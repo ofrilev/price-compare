@@ -1,48 +1,40 @@
 # Railway Deployment Fix
 
-## Quick Fix for "npm: command not found" Error
+## Fixed: "npm: command not found" Error
 
-Railway is trying to build from the root directory but can't find npm. Here's how to fix it:
+The issue was that Railway detected a Dockerfile but it wasn't configured correctly for Railway's build context.
 
-### Solution: Set Root Directory in Railway
+### What Was Fixed
 
-1. Go to your Railway project dashboard
-2. Click on your service
-3. Go to **Settings** → **Service Settings**
-4. Scroll down to **Root Directory**
-5. Set it to: `backend`
-6. Click **Save**
-7. Railway will automatically redeploy
+1. **Created root-level Dockerfile** - Railway builds from root, so the Dockerfile is now at the root level
+2. **Updated Dockerfile context** - It now correctly copies from `backend/` directory
+3. **Added .dockerignore** - Excludes unnecessary files from Docker build
 
-This tells Railway to treat the `backend` folder as the root, so it will:
-- Find `backend/package.json` and auto-detect Node.js
-- Run `npm install` and `npm run build` from the correct directory
-- Start the app with `npm start` from the backend directory
+### Current Setup
 
-### Alternative: If Root Directory Setting Doesn't Work
+Railway will now:
+- Detect the Dockerfile at root level
+- Build correctly with Node.js 20
+- Install dependencies and build TypeScript
+- Start the app on port 3001
 
-If you can't find the Root Directory setting or it doesn't work:
+### If You Still Have Issues
 
-1. **Option A**: Rename `backend/Dockerfile` to `backend/Dockerfile.backup` temporarily
-   - This forces Railway to use Nixpacks instead of Docker
-   - Railway will auto-detect Node.js from `backend/package.json`
+**Option 1**: Use Nixpacks instead of Docker
+- In Railway dashboard → Settings → Service Settings
+- Set "Builder" to "Nixpacks" (instead of Docker)
+- Railway will use the `nixpacks.toml` configuration
 
-2. **Option B**: Create a `package.json` in the root directory:
-```json
-{
-  "name": "price-scraper",
-  "scripts": {
-    "install": "cd backend && npm install",
-    "build": "cd backend && npm run build",
-    "start": "cd backend && npm start"
-  }
-}
-```
-   - Railway will detect this and use it
-   - But you'll need to install Node.js dependencies in root too
+**Option 2**: Set Root Directory
+- In Railway dashboard → Settings → Service Settings  
+- Set "Root Directory" to `backend`
+- This works if Railway uses Nixpacks auto-detection
 
-### Recommended Approach
+**Option 3**: Remove Dockerfile temporarily
+- Rename `Dockerfile` to `Dockerfile.backup`
+- Railway will use Nixpacks automatically
+- The `nixpacks.toml` will configure the build
 
-**Set Root Directory to `backend`** - this is the cleanest solution and requires no code changes.
+### Recommended: Use the Root Dockerfile
 
-After setting the root directory, your Railway build should work correctly!
+The Dockerfile at the root should now work correctly with Railway. Just redeploy and it should build successfully!
