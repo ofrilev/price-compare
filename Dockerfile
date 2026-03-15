@@ -44,10 +44,9 @@ RUN npx playwright install chromium --with-deps || true
 
 # Copy built files
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/data ./data
 
-# Create logs directory
-RUN mkdir -p logs
+# Create data and logs directories (data will be created at runtime if needed)
+RUN mkdir -p data logs
 
 # Expose port
 EXPOSE 3001
