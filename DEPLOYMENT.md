@@ -49,16 +49,40 @@ VITE_API_URL=https://your-backend.railway.app
 1. Go to [railway.app](https://railway.app) and sign up/login
 2. Click "New Project" → "Deploy from GitHub repo"
 3. Select your repository
-4. Railway will auto-detect the backend
-5. Configure environment variables in Railway dashboard:
+4. Railway will use Nixpacks (configured via `nixpacks.toml`)
+5. **Important**: In Railway dashboard, set the **Root Directory** to `backend`:
+   - Go to Settings → Service Settings
+   - Set "Root Directory" to `backend`
+   - Or configure it to use the root directory and Nixpacks will handle it
+6. Configure environment variables in Railway dashboard:
    - `PORT` (auto-set by Railway)
    - `NODE_ENV=production`
    - `FRONTEND_URL` (your Vercel URL)
    - `JWT_SECRET` (generated secret)
    - `OPENAI_API_KEY`
    - `OPENAI_MODEL` (optional)
-6. Railway will build and deploy automatically
-7. Copy the deployment URL (e.g., `https://your-app.railway.app`)
+7. Railway will build and deploy automatically
+8. Copy the deployment URL (e.g., `https://your-app.railway.app`)
+
+**Troubleshooting Railway Deployment**:
+
+If you encounter "npm: command not found" errors:
+
+**Solution 1** (Recommended): Set Root Directory in Railway
+1. Go to your Railway project → Settings → Service Settings
+2. Find "Root Directory" setting
+3. Set it to `backend`
+4. Redeploy
+
+**Solution 2**: Use Nixpacks Configuration
+- The `nixpacks.toml` file in the root should configure Railway to use Node.js
+- Ensure it's committed to your repository
+- Railway will use it automatically
+
+**Solution 3**: Remove Dockerfile (if using Nixpacks)
+- If Railway detects a Dockerfile, it may try to use Docker instead of Nixpacks
+- You can temporarily rename `backend/Dockerfile` to `backend/Dockerfile.backup`
+- Or configure Railway to use Nixpacks explicitly in the dashboard
 
 ### Option B: Render
 
