@@ -52,6 +52,17 @@ cd backoffice && npm run dev
 
 Open http://localhost:5173
 
+## Create User Account
+
+Before using the application, you need to create a user account:
+
+```bash
+cd backend
+npm run setup-user
+```
+
+Follow the prompts to create your username and password. Then log in at http://localhost:5173/login
+
 ## Usage
 
 1. **Sites** - Add e-commerce sites with search URL template

@@ -41,31 +41,61 @@ export const api = {
   sites: {
     list: () => fetchApi<Site[]>(`/sites`),
     get: (id: string) => fetchApi<Site>(`/sites/${id}`),
-    create: (data: Partial<Site>) => fetchApi<Site>(`/sites`, { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Site>) => fetchApi<Site>(`/sites/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-    delete: (id: string) => fetchApi<void>(`/sites/${id}`, { method: "DELETE" }),
+    create: (data: Partial<Site>) =>
+      fetchApi<Site>(`/sites`, { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: Partial<Site>) =>
+      fetchApi<Site>(`/sites/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      fetchApi<void>(`/sites/${id}`, { method: "DELETE" }),
   },
   products: {
     list: (params?: { category?: string; search?: string }) => {
-      const q = new URLSearchParams(params as Record<string, string>).toString();
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
       return fetchApi<Product[]>(`/products${q ? `?${q}` : ""}`);
     },
     get: (id: string) => fetchApi<Product>(`/products/${id}`),
-    create: (data: Partial<Product>) => fetchApi<Product>(`/products`, { method: "POST", body: JSON.stringify(data) }),
-    update: (id: string, data: Partial<Product>) => fetchApi<Product>(`/products/${id}`, { method: "PUT", body: JSON.stringify(data) }),
-    delete: (id: string) => fetchApi<void>(`/products/${id}`, { method: "DELETE" }),
+    create: (data: Partial<Product>) =>
+      fetchApi<Product>(`/products`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: string, data: Partial<Product>) =>
+      fetchApi<Product>(`/products/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: string) =>
+      fetchApi<void>(`/products/${id}`, { method: "DELETE" }),
   },
   categories: () => fetchApi<string[]>(`/categories`),
   scrape: {
-    run: (body?: { productIds?: string[]; category?: string; siteIds?: string[] }) =>
-      fetchApi<{ results: ScrapeResult[]; count: number }>(`/scrape`, { method: "POST", body: JSON.stringify(body ?? {}) }),
+    run: (body?: {
+      productIds?: string[];
+      category?: string;
+      siteIds?: string[];
+    }) =>
+      fetchApi<{ results: ScrapeResult[]; count: number }>(`/scrape`, {
+        method: "POST",
+        body: JSON.stringify(body ?? {}),
+      }),
     results: (params?: { productId?: string; category?: string }) => {
-      const q = new URLSearchParams(params as Record<string, string>).toString();
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
       return fetchApi<ScrapeResult[]>(`/scrape/results${q ? `?${q}` : ""}`);
     },
     lowest: (params?: { category?: string }) => {
-      const q = new URLSearchParams(params as Record<string, string>).toString();
-      return fetchApi<LowestPrice[]>(`/scrape/results/lowest${q ? `?${q}` : ""}`);
+      const q = new URLSearchParams(
+        params as Record<string, string>,
+      ).toString();
+      return fetchApi<LowestPrice[]>(
+        `/scrape/results/lowest${q ? `?${q}` : ""}`,
+      );
     },
   },
 };

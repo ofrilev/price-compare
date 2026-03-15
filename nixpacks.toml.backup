@@ -1,0 +1,18 @@
+# This file is for Nixpacks builder (alternative to Dockerfile)
+# If using Dockerfile, Railway will ignore this file
+# To use Nixpacks instead, set builder to "NIXPACKS" in Railway dashboard
+
+[variables]
+NODE_VERSION = "20"
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["sh", "-c", "cd backend && npm ci"]
+
+[phases.build]
+cmds = ["sh", "-c", "cd backend && npm run build"]
+
+[start]
+cmd = ["sh", "-c", "cd backend && npm start"]
