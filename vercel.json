@@ -1,9 +1,10 @@
 {
-  "buildCommand": "cd backoffice && npm install && npm run build",
-  "outputDirectory": "backoffice/dist",
-  "devCommand": "cd backoffice && npm run dev",
-  "installCommand": "cd backoffice && npm install",
+  "buildCommand": "npm install && npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
   "framework": "vite",
+  "rootDirectory": "backoffice",
   "rewrites": [
     {
       "source": "/(.*)",
