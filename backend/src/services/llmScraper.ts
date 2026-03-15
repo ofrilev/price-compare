@@ -30,8 +30,14 @@ async function extractPageText(page: any): Promise<string> {
     if (!body) return "";
 
     // Extract text from main content areas (prioritize product listings)
-    const mainContent = body.querySelector("main, .main-content, .products, .search-results, .product-list") || body;
-    const textContent = mainContent.innerText || mainContent.textContent || "";
+    const mainContent =
+      body.querySelector(
+        "main, .main-content, .products, .search-results, .product-list",
+      ) || body;
+    const textContent =
+      (mainContent as HTMLElement).innerText ||
+      (mainContent as HTMLElement).textContent ||
+      "";
 
     // Clean up: remove excessive whitespace, normalize newlines
     return textContent
@@ -50,15 +56,23 @@ async function scrapeWithLLM(
   url: string,
   site: Site,
   searchTerm: string,
-  pageText: string
+  pageText: string,
 ): Promise<LLMResponse> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.log(`[LLM Scrape] No OPENAI_API_KEY found, skipping LLM fallback`);
-    return { price: null, priceText: null, productName: null, productUrl: null, confidence: "low" };
+    return {
+      price: null,
+      priceText: null,
+      productName: null,
+      productUrl: null,
+      confidence: "low",
+    };
   }
 
-  const productName = site.selectors.productName ? `Product name selector: ${site.selectors.productName}` : "N/A";
+  const productName = site.selectors.productName
+    ? `Product name selector: ${site.selectors.productName}`
+    : "N/A";
 
   const prompt = `You are a web scraping assistant. Extract product information from the following page content.
 
@@ -97,8 +111,10 @@ Rules:
     searchTerm,
     [{ name: site.name, baseUrl: site.baseUrl, searchUrl: url }],
     prompt,
-    model
-  ).catch((err) => console.error("[LLM Logger] Failed to log fallback request:", err));
+    model,
+  ).catch((err) =>
+    console.error("[LLM Logger] Failed to log fallback request:", err),
+  );
 
   try {
     const response = await axios.post(
@@ -108,7 +124,8 @@ Rules:
         messages: [
           {
             role: "system",
-            content: "You are a web scraping assistant. Always return valid JSON only.",
+            content:
+              "You are a web scraping assistant. Always return valid JSON only.",
           },
           {
             role: "user",
@@ -124,12 +141,18 @@ Rules:
           "Content-Type": "application/json",
         },
         timeout: 30000,
-      }
+      },
     );
 
     const content = response.data.choices[0]?.message?.content?.trim();
     if (!content) {
-      return { price: null, priceText: null, productName: null, productUrl: null, confidence: "low" };
+      return {
+        price: null,
+        priceText: null,
+        productName: null,
+        productUrl: null,
+        confidence: "low",
+      };
     }
 
     // Extract JSON from response (handle cases where LLM adds markdown code blocks)
@@ -151,7 +174,9 @@ Rules:
 
     // Validate product match
     if (result.productName && !matchesProduct(result.productName, searchTerm)) {
-      console.log(`[LLM Scrape] Product name "${result.productName}" doesn't match search "${searchTerm}"`);
+      console.log(
+        `[LLM Scrape] Product name "${result.productName}" doesn't match search "${searchTerm}"`,
+      );
       if (result.confidence === "high") {
         result.confidence = "medium";
       }
@@ -159,7 +184,7 @@ Rules:
 
     // Log the response (fallback scraper)
     await logLLMResponse(searchTerm, response, result).catch((err) =>
-      console.error("[LLM Logger] Failed to log fallback response:", err)
+      console.error("[LLM Logger] Failed to log fallback response:", err),
     );
 
     return result;
@@ -171,10 +196,18 @@ Rules:
       searchTerm,
       pageTextLength: pageText.length,
       model,
-    }).catch((logErr) => console.error("[LLM Logger] Failed to log fallback error:", logErr));
+    }).catch((logErr) =>
+      console.error("[LLM Logger] Failed to log fallback error:", logErr),
+    );
 
     console.error(`[LLM Scrape] Error:`, err.message);
-    return { price: null, priceText: null, productName: null, productUrl: null, confidence: "low" };
+    return {
+      price: null,
+      priceText: null,
+      productName: null,
+      productUrl: null,
+      confidence: "low",
+    };
   }
 }
 
@@ -184,12 +217,13 @@ Rules:
 export async function scrapeWithLLMFallback(
   url: string,
   site: Site,
-  searchTerm: string
+  searchTerm: string,
 ): Promise<{ price: number | null; productUrl: string }> {
   const cfg = site.scraperConfig;
   const userAgent = cfg?.userAgent ?? DEFAULT_USER_AGENT;
   const waitStrategy = cfg?.waitStrategy ?? "domcontentloaded";
-  const waitUntil = waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
+  const waitUntil =
+    waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
   const browser = await chromium.launch({ headless: false });
   try {
@@ -203,7 +237,11 @@ export async function scrapeWithLLMFallback(
     if (cfg?.preSteps?.length) {
       for (const step of cfg.preSteps) {
         if (step.type === "click" && step.selector) {
-          await page.locator(step.selector).first().click({ timeout: 5000 }).catch(() => null);
+          await page
+            .locator(step.selector)
+            .first()
+            .click({ timeout: 5000 })
+            .catch(() => null);
         }
       }
     }
@@ -212,11 +250,17 @@ export async function scrapeWithLLMFallback(
     if (cfg?.searchStrategy === "searchBar" && cfg?.searchInputSelector) {
       console.log(`[LLM Scrape] Performing search: "${searchTerm}"`);
       const searchInput = page.locator(cfg.searchInputSelector).first();
-      await searchInput.waitFor({ state: "visible", timeout: 10000 }).catch(() => null);
+      await searchInput
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null);
       await searchInput.fill("");
       await searchInput.fill(searchTerm);
       if (cfg.searchSubmitSelector) {
-        await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
+        await page
+          .locator(cfg.searchSubmitSelector)
+          .first()
+          .click({ timeout: 5000 })
+          .catch(() => null);
       } else {
         await searchInput.press("Enter");
       }
@@ -242,7 +286,9 @@ export async function scrapeWithLLMFallback(
     const result = await scrapeWithLLM(url, site, searchTerm, pageText);
 
     if (result.price !== null) {
-      console.log(`[LLM Scrape] Found price: ${result.priceText} (${result.price}) - confidence: ${result.confidence}`);
+      console.log(
+        `[LLM Scrape] Found price: ${result.priceText} (${result.price}) - confidence: ${result.confidence}`,
+      );
     } else {
       console.log(`[LLM Scrape] No price found`);
     }
