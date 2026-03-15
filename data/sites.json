@@ -1,0 +1,155 @@
+[
+  {
+    "id": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "name": "חלילית",
+    "baseUrl": "https://www.halilit.com/",
+    "siteUrl": "https://www.halilit.com/",
+    "searchUrlTemplate": "https://www.halilit.com/search?q={searchTerm}",
+    "selectors": {
+      "price": ".product-price, .price, [data-price]",
+      "productName": ".product-title, .product-name, h2, h3",
+      "productLink": "a[href*='/products/'], a[href*='/product/'], a.product-link"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "searchBar",
+      "searchInputSelector": "input[type='search'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search'], #search",
+      "priceSelectors": [
+        ".product-price",
+        ".price",
+        "[data-price]",
+        ".final-price"
+      ],
+      "resultItemSelector": ".product-item, .product-card, .search-result-item, article.product",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookiesPopup273296__wrapper_1 button, .cookie-accept, [data-accept-cookies], button.cookie-consent"
+        }
+      ]
+    }
+  },
+  {
+    "id": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "name": "כלי זמר",
+    "baseUrl": "https://www.kley-zemer.co.il/",
+    "siteUrl": "https://www.kley-zemer.co.il/",
+    "searchUrlTemplate": "https://www.kley-zemer.co.il/AllResults?bskeyword={item}",
+    "selectors": {
+      "price": ".price, [class*='price']",
+      "productName": ".product-name, .product-title, h2, h3",
+      "productLink": "a[href*='/product/']"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "searchBar",
+      "searchInputSelector": "input[type='search'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='הקלד']",
+      "priceSelectors": [
+        ".price",
+        "[class*='price']",
+        ".product-price"
+      ],
+      "resultItemSelector": ".product-item, .product-card, .search-result, [class*='product']",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent"
+        }
+      ]
+    }
+  },
+  {
+    "id": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "name": "קילומבו",
+    "baseUrl": "https://www.kilombo.co.il/",
+    "siteUrl": "https://www.kilombo.co.il/",
+    "searchUrlTemplate": "https://www.kilombo.co.il/?s={searchTerm}",
+    "selectors": {
+      "price": ".price, .product-price, [class*='price'], [data-price]",
+      "productName": ".product-title, .product-name, h2, h3, h4",
+      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "searchBar",
+      "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
+      "priceSelectors": [
+        ".price",
+        ".product-price",
+        "[class*='price']",
+        "[data-price]"
+      ],
+      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
+        }
+      ]
+    }
+  },
+  {
+    "id": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "name": "נקסט פרו",
+    "baseUrl": "https://www.next-pro.co.il/",
+    "siteUrl": "https://www.next-pro.co.il/",
+    "searchUrlTemplate": "https://www.next-pro.co.il/?s={searchTerm}",
+    "selectors": {
+      "price": ".price, .product-price, [class*='price'], [data-price]",
+      "productName": ".product-title, .product-name, h2, h3, h4",
+      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "searchBar",
+      "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
+      "priceSelectors": [
+        ".price",
+        ".product-price",
+        "[class*='price']",
+        "[data-price]"
+      ],
+      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
+        }
+      ]
+    }
+  },
+  {
+    "id": "f23c873f-d398-476c-b583-eb00f8755272",
+    "name": "דיאז",
+    "baseUrl": "https://diez.co.il/",
+    "searchUrlTemplate": "",
+    "selectors": {
+      "price": "",
+      "productName": "",
+      "productLink": ""
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true
+  }
+]

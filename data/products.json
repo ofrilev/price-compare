@@ -1,0 +1,20 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Yamaha P-225",
+    "searchTerm": "piano p225",
+    "category": "Pianos"
+  },
+  {
+    "id": "2969701f-6b4b-4532-8602-871c4272f420",
+    "name": "Roland FP-10",
+    "searchTerm": "Roland FP-10",
+    "category": "Pianos"
+  },
+  {
+    "id": "37ab1554-71f3-4e52-9903-2b912ffa980f",
+    "name": "Vintage V10 Coaster",
+    "searchTerm": "גיטרה חשמלית",
+    "category": "electric Guitar"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd backoffice && npm install && npm run build",
+  "outputDirectory": "backoffice/dist",
+  "devCommand": "cd backoffice && npm run dev",
+  "installCommand": "cd backoffice && npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

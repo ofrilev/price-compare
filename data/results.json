@@ -1,0 +1,83 @@
+[
+  {
+    "id": "b4e588b2-a825-4f0b-8a17-546ee2976ab8",
+    "productId": "7e4af38e-e0f2-4c63-94d6-c4fbbecdfde5",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 1890,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/",
+    "scrapedAt": "2026-03-12T13:29:25.137Z"
+  },
+  {
+    "id": "8e37ca97-2fb2-48af-9cb0-4b4be95e7a3b",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12345",
+    "scrapedAt": "2026-03-15T18:32:37.225Z"
+  },
+  {
+    "id": "c040706d-8d33-4c7e-a981-1aeea5c74c18",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2899,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/product/67890",
+    "scrapedAt": "2026-03-15T18:32:37.225Z"
+  },
+  {
+    "id": "7908cdd6-78f7-4ac4-abcb-b71c8aaad011",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2950,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/112233",
+    "scrapedAt": "2026-03-15T18:32:37.225Z"
+  },
+  {
+    "id": "7c24e217-cc1a-47a9-b4da-cf012cb8ec65",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/roland-fp-10",
+    "scrapedAt": "2026-03-15T18:32:45.218Z"
+  },
+  {
+    "id": "336488f3-69a6-497a-957c-dd3c8f634583",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2890,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/product/roland-fp-10",
+    "scrapedAt": "2026-03-15T18:32:45.218Z"
+  },
+  {
+    "id": "4e9ca1e5-e29a-4d63-a5a5-9c454ffc5d63",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2950,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/roland-fp-10",
+    "scrapedAt": "2026-03-15T18:32:45.218Z"
+  },
+  {
+    "id": "b81f6424-9871-4e9c-b9a0-de4509fc3537",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/yamaha-p-225",
+    "scrapedAt": "2026-03-15T18:53:45.919Z"
+  },
+  {
+    "id": "ead20fb7-a47e-4d28-a620-41bfbb5ae18f",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/roland-fp-10",
+    "scrapedAt": "2026-03-15T19:21:20.484Z"
+  }
+]
