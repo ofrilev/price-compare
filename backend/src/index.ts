@@ -11,11 +11,21 @@ import { requireAuth } from "./middleware/auth.js";
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
-// CORS configuration
-const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+// CORS configuration - allow production and local dev
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://diez-music-compare.giving",
+  "http://localhost:5173",
+].filter(Boolean) as string[];
 app.use(
   cors({
-    origin: frontendUrl,
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        cb(null, origin || allowedOrigins[0]);
+      } else {
+        cb(null, false);
+      }
+    },
     credentials: true,
   })
 );
