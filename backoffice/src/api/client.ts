@@ -1,4 +1,4 @@
-const API = (import.meta as any).env?.VITE_API_URL || "/api";
+export const API_BASE = (import.meta as any).env?.VITE_API_URL || "/api";
 
 function getAuthToken(): string | null {
   return localStorage.getItem("auth_token");
@@ -15,7 +15,7 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
   });

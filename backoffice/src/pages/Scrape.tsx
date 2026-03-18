@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type CategoryMatchResult } from "../api/client";
+import { api, API_BASE, type CategoryMatchResult } from "../api/client";
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { toHrefUrl } from "../utils/url";
@@ -79,8 +79,8 @@ export default function Scrape() {
       // Get auth token for EventSource (which can't send headers)
       const token = localStorage.getItem("auth_token");
       const streamUrl = token
-        ? `/api/scrape/stream?token=${encodeURIComponent(token)}`
-        : "/api/scrape/stream";
+        ? `${API_BASE}/scrape/stream?token=${encodeURIComponent(token)}`
+        : `${API_BASE}/scrape/stream`;
       const es = new EventSource(streamUrl);
       eventSourceRef.current = es;
 
@@ -257,8 +257,8 @@ export default function Scrape() {
       // Get auth token for EventSource (which can't send headers)
       const token = localStorage.getItem("auth_token");
       const streamUrl = token
-        ? `/api/scrape/stream?token=${encodeURIComponent(token)}`
-        : "/api/scrape/stream";
+        ? `${API_BASE}/scrape/stream?token=${encodeURIComponent(token)}`
+        : `${API_BASE}/scrape/stream`;
       const es = new EventSource(streamUrl);
       eventSourceRef.current = es;
 
