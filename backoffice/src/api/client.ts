@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || "/api";
+const API = (import.meta as any).env?.VITE_API_URL || "/api";
 
 function getAuthToken(): string | null {
   return localStorage.getItem("auth_token");
@@ -6,9 +6,9 @@ function getAuthToken(): string | null {
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getAuthToken();
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options?.headers,
+    ...((options?.headers as Record<string, string>) || {}),
   };
 
   if (token) {
@@ -78,6 +78,7 @@ export const api = {
       productIds?: string[];
       category?: string;
       siteIds?: string[];
+      mode?: "scraper" | "llm_websearch";
     }) =>
       fetchApi<{ results: ScrapeResult[]; count: number }>(`/scrape`, {
         method: "POST",
@@ -97,8 +98,31 @@ export const api = {
         `/scrape/results/lowest${q ? `?${q}` : ""}`,
       );
     },
+    matchCategory: (body: { category: string; siteIds?: string[] }) =>
+      fetchApi<CategoryMatchResult>(`/scrape/match-category`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
   },
 };
+
+export interface MatchedProductPrice {
+  site: string;
+  price: number;
+  url: string;
+}
+
+export interface MatchedProduct {
+  model: string;
+  common_features: string;
+  prices: MatchedProductPrice[];
+  best_deal: string;
+}
+
+export interface CategoryMatchResult {
+  comparison: MatchedProduct[];
+  unmatched_highlights: string[];
+}
 
 export interface ScraperConfig {
   searchStrategy?: "url" | "searchBar";

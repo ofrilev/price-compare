@@ -79,5 +79,887 @@
     "currency": "ILS",
     "productUrl": "https://www.kilombo.co.il/product/roland-fp-10",
     "scrapedAt": "2026-03-15T19:21:20.484Z"
+  },
+  {
+    "id": "d8f1328b-91a1-455b-8d80-8a9d89195876",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/yamaha-p-225",
+    "scrapedAt": "2026-03-16T08:29:04.855Z"
+  },
+  {
+    "id": "439af088-04db-416b-b610-587a0f389c80",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2899,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/product/yamaha-p-225",
+    "scrapedAt": "2026-03-16T08:29:04.855Z"
+  },
+  {
+    "id": "655bc773-08a2-43f6-9d76-c4f8aae8fc7f",
+    "productId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3100,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/yamaha-p-225",
+    "scrapedAt": "2026-03-16T08:29:04.855Z"
+  },
+  {
+    "id": "b2113167-ac0c-42c4-9d25-cb5ca7c346d6",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/roland-fp-10",
+    "scrapedAt": "2026-03-16T08:29:13.615Z"
+  },
+  {
+    "id": "11e52acb-4ad3-4735-b9e0-69c8b0b759e0",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2890,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/product/roland-fp-10",
+    "scrapedAt": "2026-03-16T08:29:13.615Z"
+  },
+  {
+    "id": "5fe46e7f-19eb-4c09-9a33-423550a2ee40",
+    "productId": "2969701f-6b4b-4532-8602-871c4272f420",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2950,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/roland-fp-10",
+    "scrapedAt": "2026-03-16T08:29:13.615Z"
+  },
+  {
+    "id": "8605e050-765c-483a-bc53-a1605cf8fb2b",
+    "productId": "99bdb746-3c0e-491b-89c9-a06698ae602e",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12345",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "45211ed0-3dcf-4655-b9c8-4591f6d5d80b",
+    "productId": "99bdb746-3c0e-491b-89c9-a06698ae602e",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123456",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "3ac9a0d7-9834-41e4-a44f-e53a8cd8d7a9",
+    "productId": "d5e2cdf1-2155-4a3e-9fb3-040dce2ae136",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2990,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12346",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "2c06ff31-edf6-4906-ad48-e425ebc2b6fd",
+    "productId": "d5e2cdf1-2155-4a3e-9fb3-040dce2ae136",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2990,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123457",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "662b07b0-c7ee-45fc-ad8d-817c4e73867d",
+    "productId": "0029a742-d172-40c2-a3ca-ee1032da6085",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2490,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12347",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "2387dff0-bec8-4db9-b327-c2617d6f5ece",
+    "productId": "0029a742-d172-40c2-a3ca-ee1032da6085",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2490,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123458",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "827a7093-c3fe-4482-9f42-a8d4e1da41cf",
+    "productId": "976320a2-2e6a-42ef-9a6e-87b7027abcaa",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 3490,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12348",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "caf4e82b-fcaf-4368-9278-8cfaa14d4181",
+    "productId": "976320a2-2e6a-42ef-9a6e-87b7027abcaa",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3490,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123459",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "fde26725-0d94-4d2f-a1f4-1d2ba157000b",
+    "productId": "6ad2e21f-54d7-42c9-a769-90564124b978",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12350",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "c1469bf3-345d-4a6c-a6b1-1d42eb6e8f69",
+    "productId": "6ad2e21f-54d7-42c9-a769-90564124b978",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123460",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "b580b7e2-5edd-4695-8e4e-22c8758b147f",
+    "productId": "f4017ee3-8ced-413e-aa06-dab1f4a71f7b",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 1990,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12349",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "8907f40f-5f42-418b-be15-a7fec8ae59bf",
+    "productId": "f4017ee3-8ced-413e-aa06-dab1f4a71f7b",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 1990,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123461",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "f4e90b37-d650-4a4f-a087-44d7354df16b",
+    "productId": "3276e2b9-2a44-4e9c-90fe-d3e00d1a77d9",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 1990,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12352",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "7dd6feea-75f0-4f98-92a7-daf332493022",
+    "productId": "3276e2b9-2a44-4e9c-90fe-d3e00d1a77d9",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 1790,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123462",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "1cf8bebc-a631-4e81-94ba-9c8f70476d26",
+    "productId": "730d21e1-789b-4ee9-a21d-b43c1ea99c36",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2390,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12351",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "1b7f8d42-e228-4ed8-835f-9ab3fe15cc99",
+    "productId": "730d21e1-789b-4ee9-a21d-b43c1ea99c36",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2390,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123464",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "4ba90d9e-8399-4bd8-a184-bd2688e4863f",
+    "productId": "26708f52-11eb-4548-a56c-d818b45ad6ae",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 1790,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12353",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "f3bde529-a042-4a17-9832-fd0db833f94c",
+    "productId": "26708f52-11eb-4548-a56c-d818b45ad6ae",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 1590,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123463",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "5900afde-98c5-4361-b770-6958cac04376",
+    "productId": "2454df81-e382-4152-a5c0-8c1b534fb057",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 1590,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/12355",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "3aeb163d-7eda-492f-b4bd-d27dd0d81568",
+    "productId": "2454df81-e382-4152-a5c0-8c1b534fb057",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 1490,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Product/123465",
+    "scrapedAt": "2026-03-16T18:11:26.055Z"
+  },
+  {
+    "id": "0d6bb867-42ab-497a-8d99-9f8cf87e8dfa",
+    "productId": "99bdb746-3c0e-491b-89c9-a06698ae602e",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 3290,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-fender-player-stratocaster/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "aee22474-06bf-4c5c-b51f-af9b8141d9f5",
+    "productId": "d5e2cdf1-2155-4a3e-9fb3-040dce2ae136",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 2490,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-ibanez-rg421/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "4d28f6f9-e320-4752-99f6-30481a2c3e79",
+    "productId": "0029a742-d172-40c2-a3ca-ee1032da6085",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 1990,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-yamaha-pacifica-112v/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "aaf1885f-8c6b-40d5-852a-9b9e18ef2f1a",
+    "productId": "976320a2-2e6a-42ef-9a6e-87b7027abcaa",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 2990,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-epiphone-les-paul-standard/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "6e988092-67c7-4f14-954f-0cc5f662c8c8",
+    "productId": "6bb81edb-3a8c-4241-aa74-46e6fb0d379a",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 2390,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-squier-classic-vibe-70s-stratocaster/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "4f008e13-98e2-41a2-909e-6e2ab43d549c",
+    "productId": "6ad2e21f-54d7-42c9-a769-90564124b978",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 3190,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-prs-se-custom-24/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "ecb4fe0d-6ad3-487e-bf4c-c2cf5885d5ca",
+    "productId": "fb66456b-6ebc-44a8-a9bf-840899db7e4f",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 1890,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-cort-kx5/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "c4461a2a-5a0e-4fae-9256-017033227d37",
+    "productId": "730d21e1-789b-4ee9-a21d-b43c1ea99c36",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 2490,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-schecter-omen-6/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "49823aa7-92ec-416a-aa51-a992ba7509c8",
+    "productId": "3276e2b9-2a44-4e9c-90fe-d3e00d1a77d9",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 1990,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-jackson-dinky-js22/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "f68aedee-1979-4739-beaf-d0b2ebfb53ae",
+    "productId": "2454df81-e382-4152-a5c0-8c1b534fb057",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 1790,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/גיטרה-חשמלית-ibanez-grg121dx/",
+    "scrapedAt": "2026-03-16T18:21:24.172Z"
+  },
+  {
+    "id": "f8bcaed2-bd16-494a-9674-5a7bcd44f28f",
+    "productId": "c3943bc8-fec0-4ee4-a821-23c847ef37fa",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Tama-Imperialstar-5-Piece-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "3f874986-d58c-4296-b378-e936e525e91d",
+    "productId": "c3943bc8-fec0-4ee4-a821-23c847ef37fa",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/tama-imperialstar-5-piece-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "e5c0278f-0215-40b1-9fe7-5ead573a8ffd",
+    "productId": "c3943bc8-fec0-4ee4-a821-23c847ef37fa",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/tama-imperialstar-5-piece-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "2b349dd5-4be7-4280-9dd8-e0a62b00ccc5",
+    "productId": "ce59cc8d-8010-43ed-8c7e-e5c9c62c4295",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3499,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Yamaha-Stage-Custom-Birch-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "aa7971ec-74dc-4a12-b673-573e5e413615",
+    "productId": "ce59cc8d-8010-43ed-8c7e-e5c9c62c4295",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 3999,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/yamaha-stage-custom-birch-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "5a703ce1-ac61-42e2-99c8-5ca68ee727ab",
+    "productId": "ce59cc8d-8010-43ed-8c7e-e5c9c62c4295",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3999,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/yamaha-stage-custom-birch-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "60c406f5-67ee-4950-b421-a9b9b830e3ff",
+    "productId": "a76d43c9-8d9c-4323-8ea1-0862035748dd",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2899,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Pearl-Export-Series-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "d8929123-2606-45da-a0f0-ab97b52121b6",
+    "productId": "a76d43c9-8d9c-4323-8ea1-0862035748dd",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 3499,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/pearl-export-series-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "03f4f28a-ec69-41f7-a954-6a47af3b3104",
+    "productId": "a76d43c9-8d9c-4323-8ea1-0862035748dd",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3499,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/pearl-export-series-5-piece-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "fd156b7b-9bea-4f2d-a4fb-c02b60da7193",
+    "productId": "88a146e1-6348-4c51-90dc-67567ca65bb6",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2499,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Mapex-Tornado-5-Piece-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "75541fcf-7ee7-4253-aefa-69b5fbb77f09",
+    "productId": "88a146e1-6348-4c51-90dc-67567ca65bb6",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2799,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/mapex-tornado-5-piece-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "2b81764c-896a-49c1-9001-19fbfa28b206",
+    "productId": "88a146e1-6348-4c51-90dc-67567ca65bb6",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2499,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/mapex-tornado-5-piece-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "456a852b-72ed-4bbd-8f48-df3fc0097829",
+    "productId": "3da22785-69fb-4770-8914-86cbe9a00d48",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3999,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Roland-TD-1K-Electronic-Drum-Kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "eee3333b-81b1-4752-b011-a28be1b6f8a7",
+    "productId": "3da22785-69fb-4770-8914-86cbe9a00d48",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 4999,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/roland-td-1k-electronic-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "9d2f1416-cc1e-4f14-9030-d1068d2072f3",
+    "productId": "3da22785-69fb-4770-8914-86cbe9a00d48",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 4999,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/roland-td-1k-electronic-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "482de882-810f-4d10-a603-ebb2bd9a2a49",
+    "productId": "9325d98e-7457-45a4-93fd-fb0073d2df01",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 1999,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Alesis-Nitro-Mesh-Kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "fc4c43b2-6971-4db3-8c59-ccbbd810d2e2",
+    "productId": "9325d98e-7457-45a4-93fd-fb0073d2df01",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2999,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/alesis-nitro-mesh-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "00a7f545-55eb-4558-ab23-a94024a5eb9b",
+    "productId": "9325d98e-7457-45a4-93fd-fb0073d2df01",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 1999,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/alesis-nitro-mesh-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "7d32f357-c0ca-4c3d-a3c5-d05f5407b901",
+    "productId": "cce9f5fa-0682-47f7-867e-b678cadd8263",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3599,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Gretsch-Catalina-Club-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "06c533d6-668f-4c03-9787-69d7df057328",
+    "productId": "cce9f5fa-0682-47f7-867e-b678cadd8263",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 3599,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/gretsch-catalina-club-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "661ba73c-b635-4bb8-a8da-14b8456431da",
+    "productId": "cce9f5fa-0682-47f7-867e-b678cadd8263",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3599,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/gretsch-catalina-club-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "e95d2436-64cc-45fc-89ae-3f3ad1608100",
+    "productId": "606819f8-ec04-472b-afe6-5042c20cee39",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 4999,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Sonor-AQ2-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "db581cf2-28b1-4e32-9dec-8b700baa472b",
+    "productId": "606819f8-ec04-472b-afe6-5042c20cee39",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 4299,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/sonor-aq2-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "dba86749-922a-48b6-98bb-645c9cebcf25",
+    "productId": "606819f8-ec04-472b-afe6-5042c20cee39",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 4499,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/sonor-aq2-drum-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "815fd7f9-9281-4233-8e95-74a12eb6f1af",
+    "productId": "6d1a746b-bbfb-49a7-a4cf-8c73f2768ace",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2199,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/Ludwig-Breakbeats-by-Questlove",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "c884c296-a123-4116-99f5-6f69c6e05ba2",
+    "productId": "6d1a746b-bbfb-49a7-a4cf-8c73f2768ace",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2399,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/ludwig-breakbeats-by-questlove-drum-kit",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "85b52d56-9a41-419f-9293-ae925a8089ed",
+    "productId": "6d1a746b-bbfb-49a7-a4cf-8c73f2768ace",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2899,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/ludwig-breakbeats-by-questlove",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "1bf3f0e2-f7b7-439e-b2f1-74904c984d37",
+    "productId": "cb30185d-7d21-4466-8197-535e866cc27b",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 6999,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/DW-Performance-Series-Drum-Set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "10e156b0-0e88-47e2-8981-812f61aee5bf",
+    "productId": "44f7cfa6-671c-4bc5-bc34-b9734cca2065",
+    "siteId": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
+    "price": 2199,
+    "currency": "ILS",
+    "productUrl": "https://www.kilombo.co.il/product/dixon-drums-5-piece-set",
+    "scrapedAt": "2026-03-16T19:21:58.570Z"
+  },
+  {
+    "id": "e2338b86-b878-4434-9edb-cdc56915d3d4",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 3999,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/roland-rp107",
+    "scrapedAt": "2026-03-16T19:49:50.968Z"
+  },
+  {
+    "id": "624830d6-519a-4f68-97d5-f46c22ef60f0",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3890,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/product/roland-rp107",
+    "scrapedAt": "2026-03-16T19:49:50.968Z"
+  },
+  {
+    "id": "83fc90aa-2a8a-4d21-9bc7-31c5b77015c6",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/roland-rp107",
+    "scrapedAt": "2026-03-16T19:49:50.968Z"
+  },
+  {
+    "id": "fa119c38-926b-4660-bd5d-dd9770ca096d",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/roland-rp107",
+    "scrapedAt": "2026-03-17T08:24:41.931Z"
+  },
+  {
+    "id": "d1fdfdcf-89f9-4357-b250-615db88d1ab2",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 3999,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/product/roland-rp107",
+    "scrapedAt": "2026-03-17T08:24:41.931Z"
+  },
+  {
+    "id": "64d67ca9-63d2-4108-8114-7f9384c17591",
+    "productId": "cc55c09b-8736-4812-b4c1-315412a5d5a2",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 74687468.63776377,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-studiologic-numa-x-piano-gt/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "a7fe2273-a1ed-47c2-9137-75149974613c",
+    "productId": "bc796803-7d8a-4e92-9005-56590fd53c59",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 6930,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-kawai-cn201-%d7%91%d7%a6%d7%91%d7%a2-%d7%a9%d7%97%d7%95%d7%a8-%d7%90%d7%95-%d7%9c%d7%91%d7%9f/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "344fb7d8-0fab-4b35-ab46-edaa2323c953",
+    "productId": "1e18bd35-8741-4a20-ac57-59357e035b68",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 3549,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-kawai-es120/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "52b8c55b-37fc-4616-85b2-3f103cc6cf01",
+    "productId": "1f8f3266-a0e4-4e61-a3f5-d3c99c18e986",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2851,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%97%d7%9b%d7%9d-the-one-nex-%d7%a2%d7%9d-%d7%90%d7%a4%d7%9c%d7%99%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%99%d7%99%d7%a2%d7%95%d7%93%d7%99/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "2c403ff8-7174-428a-9c2c-d3a304c89d5e",
+    "productId": "d852d26b-fcff-4d8b-8cdf-159640430c98",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2490329024903290,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%97%d7%9b%d7%9d-the-one-sp-ton-pro-%d7%91%d7%a9%d7%97%d7%95%d7%a8-%d7%90%d7%95-%d7%91%d7%9c%d7%91%d7%9f/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "0d09c27f-c14d-49e4-83aa-c22f917418b5",
+    "productId": "5829fabf-cd37-4d88-b469-8d6030279993",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 1300146013001460,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-%d7%97%d7%9b%d7%9e%d7%94-the-one-tok-%d7%91%d7%a6%d7%91%d7%a2%d7%99%d7%9d-%d7%a9%d7%95%d7%a0%d7%99%d7%9d/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "483d9aad-615b-4800-aed9-a62b3fe564e4",
+    "productId": "b758827a-6fbf-4573-b3e5-8f68ba2ec700",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2100,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-casio-cdp-s110-%d7%91%d7%a6%d7%91%d7%a2-%d7%a9%d7%97%d7%95%d7%a8-%d7%90%d7%95-%d7%9c%d7%91%d7%9f/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "8ac80b96-7d2d-433d-9d17-b58f68fd8433",
+    "productId": "5bba3771-f2b6-4f45-8587-88970f816a4d",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 2890311928903119,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-korg-b2sp-%d7%91%d7%a9%d7%97%d7%95%d7%a8-%d7%90%d7%95-%d7%91%d7%9c%d7%91%d7%9f/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "7c77a702-cdf4-453c-9b12-ba622ca27591",
+    "productId": "45de531c-b29a-4cf7-86f9-64d213b84445",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 5550,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-casio-ap-470/",
+    "scrapedAt": "2026-03-17T09:06:50.184Z"
+  },
+  {
+    "id": "066f1b5a-111a-44c6-83f9-f39e7c433d2c",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "48304190",
+    "price": 48304190,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-rp107-black/",
+    "scrapedAt": "2026-03-17T17:57:53.959Z"
+  },
+  {
+    "id": "6a718dbf-bc34-4556-b73c-d1a827234ec3",
+    "productId": "f081ced8-b6fd-4615-bfe7-7bf0fbcbbba6",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 7428061900,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%90%d7%a7%d7%95%d7%a1%d7%98%d7%99-%d7%91%d7%a6%d7%91%d7%a2-%d7%a9%d7%97%d7%95%d7%a8-kawai-k-500-aures-2-e-p-piano/",
+    "scrapedAt": "2026-03-17T17:59:17.592Z"
+  },
+  {
+    "id": "fe6cc73b-5e5a-483e-acc6-e938f3623937",
+    "productId": "f43cfca3-2e24-4542-80cf-3906cb8ded43",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 65125600,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-studiologic-numa-x-piano-88/",
+    "scrapedAt": "2026-03-17T17:59:17.592Z"
+  },
+  {
+    "id": "62ec00f9-7f64-4f38-bbc0-626725a4943c",
+    "productId": "3e4bccd2-49ca-416c-bc7e-18e7dd2a77f0",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 52804800,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-studiologic-numa-x-piano-73/",
+    "scrapedAt": "2026-03-17T17:59:17.592Z"
+  },
+  {
+    "id": "b2c27f32-60a9-406f-a1a5-fec3f9c6a0df",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4190,
+    "currency": "ILS",
+    "productUrl": "https://mng.diez.co.il/product/פסנתר-חשמלי-רולנד-roland-rp107-black/",
+    "scrapedAt": "2026-03-17T19:35:08.424Z"
+  },
+  {
+    "id": "e3731147-c6cf-41e8-806b-8455861c96a2",
+    "productId": "7af94c2c-301a-4f86-94b4-5a916d96df5f",
+    "siteId": "uuid",
+    "price": 4830,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-rp107-black/",
+    "scrapedAt": "2026-03-17T19:37:12.938Z"
+  },
+  {
+    "id": "610dd82b-b509-4654-a8b9-f756c0f56f74",
+    "productId": "cc55c09b-8736-4812-b4c1-315412a5d5a2",
+    "siteId": "uuid",
+    "price": 9000,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%93%d7%99%d7%92%d7%99%d7%98%d7%9c%d7%99-studiologic-numa-gt-x88/",
+    "scrapedAt": "2026-03-17T19:37:39.079Z"
+  },
+  {
+    "id": "c1e35565-f48d-4d90-80a4-6b3c39364a5f",
+    "productId": "bc796803-7d8a-4e92-9005-56590fd53c59",
+    "siteId": "uuid1",
+    "price": 6930,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-kawai-cn201-%d7%91%d7%a6%d7%91%d7%a2-%d7%a9%d7%97%d7%95%d7%a8-%d7%90%d7%95-%d7%9c%d7%91%d7%9f/",
+    "scrapedAt": "2026-03-17T19:38:25.453Z"
+  },
+  {
+    "id": "4339c37f-26bb-4d86-9894-61cf656f2394",
+    "productId": "bc796803-7d8a-4e92-9005-56590fd53c59",
+    "siteId": "uuid2",
+    "price": 8040,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a7%d7%95%d7%95%d7%90%d7%99-kawai-cn201-black/",
+    "scrapedAt": "2026-03-17T19:38:25.453Z"
+  },
+  {
+    "id": "87ab7872-4afa-46e8-a158-8de58ab9fa25",
+    "productId": "1e18bd35-8741-4a20-ac57-59357e035b68",
+    "siteId": "uuid",
+    "price": 3549,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-kawai-es120/",
+    "scrapedAt": "2026-03-17T19:39:00.972Z"
+  },
+  {
+    "id": "9e117163-9502-49a2-8140-8abee70b1f28",
+    "productId": "1e18bd35-8741-4a20-ac57-59357e035b68",
+    "siteId": "uuid",
+    "price": 4056,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a7%d7%95%d7%95%d7%90%d7%99-kawai-es-120-black/",
+    "scrapedAt": "2026-03-17T19:39:00.972Z"
+  },
+  {
+    "id": "2b768575-7526-438e-ac1e-9737869659a8",
+    "productId": "1f8f3266-a0e4-4e61-a3f5-d3c99c18e986",
+    "siteId": "uuid",
+    "price": 2851,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%97%d7%9b%d7%9d-the-one-nex-%d7%a2%d7%9d-%d7%90%d7%a4%d7%9c%d7%99%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%99%d7%99%d7%a2%d7%95%d7%93%d7%99/",
+    "scrapedAt": "2026-03-17T19:39:28.254Z"
+  },
+  {
+    "id": "354083fa-e04b-4e47-96aa-e841b0575691",
+    "productId": "b758827a-6fbf-4573-b3e5-8f68ba2ec700",
+    "siteId": "uuid1",
+    "price": 2100,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-casio-cdp-s110-%d7%91%d7%a6%d7%91%d7%a2-%d7%a9%d7%97%d7%95%d7%a8-%d7%90%d7%95-%d7%9c%d7%91%d7%9f/",
+    "scrapedAt": "2026-03-17T19:41:08.695Z"
+  },
+  {
+    "id": "65fe87f6-d8c2-4e9c-a689-81f0ce32b8d4",
+    "productId": "b758827a-6fbf-4573-b3e5-8f68ba2ec700",
+    "siteId": "uuid2",
+    "price": 2460,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a7%d7%a1%d7%99%d7%95-casio-cdp-s110-wh/",
+    "scrapedAt": "2026-03-17T19:41:08.695Z"
+  },
+  {
+    "id": "50908dec-2c81-4636-ab85-5dada44156cf",
+    "productId": "45de531c-b29a-4cf7-86f9-64d213b84445",
+    "siteId": "1",
+    "price": 5550,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-casio-ap-470/",
+    "scrapedAt": "2026-03-17T19:42:12.752Z"
+  },
+  {
+    "id": "0925f6b1-dbb2-4c85-a461-d451d7256cd3",
+    "productId": "45de531c-b29a-4cf7-86f9-64d213b84445",
+    "siteId": "2",
+    "price": 6600,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a7%d7%a1%d7%99%d7%95-casio-ap-470-bk/",
+    "scrapedAt": "2026-03-17T19:42:12.752Z"
+  },
+  {
+    "id": "44c9e39b-e4f4-4e73-971a-84b929199ddd",
+    "productId": "f081ced8-b6fd-4615-bfe7-7bf0fbcbbba6",
+    "siteId": "uuid",
+    "price": 74280,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%90%d7%a7%d7%95%d7%a1%d7%98%d7%99-%d7%91%d7%a6%d7%91%d7%a2-%d7%a9%d7%97%d7%95%d7%a8-kawai-k-500-aures-2-e-p-piano/",
+    "scrapedAt": "2026-03-17T19:42:43.737Z"
+  },
+  {
+    "id": "b991486a-3aea-4702-9258-ba3a94296992",
+    "productId": "f43cfca3-2e24-4542-80cf-3906cb8ded43",
+    "siteId": "uuid",
+    "price": 6512,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-studiologic-numa-x-piano-88/",
+    "scrapedAt": "2026-03-17T19:43:21.688Z"
+  },
+  {
+    "id": "879ff4a9-048a-4686-b45b-c95151b4fce7",
+    "productId": "3e4bccd2-49ca-416c-bc7e-18e7dd2a77f0",
+    "siteId": "uuid",
+    "price": 5280,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-studiologic-numa-x-piano-73/",
+    "scrapedAt": "2026-03-17T19:43:54.252Z"
   }
 ]

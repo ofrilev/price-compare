@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Sites from "./pages/Sites";
 import Products from "./pages/Products";
 import Scrape from "./pages/Scrape";
+import Results from "./pages/Results";
 import Login from "./pages/Login";
 
 function NavLink({ to, children }: { to: string; children: ReactNode }) {
@@ -35,6 +36,7 @@ function AppContent() {
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
               <NavLink to="/scrape">השוואת מחירים</NavLink>
+              <NavLink to="/results">תוצאות</NavLink>
               <NavLink to="/products">מוצרים</NavLink>
               <NavLink to="/">אתרים</NavLink>
             </div>
@@ -74,6 +76,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <Scrape />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/results"
+            element={
+              <ProtectedRoute>
+                <Results />
               </ProtectedRoute>
             }
           />

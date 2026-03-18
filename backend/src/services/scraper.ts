@@ -32,7 +32,10 @@ function getInitialUrl(site: Site, searchTerm: string): string {
     const base = site.baseUrl.split("?")[0];
     return base.endsWith("/") ? base : base + "/";
   }
-  return site.searchUrlTemplate.replace("{searchTerm}", encodeURIComponent(searchTerm));
+  const encoded = encodeURIComponent(searchTerm);
+  return site.searchUrlTemplate
+    .replace("{searchTerm}", encoded)
+    .replace("{item}", encoded);
 }
 
 async function scrapeWithPlaywright(

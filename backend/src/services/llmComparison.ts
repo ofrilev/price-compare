@@ -48,27 +48,34 @@ async function comparePricesWithLLM(
     return null;
   }
 
+  const searchTerm = (product.searchTerm || product.name || "").trim();
+  const encodedSearch = encodeURIComponent(searchTerm);
+
   // Build site information for LLM
   const siteInfo = sites.map((site) => ({
     name: site.name,
     baseUrl: site.baseUrl,
-    searchUrl: site.searchUrlTemplate.replace("{searchTerm}", encodeURIComponent(product.searchTerm)),
+    searchUrl: site.searchUrlTemplate
+      ? site.searchUrlTemplate
+          .replace("{searchTerm}", encodedSearch)
+          .replace("{item}", encodedSearch)
+      : site.baseUrl,
   }));
 
   const prompt = `You are a price comparison assistant. Your task is to compare prices for a product across multiple Israeli e-commerce websites.
 
 PRODUCT TO COMPARE:
 - Product Name: ${product.name}
-- Search Term: "${product.searchTerm}"
+- Search Term: "${searchTerm}"
 - Category: ${product.category}
 
 WEBSITES TO COMPARE:
 ${siteInfo.map((s, i) => `${i + 1}. ${s.name}
    Base URL: ${s.baseUrl}
-   Search URL: ${s.searchUrl}`).join("\n\n")}
+   Search URL: ${s.searchUrl || "(use base URL and site search)"}`).join("\n\n")}
 
 COMPARISON INSTRUCTIONS:
-1. Visit each website using the provided search URL or search for "${product.searchTerm}" directly on the site
+1. Visit each website: use the Search URL if provided, otherwise go to Base URL and search for "${searchTerm}" in the site's search box
 2. Find products matching "${product.name}" - be flexible with model numbers:
    - "FP-10" matches "FP 10", "FP10", "Roland FP-10", etc.
    - "P-225" matches "P 225", "P225", "Yamaha P-225", etc.
@@ -77,21 +84,18 @@ COMPARISON INSTRUCTIONS:
    - Look for ₪ symbol, "ILS", "שקל", "ש\"ח"
    - Check for sale prices, discounts, or special offers
    - Use the final price after any discounts
-4. **IMPORTANT**: Find the ACTUAL PRODUCT PAGE URL (not the search page or homepage)
-   - Click on the product to get its dedicated product page URL
-   - The URL should be something like: https://site.com/product/name or https://site.com/products/id
-   - This is critical - always include the direct product page link
+4. **REQUIRED - Product URL for each site**: For EVERY site you check, you MUST provide the productUrl - the direct link to the product page (not the search page or homepage). Click on the product to get its dedicated product page URL. Format: https://site.com/product/name or https://site.com/products/id. If product not found, set productUrl to null. This is mandatory for each result.
 5. Return ONLY valid JSON in this exact format:
 {
   "productName": "${product.name}",
-  "searchTerm": "${product.searchTerm}",
+  "searchTerm": "${searchTerm}",
   "results": [
     {
       "siteName": "Site Name",
       "siteUrl": "https://site.com",
       "price": 1234.56,  // number or null if not found
       "priceText": "₪1,234.56",  // original price text or null
-      "productUrl": "https://site.com/product/123",  // product page URL or null
+      "productUrl": "https://site.com/product/123",  // REQUIRED: direct product page URL for this site, or null if not found
       "confidence": "high",  // "high", "medium", or "low"
       "notes": "Optional notes about availability or special conditions"
     }
@@ -110,17 +114,23 @@ COMPARISON RULES:
   * "low": Product not found, uncertain match, or estimated price
 - Include notes about availability, special offers, or shipping conditions if relevant
 - Return ONLY the JSON object, no other text or markdown
-- Ensure all sites are checked - return results for ALL ${siteInfo.length} sites listed above
+- Ensure all sites are checked - return results for ALL ${siteInfo.length} sites listed above, each with productUrl when product is found
 - If you cannot directly access a website, indicate this in notes and mark confidence as "low"
 
 IMPORTANT: This is a price comparison task. Your goal is to help the user find the best price across all these Israeli e-commerce sites. Be thorough and accurate.`;
 
-  const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+  const useBetterModel = sites.length > 3;
+  const model = useBetterModel
+    ? (process.env.OPENAI_MODEL_BETTER || "gpt-4o")
+    : (process.env.OPENAI_MODEL || "gpt-4o-mini");
 
   // Log the request
   await logLLMRequest(product.name, product.searchTerm, siteInfo, prompt, model).catch((err) =>
     console.error("[LLM Logger] Failed to log request:", err)
   );
+
+  // Emit prompt for UI visibility
+  progressEmit("llm_prompt", JSON.stringify({ product: product.name, prompt }));
 
   try {
     const response = await axios.post(
@@ -131,7 +141,7 @@ IMPORTANT: This is a price comparison task. Your goal is to help the user find t
           {
             role: "system",
             content:
-              "You are an expert price comparison assistant specializing in Israeli e-commerce sites. Your task is to compare prices for products across multiple websites, visit each site, search for products, extract prices in ILS, and return structured JSON results. Always return valid JSON only - no markdown, no explanations, just the JSON object.",
+              "You are an expert price comparison assistant specializing in Israeli e-commerce sites. Your task is to compare prices for products across multiple websites, visit each site, search for products, extract prices in ILS, and return structured JSON results. For each site, you MUST include the productUrl - the direct link to the product page. Always return valid JSON only - no markdown, no explanations, just the JSON object.",
           },
           {
             role: "user",
@@ -178,6 +188,9 @@ IMPORTANT: This is a price comparison task. Your goal is to help the user find t
     await logLLMResponse(product.name, response, result).catch((err) =>
       console.error("[LLM Logger] Failed to log response:", err)
     );
+
+    // Emit response for UI visibility
+    progressEmit("llm_response", JSON.stringify({ product: product.name, rawResponse: content, parsedResult: result }));
 
     return result;
   } catch (err: any) {

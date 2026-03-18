@@ -52,11 +52,34 @@ productsRouter.get("/:id", async (req, res) => {
 productsRouter.post("/", async (req, res) => {
   try {
     const products = await getProducts();
+    const name = (req.body.name ?? "").trim();
+    const searchTerm = (req.body.searchTerm ?? "").trim();
+    const category = (req.body.category ?? "").trim();
+
+    const existingByNameAndCategory = products.find(
+      (p) =>
+        p.name.trim().toLowerCase() === name.toLowerCase() &&
+        p.category.trim().toLowerCase() === category.toLowerCase()
+    );
+    if (existingByNameAndCategory) {
+      const msg = category
+        ? `Product '${name}' in category '${category}' already exists`
+        : `Product '${name}' already exists`;
+      return res.status(400).json({ error: msg });
+    }
+
+    const existingBySearchTerm = searchTerm && products.find(
+      (p) => p.searchTerm.trim().toLowerCase() === searchTerm.toLowerCase()
+    );
+    if (existingBySearchTerm) {
+      return res.status(400).json({ error: `Search term '${searchTerm}' already exists` });
+    }
+
     const product: Product = {
       id: uuidv4(),
-      name: req.body.name ?? "",
-      searchTerm: req.body.searchTerm ?? "",
-      category: req.body.category ?? "",
+      name,
+      searchTerm,
+      category,
     };
     products.push(product);
     await writeJson("products.json", products);
@@ -72,6 +95,31 @@ productsRouter.put("/:id", async (req, res) => {
     const products = await getProducts();
     const idx = products.findIndex((p) => p.id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: "Product not found" });
+
+    const name = (req.body.name ?? products[idx].name).trim();
+    const searchTerm = (req.body.searchTerm ?? products[idx].searchTerm).trim();
+    const category = (req.body.category ?? products[idx].category).trim();
+
+    const existingByNameAndCategory = products.find(
+      (p) =>
+        p.id !== req.params.id &&
+        p.name.trim().toLowerCase() === name.toLowerCase() &&
+        p.category.trim().toLowerCase() === category.toLowerCase()
+    );
+    if (existingByNameAndCategory) {
+      const msg = category
+        ? `Product '${name}' in category '${category}' already exists`
+        : `Product '${name}' already exists`;
+      return res.status(400).json({ error: msg });
+    }
+
+    const existingBySearchTerm = searchTerm && products.find(
+      (p) => p.id !== req.params.id && p.searchTerm.trim().toLowerCase() === searchTerm.toLowerCase()
+    );
+    if (existingBySearchTerm) {
+      return res.status(400).json({ error: `Search term '${searchTerm}' already exists` });
+    }
+
     products[idx] = { ...products[idx], ...req.body, id: products[idx].id };
     await writeJson("products.json", products);
     res.json(products[idx]);

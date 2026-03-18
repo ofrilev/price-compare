@@ -1,8 +1,139 @@
 import { Router } from "express";
+import { v4 as uuidv4 } from "uuid";
 import { readJson, writeJson } from "../services/store.js";
 import { runLLMComparison } from "../services/llmComparison.js";
+import { runScraperComparison } from "../orchestrator/comparisonRunner.js";
+import { runLLMWebSearch } from "../services/llmWebSearch.service.js";
+import { matchCategoryProducts } from "../services/categoryMatcher.js";
 import { subscribe } from "../services/scrapeProgress.js";
 import type { ScrapeResult, Product, Site } from "../types.js";
+
+interface CategoryMatchPrice {
+  site: string;
+  price: number;
+  url: string;
+}
+
+interface CategoryMatchItem {
+  model: string;
+  common_features?: string;
+  prices: CategoryMatchPrice[];
+  best_deal: string;
+}
+
+interface UnmatchedItem {
+  model: string;
+  site: string;
+  price: number;
+  url: string;
+}
+
+async function saveCategoryMatchResults(
+  category: string,
+  comparison: CategoryMatchItem[],
+  unmatched: UnmatchedItem[] = []
+): Promise<{ productsAdded: number; resultsAdded: number }> {
+  const products = await readJson<Product[]>("products.json").catch(() => []);
+  const sites = await readJson<Site[]>("sites.json");
+  const existingResults = await readJson<ScrapeResult[]>("results.json").catch(() => []);
+
+  const siteByName = new Map(sites.map((s) => [s.name, s]));
+  const productByNameAndCategory = new Map(
+    products.map((p) => [`${p.name}|${p.category}`, p])
+  );
+  const now = new Date().toISOString();
+  const today = now.split("T")[0];
+
+  const existingResultKeys = new Set(
+    existingResults.map((r) => `${r.productId}-${r.siteId}-${r.scrapedAt.split("T")[0]}`)
+  );
+
+  const newProducts: Product[] = [];
+  const newResults: ScrapeResult[] = [];
+
+  for (const item of comparison) {
+    const modelName = item.model.trim();
+    const key = `${modelName}|${category}`;
+    let product = productByNameAndCategory.get(key);
+
+    if (!product) {
+      product = {
+        id: uuidv4(),
+        name: modelName,
+        searchTerm: modelName,
+        category,
+      };
+      newProducts.push(product);
+      productByNameAndCategory.set(key, product);
+    }
+
+    for (const p of item.prices) {
+      const site = siteByName.get(p.site);
+      if (!site || !p.url || p.price <= 0) continue;
+
+      const resultKey = `${product!.id}-${site.id}-${today}`;
+      if (existingResultKeys.has(resultKey)) continue;
+
+      const scrapeResult: ScrapeResult = {
+        id: uuidv4(),
+        productId: product!.id,
+        siteId: site.id,
+        price: p.price,
+        currency: "ILS",
+        productUrl: p.url,
+        scrapedAt: now,
+      };
+      newResults.push(scrapeResult);
+      existingResultKeys.add(resultKey);
+    }
+  }
+
+  // Also save unmatched products (found in only one store)
+  for (const item of unmatched) {
+    const modelName = item.model.trim();
+    const key = `${modelName}|${category}`;
+    let product = productByNameAndCategory.get(key);
+
+    if (!product) {
+      product = {
+        id: uuidv4(),
+        name: modelName,
+        searchTerm: modelName,
+        category,
+      };
+      newProducts.push(product);
+      productByNameAndCategory.set(key, product);
+    }
+
+    const site = siteByName.get(item.site);
+    if (!site || item.price <= 0) continue;
+
+    const url = item.url || site.siteUrl || site.baseUrl;
+    const resultKey = `${product!.id}-${site.id}-${today}`;
+    if (existingResultKeys.has(resultKey)) continue;
+
+    const scrapeResult: ScrapeResult = {
+      id: uuidv4(),
+      productId: product!.id,
+      siteId: site.id,
+      price: item.price,
+      currency: "ILS",
+      productUrl: url,
+      scrapedAt: now,
+    };
+    newResults.push(scrapeResult);
+    existingResultKeys.add(resultKey);
+  }
+
+  if (newProducts.length > 0) {
+    await writeJson("products.json", [...products, ...newProducts]);
+  }
+  if (newResults.length > 0) {
+    await writeJson("results.json", [...existingResults, ...newResults]);
+  }
+
+  return { productsAdded: newProducts.length, resultsAdded: newResults.length };
+}
 
 export const scrapeRouter = Router();
 
@@ -10,21 +141,55 @@ scrapeRouter.get("/stream", (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
   res.flushHeaders();
 
+  // Send initial connection confirmation
+  res.write(`data: ${JSON.stringify({ type: "status", message: "Stream connected" })}\n\n`);
+
   const unsubscribe = subscribe((data) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
+    try {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    } catch (err) {
+      // Connection closed, unsubscribe
+      unsubscribe();
+    }
   });
 
-  req.on("close", () => unsubscribe());
+  // Send keep-alive ping every 30 seconds
+  const keepAliveInterval = setInterval(() => {
+    try {
+      res.write(`: keep-alive\n\n`);
+    } catch (err) {
+      clearInterval(keepAliveInterval);
+      unsubscribe();
+    }
+  }, 30000);
+
+  req.on("close", () => {
+    clearInterval(keepAliveInterval);
+    unsubscribe();
+  });
+
+  req.on("error", () => {
+    clearInterval(keepAliveInterval);
+    unsubscribe();
+  });
 });
 
 scrapeRouter.post("/", async (req, res) => {
   try {
-    const { productIds, category, siteIds } = req.body ?? {};
-    
-    // Always use LLM comparison (scraping removed)
-    const results = await runLLMComparison({ productIds, category, siteIds });
+    const { productIds, category, siteIds, mode } = req.body ?? {};
+    const useLegacy = process.env.USE_LEGACY_LLM_SCRAPE === "true";
+
+    let results: ScrapeResult[];
+    if (mode === "llm_websearch") {
+      results = await runLLMWebSearch({ productIds, category, siteIds });
+    } else if (useLegacy) {
+      results = await runLLMComparison({ productIds, category, siteIds });
+    } else {
+      results = await runScraperComparison({ productIds, category, siteIds });
+    }
     
     // Save results (merge with existing, avoiding duplicates)
     const existing = await readJson<ScrapeResult[]>("results.json").catch(() => []);
@@ -112,5 +277,63 @@ scrapeRouter.get("/results/lowest", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "נכשל בטעינת המחירים הנמוכים ביותר" });
+  }
+});
+
+/**
+ * POST /api/scrape/match-category
+ * Match products across sites for a category using LLM
+ */
+scrapeRouter.post("/match-category", async (req, res) => {
+  try {
+    const { category, siteIds } = req.body ?? {};
+    
+    if (!category) {
+      return res.status(400).json({ error: "קטגוריה נדרשת" });
+    }
+    
+    const result = await matchCategoryProducts(category, siteIds);
+    
+    if (!result) {
+      return res.status(500).json({ error: "התאמת קטגוריה נכשלה" });
+    }
+
+    // Parse unmatched: use structured array if present, else parse unmatched_highlights
+    let unmatched: UnmatchedItem[] = result.unmatched || [];
+    if (unmatched.length === 0 && result.unmatched_highlights?.length) {
+      const siteByName = new Map((await readJson<Site[]>("sites.json")).map((s) => [s.name, s]));
+      for (const s of result.unmatched_highlights) {
+        const m = s.match(/^(.+?)\s*-\s*found only at\s+(.+?)\s+for\s+(\d+)/i);
+        if (m) {
+          const [, model, siteName, priceStr] = m;
+          const site = siteByName.get(siteName?.trim() || "");
+          if (model && site) {
+            unmatched.push({
+              model: model.trim(),
+              site: siteName?.trim() || "",
+              price: parseInt(priceStr || "0", 10),
+              url: site.siteUrl || site.baseUrl,
+            });
+          }
+        }
+      }
+    }
+
+    // Store comparison results as products and scrape results (including unmatched)
+    const { productsAdded, resultsAdded } = await saveCategoryMatchResults(
+      category,
+      result.comparison,
+      unmatched
+    );
+    if (productsAdded > 0 || resultsAdded > 0) {
+      console.log(
+        `[Category Match] Saved: ${productsAdded} new product(s), ${resultsAdded} new result(s)`
+      );
+    }
+    
+    res.json({ ...result, saved: { productsAdded, resultsAdded } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "התאמת קטגוריה נכשלה" });
   }
 });

@@ -87,12 +87,13 @@ ${pageText}
 Instructions:
 1. Find products matching the search term "${searchTerm}" (be flexible: "FP-10" matches "FP 10", "FP10", etc.)
 2. Extract the price in ILS (Israeli Shekel). Look for numbers with ₪ symbol or "ILS" or "שקל"
-3. Return ONLY valid JSON in this exact format:
+3. **REQUIRED**: Include the productUrl - the full URL of the product page (not the search page). This is mandatory when a matching product is found.
+4. Return ONLY valid JSON in this exact format:
 {
   "price": 1234.56,  // number or null if not found
   "priceText": "₪1,234.56",  // original price text or null
   "productName": "Roland FP-10",  // matched product name or null
-  "productUrl": "https://...",  // product page URL or null
+  "productUrl": "https://...",  // REQUIRED when product found: direct product page URL, or null if not found
   "confidence": "high"  // "high", "medium", or "low"
 }
 
@@ -125,7 +126,7 @@ Rules:
           {
             role: "system",
             content:
-              "You are a web scraping assistant. Always return valid JSON only.",
+              "You are a web scraping assistant. Always include the productUrl when a product is found. Always return valid JSON only.",
           },
           {
             role: "user",

@@ -9,6 +9,9 @@ export default defineConfig({
       "/api": {
         target: "http://localhost:3001",
         changeOrigin: true,
+        // Prevent SSE/EventSource connections from being cancelled by proxy timeout
+        timeout: 0,
+        proxyTimeout: 0,
       },
     },
   },

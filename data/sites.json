@@ -142,14 +142,36 @@
     "id": "f23c873f-d398-476c-b583-eb00f8755272",
     "name": "דיאז",
     "baseUrl": "https://diez.co.il/",
-    "searchUrlTemplate": "",
+    "siteUrl": "https://diez.co.il/",
+    "searchUrlTemplate": "https://diez.co.il/?s={searchTerm}",
     "selectors": {
-      "price": "",
-      "productName": "",
-      "productLink": ""
+      "price": ".price, .product-price, [class*='price'], [data-price], .woocommerce-Price-amount",
+      "productName": ".product-title, .product-name, .woocommerce-loop-product__title, h2, h3, h4",
+      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
     },
     "selectorType": "css",
     "usePlaywright": true,
-    "enabled": true
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "url",
+      "priceSelectors": [
+        ".woocommerce-Price-amount bdi",
+        ".woocommerce-Price-amount.amount",
+        ".price ins .woocommerce-Price-amount",
+        ".price .amount",
+        ".product-price",
+        "[data-price]"
+      ],
+      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
+        }
+      ]
+    }
   }
 ]

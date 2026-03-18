@@ -14,10 +14,18 @@ export async function readJson<T>(filename: string): Promise<T> {
   const path = join(DATA_DIR, filename);
   try {
     const content = await readFile(path, "utf-8");
+    const trimmed = content.trim();
+    if (!trimmed) return [] as T;
     return JSON.parse(content) as T;
   } catch (err: unknown) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") {
       return [] as T;
+    }
+    if (err instanceof SyntaxError) {
+      // Corrupted JSON - return empty array for list files
+      if (["products.json", "results.json", "sites.json"].includes(filename)) {
+        return [] as T;
+      }
     }
     throw err;
   }
