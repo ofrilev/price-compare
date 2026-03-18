@@ -6,7 +6,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "setup-user": "tsx scripts/setup-user.ts"
+    "setup-user": "node dist/scripts/setup-user.js",
+    "setup-user:dev": "tsx src/scripts/setup-user.ts"
   },
   "dependencies": {
     "axios": "^1.6.0",
