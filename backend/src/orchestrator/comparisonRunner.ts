@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { chromium } from "playwright";
-import { readJson, writeJson } from "../services/store.js";
+import { readJson } from "../services/store.js";
 import { emit as progressEmit } from "../services/scrapeProgress.js";
 import { logScrape, logScrapeError } from "../services/scrapeLogger.js";
 import { scrapeSite } from "../services/scraperService.js";
@@ -11,6 +11,8 @@ import {
   getSearchTermFallbacks,
 } from "../services/normalization.service.js";
 import { compareWithGPT } from "../services/gptComparison.service.js";
+import { validateProductMatch } from "../services/productMatchValidator.service.js";
+import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
 export interface RunScraperComparisonOptions {
@@ -32,6 +34,7 @@ export async function runScraperComparison(
   if (options.siteIds?.length) {
     targetSites = targetSites.filter((s) => options.siteIds!.includes(s.id));
   }
+  targetSites = ensureAnchorSiteInList(targetSites, sites);
 
   let targetProducts: Product[] = products;
   if (options.productIds?.length) {
@@ -87,6 +90,12 @@ export async function runScraperComparison(
             })
           );
 
+          const productsBySiteForValidator: Array<{
+            siteId: string;
+            siteName: string;
+            products: NonNullable<ReturnType<typeof normalizeProduct>>[];
+          }> = [];
+
           for (const { site, raw } of rawBySite) {
             if (siteResultsBySite.has(site.id)) continue;
 
@@ -99,18 +108,53 @@ export async function runScraperComparison(
             await logScrape(`${site.name}: raw=${raw.length} → normalized=${normalized.length} → matched=${matched.length} → deduped=${deduped.length}`);
 
             if (deduped.length > 0) {
-              const best = deduped.reduce((a, b) => (a.price < b.price ? a : b));
-              siteResultsBySite.set(site.id, {
-                price: best.price,
-                productUrl: best.productUrl,
+              productsBySiteForValidator.push({
+                siteId: site.id,
+                siteName: site.name,
+                products: deduped,
               });
-              await logScrape(`${site.name}: best match "${best.name}" @ ${best.price} ILS`);
+            }
+          }
+
+          if (productsBySiteForValidator.length > 0) {
+            const validatorResult = await validateProductMatch({
+              productName: product.name,
+              searchTerm,
+              productsBySite: productsBySiteForValidator,
+            });
+
+            if (validatorResult) {
+              for (const [siteId, selected] of validatorResult.selections) {
+                siteResultsBySite.set(siteId, {
+                  price: selected.price,
+                  productUrl: selected.productUrl,
+                });
+                await logScrape(`${siteMap.get(siteId)?.name}: validated match "${selected.name}" @ ${selected.price} ILS`);
+              }
+            } else {
+              for (const { siteId, siteName, products: deduped } of productsBySiteForValidator) {
+                if (siteResultsBySite.has(siteId)) continue;
+                const best = deduped.reduce((a, b) => (a.price < b.price ? a : b));
+                siteResultsBySite.set(siteId, {
+                  price: best.price,
+                  productUrl: best.productUrl,
+                });
+                await logScrape(`${siteName}: best match (no validator) "${best.name}" @ ${best.price} ILS`);
+              }
             }
           }
 
           const foundCount = siteResultsBySite.size;
           if (foundCount === targetSites.length) break;
           if (foundCount > 0 && searchTerm === searchTerms[0]) break;
+        }
+
+        const anchorSite = getAnchorSite(targetSites);
+        const foundOnDiez = anchorSite && siteResultsBySite.has(anchorSite.id);
+        if (!foundOnDiez) {
+          progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
+          await logScrape(`Product ${product.name} not found on Diez - skipping`);
+          continue;
         }
 
         const siteResults = Array.from(siteResultsBySite.entries()).map(([siteId, data]) => ({
@@ -135,12 +179,14 @@ export async function runScraperComparison(
 
         if (gptResult) {
           await logScrape(`GPT result for ${product.name}: cheapest=${gptResult.cheapest}, ${gptResult.results.length} result(s)`);
+          const siteNameToId = new Map(siteResults.map((s) => [s.siteName, s.siteId]));
           for (const r of gptResult.results) {
             if (r.price > 0) {
+              const siteId = siteNameToId.get(r.siteName) ?? r.siteId;
               allResults.push({
                 id: uuidv4(),
                 productId: product.id,
-                siteId: r.siteId,
+                siteId,
                 price: r.price,
                 currency: "ILS",
                 productUrl: r.productUrl,

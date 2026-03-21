@@ -36,7 +36,7 @@ export async function compareWithGPT(input: GPTComparisonInput): Promise<GPTComp
 {
   "productName": "${input.productName}",
   "results": [
-    { "siteName": "Site Name", "siteId": "uuid", "price": 1234, "productUrl": "https://..." }
+    { "siteName": "exact site name from input", "price": 1234, "productUrl": "https://..." }
   ],
   "cheapest": "Site Name"
 }

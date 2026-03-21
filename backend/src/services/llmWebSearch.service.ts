@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import { readJson } from "./store.js";
 import { emit as progressEmit } from "./scrapeProgress.js";
 import { parsePrice } from "./priceParser.js";
+import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import { getSearchTermFallbacks } from "./normalization.service.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
 /** OpenAI models with built-in web search - mini has broader availability */
@@ -74,6 +76,7 @@ export async function runLLMWebSearch(
   if (options.siteIds?.length) {
     targetSites = targetSites.filter((s) => options.siteIds!.includes(s.id));
   }
+  targetSites = ensureAnchorSiteInList(targetSites, sites);
 
   let targetProducts: Product[] = products;
   if (options.productIds?.length) {
@@ -93,13 +96,19 @@ export async function runLLMWebSearch(
   for (const product of targetProducts) {
     try {
       const searchTerm = (product.searchTerm || product.name || "").trim();
+      const fallbacks = getSearchTermFallbacks(searchTerm);
+      const fallbackHint =
+        fallbacks.length > 1
+          ? `\nIf not found with "${searchTerm}", try these variations: ${fallbacks.slice(1, 5).map((f) => `"${f}"`).join(", ")}`
+          : "";
+
       progressEmit("status", `מחפש מחירים עבור ${product.name}...`);
 
       const prompt = `You are a price comparison assistant for Israeli e-commerce. Search the web to find the current price in ILS for this product on each of the listed sites.
 
 Product: ${product.name}
 Search term: ${searchTerm}
-Category: ${product.category}
+Category: ${product.category}${fallbackHint}
 
 Sites to check (use the exact siteId in your response):
 ${targetSites.map((s) => `- ${s.name}: siteId="${s.id}", ${s.baseUrl}`).join("\n")}
@@ -183,7 +192,16 @@ Rules:
 
       const parsed = extractJsonFromContent(content);
       if (parsed && Array.isArray(parsed.results)) {
-        for (const r of parsed.results as LLMPriceResult[]) {
+        const anchorSite = getAnchorSite(targetSites);
+        const results = (parsed.results as LLMPriceResult[]).filter(
+          (r) => r.price !== null && (r.price ?? parsePrice(String(r.price))) > 0 && r.siteId
+        );
+        const hasDiez = anchorSite && results.some((r) => r.siteId === anchorSite.id);
+        if (!hasDiez) {
+          progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
+          continue;
+        }
+        for (const r of results) {
           const price = r.price ?? parsePrice(String(r.price));
           if (price !== null && price > 0 && r.siteId) {
             allResults.push({
@@ -197,7 +215,7 @@ Rules:
             });
           }
         }
-        progressEmit("status", `סיים ${product.name}: ${(parsed.results as unknown[]).length} תוצאות`);
+        progressEmit("status", `סיים ${product.name}: ${results.length} תוצאות`);
       } else {
         progressEmit("error", `לא הצלחתי לפרסר JSON עבור ${product.name}`);
       }

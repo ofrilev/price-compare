@@ -10,6 +10,8 @@ import {
   logLLMComparisonStart,
   logLLMComparisonEnd,
 } from "./llmLogger.js";
+import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import { getSearchTermFallbacks } from "./normalization.service.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
 interface LLMComparisonRequest {
@@ -62,12 +64,18 @@ async function comparePricesWithLLM(
       : site.baseUrl,
   }));
 
+  const fallbacks = getSearchTermFallbacks(searchTerm);
+  const fallbackHint =
+    fallbacks.length > 1
+      ? `\n- If not found, try these search variations: ${fallbacks.slice(1, 5).map((f) => `"${f}"`).join(", ")}`
+      : "";
+
   const prompt = `You are a price comparison assistant. Your task is to compare prices for a product across multiple Israeli e-commerce websites.
 
 PRODUCT TO COMPARE:
 - Product Name: ${product.name}
 - Search Term: "${searchTerm}"
-- Category: ${product.category}
+- Category: ${product.category}${fallbackHint}
 
 WEBSITES TO COMPARE:
 ${siteInfo.map((s, i) => `${i + 1}. ${s.name}
@@ -234,6 +242,7 @@ export async function runLLMComparison(
   if (options.siteIds?.length) {
     targetSites = targetSites.filter((s) => options.siteIds!.includes(s.id));
   }
+  targetSites = ensureAnchorSiteInList(targetSites, sites);
 
   // Filter products
   let targetProducts = products;
@@ -277,10 +286,16 @@ export async function runLLMComparison(
       // Sites to check with LLM (exclude sites with today's data)
       const sitesToCheck = targetSites.filter((site) => !existingBySite.has(site.id));
 
+      const anchorSite = getAnchorSite(targetSites);
+      const hasDiezExisting = anchorSite && existingBySite.has(anchorSite.id);
+
       if (sitesToCheck.length === 0) {
         progressEmit("status", `כל האתרים עבור ${product.name} כבר מכילים נתונים מהיום, מדלג על קריאת LLM`);
-        // Add all existing today's results
-        existingToday.forEach((r) => allResults.push(r));
+        if (hasDiezExisting) {
+          existingToday.forEach((r) => allResults.push(r));
+        } else {
+          progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
+        }
         continue;
       }
 
@@ -292,8 +307,16 @@ export async function runLLMComparison(
       const comparison = await comparePricesWithLLM(product, sitesToCheck);
       if (!comparison) {
         progressEmit("error", `השוואה נכשלה עבור ${product.name}`);
-        // Still include existing today's results
-        existingToday.forEach((r) => allResults.push(r));
+        if (hasDiezExisting) existingToday.forEach((r) => allResults.push(r));
+        continue;
+      }
+
+      const hasDiezInNew = anchorSite && comparison.results.some(
+        (r) => r.price !== null && (r.siteName === anchorSite.name || r.siteUrl?.includes("diez.co.il"))
+      );
+      const hasDiez = hasDiezExisting || hasDiezInNew;
+      if (!hasDiez) {
+        progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
         continue;
       }
 

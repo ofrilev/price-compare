@@ -1,5 +1,43 @@
 [
   {
+    "id": "f23c873f-d398-476c-b583-eb00f8755272",
+    "name": "דיאז",
+    "baseUrl": "https://diez.co.il/",
+    "siteUrl": "https://diez.co.il/",
+    "searchUrlTemplate": "https://diez.co.il/?s={searchTerm}",
+    "selectors": {
+      "price": ".price, .product-price, [class*='price'], [data-price], .woocommerce-Price-amount",
+      "productName": ".product-title, .product-name, .woocommerce-loop-product__title, h2, h3, h4",
+      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "url",
+      "priceSelectors": [
+        ".price ins .woocommerce-Price-amount",
+        ".price ins .amount",
+        ".woocommerce-Price-amount bdi",
+        ".woocommerce-Price-amount.amount",
+        ".price .amount",
+        ".product-price",
+        "[data-price]"
+      ],
+      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
+      "priceStrategy": "first",
+      "excludePriceInDel": true,
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
+        }
+      ]
+    }
+  },
+  {
     "id": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
     "name": "חלילית",
     "baseUrl": "https://www.halilit.com/",
@@ -7,22 +45,22 @@
     "searchUrlTemplate": "https://www.halilit.com/search?q={searchTerm}",
     "selectors": {
       "price": ".product-price, .price, [data-price]",
-      "productName": ".product-title, .product-name, h2, h3",
-      "productLink": "a[href*='/products/'], a[href*='/product/'], a.product-link"
+      "productName": ".title_with_brand, .product-title, .product-name, h2, h3",
+      "productLink": "a[href*='/items/'], a[href*='/products/'], a[href*='/product/'], a.product-link"
     },
     "selectorType": "css",
     "usePlaywright": true,
     "enabled": true,
     "scraperConfig": {
       "searchStrategy": "searchBar",
-      "searchInputSelector": "input[type='search'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search'], #search",
+      "searchInputSelector": "input[aria-label^='חפש'], input[type='search'], input[name='q'], input[placeholder*='חיפוש'], #search",
       "priceSelectors": [
-        ".product-price",
         ".price",
+        ".product-price",
         "[data-price]",
         ".final-price"
       ],
-      "resultItemSelector": ".product-item, .product-card, .search-result-item, article.product",
+      "resultItemSelector": ".box, .layout_list_item, .product-item, .product-card, .search-result-item, article.product",
       "priceStrategy": "first",
       "waitStrategy": "domcontentloaded",
       "waitExtraMs": 2000,
@@ -41,22 +79,24 @@
     "siteUrl": "https://www.kley-zemer.co.il/",
     "searchUrlTemplate": "https://www.kley-zemer.co.il/AllResults?bskeyword={item}",
     "selectors": {
-      "price": ".price, [class*='price']",
-      "productName": ".product-name, .product-title, h2, h3",
-      "productLink": "a[href*='/product/']"
+      "price": ".saleprice, .price, [class*='price']",
+      "productName": ".description h2, .product-name, .product-title, h2, h3",
+      "productLink": "a[href]"
     },
     "selectorType": "css",
     "usePlaywright": true,
     "enabled": true,
     "scraperConfig": {
       "searchStrategy": "searchBar",
-      "searchInputSelector": "input[type='search'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='הקלד']",
+      "searchInputSelector": "#searchbox, input[type='search'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='הקלד']",
       "priceSelectors": [
+        ".saleprice",
+        ".priceBlock .saleprice",
         ".price",
         "[class*='price']",
         ".product-price"
       ],
-      "resultItemSelector": ".product-item, .product-card, .search-result, [class*='product']",
+      "resultItemSelector": ".productlist .border_item, .productlist .item, .productlist .col-xs-6, .product-item, .product-card, .search-result",
       "priceStrategy": "first",
       "waitStrategy": "domcontentloaded",
       "waitExtraMs": 2000,
@@ -84,7 +124,7 @@
     "enabled": true,
     "scraperConfig": {
       "searchStrategy": "searchBar",
-      "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
+      "searchInputSelector": "input[aria-label^='חפש'], input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
       "priceSelectors": [
         ".price",
         ".product-price",
@@ -119,47 +159,11 @@
     "enabled": true,
     "scraperConfig": {
       "searchStrategy": "searchBar",
-      "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
+      "searchInputSelector": "input[aria-label='חיפוש'], input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
       "priceSelectors": [
         ".price",
         ".product-price",
         "[class*='price']",
-        "[data-price]"
-      ],
-      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
-      "priceStrategy": "first",
-      "waitStrategy": "domcontentloaded",
-      "waitExtraMs": 2000,
-      "preSteps": [
-        {
-          "type": "click",
-          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
-        }
-      ]
-    }
-  },
-  {
-    "id": "f23c873f-d398-476c-b583-eb00f8755272",
-    "name": "דיאז",
-    "baseUrl": "https://diez.co.il/",
-    "siteUrl": "https://diez.co.il/",
-    "searchUrlTemplate": "https://diez.co.il/?s={searchTerm}",
-    "selectors": {
-      "price": ".price, .product-price, [class*='price'], [data-price], .woocommerce-Price-amount",
-      "productName": ".product-title, .product-name, .woocommerce-loop-product__title, h2, h3, h4",
-      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
-    },
-    "selectorType": "css",
-    "usePlaywright": true,
-    "enabled": true,
-    "scraperConfig": {
-      "searchStrategy": "url",
-      "priceSelectors": [
-        ".woocommerce-Price-amount bdi",
-        ".woocommerce-Price-amount.amount",
-        ".price ins .woocommerce-Price-amount",
-        ".price .amount",
-        ".product-price",
         "[data-price]"
       ],
       "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",

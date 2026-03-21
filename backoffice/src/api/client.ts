@@ -131,6 +131,7 @@ export interface ScraperConfig {
   priceSelectors?: string[];
   resultItemSelector?: string;
   priceStrategy?: "first" | "lowest" | "sale";
+  excludePriceInDel?: boolean;
   waitStrategy?: "domcontentloaded" | "networkidle" | "selector" | "timeout";
   waitSelector?: string;
   waitExtraMs?: number;

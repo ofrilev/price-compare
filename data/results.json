@@ -961,5 +961,356 @@
     "currency": "ILS",
     "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-studiologic-numa-x-piano-73/",
     "scrapedAt": "2026-03-17T19:43:54.252Z"
+  },
+  {
+    "id": "e58953d1-2a20-4c38-a627-798927e83a00",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "uuid",
+    "price": 568,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a1%d7%98%d7%a0%d7%93-ksc70-%d7%9c%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-fp30-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland/",
+    "scrapedAt": "2026-03-20T08:51:19.263Z"
+  },
+  {
+    "id": "2da57237-c202-4c3c-9999-5fd77e504479",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "uuid1",
+    "price": 568,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a1%d7%98%d7%a0%d7%93-ksc70-%d7%9c%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-fp30-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland/",
+    "scrapedAt": "2026-03-20T08:58:14.481Z"
+  },
+  {
+    "id": "3b16226e-62f7-4548-ae5a-c06340ad7a0f",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "uuid2",
+    "price": 2765,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697276-roland-fp-30x-digital-piano",
+    "scrapedAt": "2026-03-20T08:58:14.481Z"
+  },
+  {
+    "id": "74837bfa-0df4-4439-9c87-081bef0af6b9",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 568,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a1%d7%98%d7%a0%d7%93-ksc70-%d7%9c%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-fp30-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland/",
+    "scrapedAt": "2026-03-20T09:11:06.554Z"
+  },
+  {
+    "id": "0ff144cf-b746-43f8-a6e2-91e943fcf8d4",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2765,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697276-roland-fp-30x-digital-piano",
+    "scrapedAt": "2026-03-20T09:11:06.554Z"
+  },
+  {
+    "id": "edd00397-2212-4f7e-97ed-4c7977297def",
+    "productId": "49381831-b065-405a-a8b0-537c4d6a6488",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2765,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697458-roland-fp-30x-digital-piano",
+    "scrapedAt": "2026-03-20T09:17:20.736Z"
+  },
+  {
+    "id": "b8694a30-6768-4b93-b637-71c3c9e6d9b1",
+    "productId": "49381831-b065-405a-a8b0-537c4d6a6488",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 3900,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp30x-black/",
+    "scrapedAt": "2026-03-20T09:17:20.736Z"
+  },
+  {
+    "id": "d06f3903-195a-44be-979c-acc96fe74f3e",
+    "productId": "d0694954-9080-44c5-9db7-05fb191cf0a8",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2765,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697458-roland-fp-30x-digital-piano",
+    "scrapedAt": "2026-03-20T09:20:05.016Z"
+  },
+  {
+    "id": "0bd01b1f-d899-4710-9216-a6e5aba07e55",
+    "productId": "d0694954-9080-44c5-9db7-05fb191cf0a8",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 3900,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp30x-black/",
+    "scrapedAt": "2026-03-20T09:20:05.016Z"
+  },
+  {
+    "id": "d0f185e0-b2d1-4082-bf77-c14675f2590f",
+    "productId": "46070d78-fefc-416d-9ce1-c362e3e3483a",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 5690,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/",
+    "scrapedAt": "2026-03-20T09:25:36.958Z"
+  },
+  {
+    "id": "4b37e660-c215-4ccd-a76f-ede6018a72c7",
+    "productId": "46070d78-fefc-416d-9ce1-c362e3e3483a",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 6468,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%99%d7%9e%d7%94%d7%94-yamaha-arius-ydp-145-black/",
+    "scrapedAt": "2026-03-20T09:25:36.958Z"
+  },
+  {
+    "id": "79c3338b-059d-443e-a5b4-ff655488b33e",
+    "productId": "473e908f-fbbe-47cc-90d7-bd7b969357cb",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 1190,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%92%d7%99%d7%98%d7%a8%d7%94-%d7%97%d7%a9%d7%9e%d7%9c%d7%99%d7%aa-%d7%99%d7%9e%d7%94%d7%94-yamaha-pacifica-012-white/",
+    "scrapedAt": "2026-03-20T09:31:51.612Z"
+  },
+  {
+    "id": "fb6ef51f-ba7d-43eb-8944-207d2bb51fd1",
+    "productId": "981671bd-b8c9-4643-a59f-de8a5ce6a064",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 1190,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%92%d7%99%d7%98%d7%a8%d7%94-%d7%97%d7%a9%d7%9e%d7%9c%d7%99%d7%aa-%d7%99%d7%9e%d7%94%d7%94-yamaha-pacifica-012-white/",
+    "scrapedAt": "2026-03-20T09:51:31.374Z"
+  },
+  {
+    "id": "fe388f63-add3-4a64-b29f-967a5567dc4d",
+    "productId": "c942aec8-07ee-48a1-a5ba-f7c4db152281",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 177,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%a2%d7%92%d7%95%d7%9c-%d7%a9%d7%97%d7%95%d7%a8-hy-music-hy-dts120/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "cfe06d55-9f69-4260-ab06-26b0b953903b",
+    "productId": "8bceb1f8-d105-44cc-9f15-5c74e66daf09",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 180,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-gewa-drummer-thrones-basix-100-series-round-dt-90/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "5dc628f6-90cf-4109-b4ed-e115adb465db",
+    "productId": "aad5e1bf-7dc1-4fbc-af4a-b5969b3adef3",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 195,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%99%d7%a1%d7%90-%d7%aa%d7%95%d7%a4%d7%99%d7%9d-stagg-dt-32bk/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "8bbdb05d-f3ff-47b6-8963-2085b3e2a15c",
+    "productId": "e23b206d-e0d0-4f95-9e39-1240e151b2e8",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 205,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%a8%d7%92%d7%9c%d7%99%d7%99%d7%9d-%d7%9b%d7%a4%d7%95%d7%9c%d7%95%d7%aa-fleet-dt200/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "22b79f7b-9a67-41c7-a018-f7c3d28ae631",
+    "productId": "c0fcb8f1-a4b4-4e43-9c50-2396f8653f56",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 208,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%95%d7%93%d7%95%d7%95%d7%99%d7%92-ludwig-l247th/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "fa5af7f9-8afe-429b-9173-c4385861354b",
+    "productId": "af7367d1-5997-4a3d-a7db-fc4eb960c6e1",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 215,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%a2%d7%92%d7%95%d7%9c-%d7%a8%d7%99%d7%a4%d7%95%d7%93-%d7%a9%d7%97%d7%95%d7%a8-moratti-g-04/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "7295e50a-210b-4d9c-801a-93c0b7245b3d",
+    "productId": "3296ee31-dea4-44ce-b2ee-7a6c93143a43",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 217,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%9e%d7%aa%d7%95%d7%a4%d7%a3-%d7%92%d7%99%d7%a0%d7%91%d7%90%d7%95-jinbao-jb-t-1d-throne/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "57c23adb-cacb-461b-aee1-afbe2f8a6c68",
+    "productId": "aed73ced-6894-447f-a5fd-116f30294334",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 220,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-gewa-drummer-thrones-basix-100-series-round-dt-100/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "8317f4ad-1917-49fc-83ae-5696ce2f9f42",
+    "productId": "299b5c5f-3a47-4702-bbe0-b4b8c43d0862",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 224,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%a2%d7%92%d7%95%d7%9c-%d7%a8%d7%92%d7%9c%d7%99%d7%99%d7%9d-%d7%9b%d7%a4%d7%95%d7%9c%d7%95%d7%aa-smart-da130/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "257e53ca-836d-4a77-9598-13974d8fc2f3",
+    "productId": "2abc75f9-7429-4e57-9a33-c1fa6e1bcbf2",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 240,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%99%d7%a1%d7%90-%d7%aa%d7%95%d7%a4%d7%99%d7%9d-stagg-dt-32cr/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "36a14c30-ba66-4a3c-996c-838d6ffaee51",
+    "productId": "c64eb8ae-bc83-4943-8c1a-7a77d2c532fd",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 243,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%a2%d7%92%d7%95%d7%9c-%d7%a9%d7%97%d7%95%d7%a8-hy-music-hy-dts130/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "8b5030b0-ea61-4bdc-986a-8bf243dafef4",
+    "productId": "295aadf5-893d-4d32-ba19-037df02a339c",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 246,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%9e%d7%aa%d7%95%d7%a4%d7%a3-%d7%92%d7%99%d7%a0%d7%91%d7%90%d7%95-jinbao-jb-t-1c-throne/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "619f450d-a693-4c75-b822-808f31b39c8b",
+    "productId": "6dd26528-4985-4349-bce4-de85bd31b9c1",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 266,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%90%d7%95%d7%a4%d7%a0%d7%95%d7%a2-%d7%a8%d7%92%d7%9c%d7%99%d7%99%d7%9d-%d7%9b%d7%a4%d7%95%d7%9c%d7%95%d7%aa-smart-da140/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "9c7a1872-d0ac-4ce7-99f2-2ee8d4777c0d",
+    "productId": "5abaddeb-0737-469f-bd0b-37f1f7ad61f9",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 278,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%90%d7%95%d7%a4%d7%a0%d7%95%d7%a2-%d7%a8%d7%99%d7%a4%d7%95%d7%93-%d7%a9%d7%97%d7%95%d7%a8-moratti-g-01-bk/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "6e6e8538-460a-498b-89d2-e4091d6831f9",
+    "productId": "fa9cf59c-bb75-4208-845c-876395b14770",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 278,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%90%d7%95%d7%a4%d7%a0%d7%95%d7%a2-%d7%a8%d7%99%d7%a4%d7%95%d7%93-%d7%a9%d7%97%d7%95%d7%a8-%d7%9c%d7%91%d7%9f-moratti-g-01-bk-wh/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "95d3d0c9-c5d2-4d06-af9a-750c5eed89b4",
+    "productId": "98f6b85b-9692-4837-9570-2d276d58f563",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 278,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%90%d7%95%d7%a4%d7%a0%d7%95%d7%a2-%d7%a8%d7%99%d7%a4%d7%95%d7%93-%d7%9b%d7%97%d7%95%d7%9c-%d7%90%d7%93%d7%95%d7%9d-moratti-g-01-bl-rd/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "c892502a-ee7d-4870-94bc-7b4ff6261f06",
+    "productId": "34b38744-871a-474f-80b4-162fc9488f3b",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 278,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%90%d7%95%d7%a4%d7%a0%d7%95%d7%a2-%d7%a8%d7%99%d7%a4%d7%95%d7%93-%d7%9b%d7%97%d7%95%d7%9c-%d7%9c%d7%91%d7%9f-%d7%90%d7%93%d7%95%d7%9d-moratti/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "b0a78b6b-a1d7-4103-a0fd-3c9ac38f7e19",
+    "productId": "611db072-5a62-42b7-8dba-e6e10cdcda90",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 304,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%a4%d7%a8%d7%9c-pearl-d-730s/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "2525e22a-593a-41ae-bab5-2c38ee077806",
+    "productId": "d656b45c-a01c-4ff7-b69d-7c4d028a90f3",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 310,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9c%d7%aa%d7%95%d7%a4%d7%99%d7%9d-%d7%90%d7%95%d7%9b%d7%a3-nux-drum-throne-ndt-03/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "a0f21f47-22b4-456c-b61a-0eade2d65f7c",
+    "productId": "08e51646-d964-4f21-8690-ea5bfdcc9c10",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 322,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%9b%d7%a1%d7%90-%d7%9e%d7%aa%d7%95%d7%a4%d7%a3-%d7%90%d7%aa%d7%9c%d7%98%d7%99%d7%a7-athletic-st-1/",
+    "scrapedAt": "2026-03-20T10:43:21.062Z"
+  },
+  {
+    "id": "ee94655e-3371-4742-becb-c735fba9fe17",
+    "productId": "cfbb37c8-2d00-4ae2-8e49-f360ebd4c631",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4490,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp-e50-black/",
+    "scrapedAt": "2026-03-21T14:07:00.701Z"
+  },
+  {
+    "id": "b53db65c-4481-491f-bb68-251afba7a042",
+    "productId": "cfbb37c8-2d00-4ae2-8e49-f360ebd4c631",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 4674,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/5633246-roland-fp-e50-digital-piano",
+    "scrapedAt": "2026-03-21T14:07:00.702Z"
+  },
+  {
+    "id": "5edabca0-08da-4deb-8f7f-f7c5d48ffd36",
+    "productId": "c4ee332a-e356-4993-8025-5a855518776f",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4920,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp-60x-white/",
+    "scrapedAt": "2026-03-21T14:07:15.240Z"
+  },
+  {
+    "id": "f371ff7f-6728-44ac-ae7b-061ec9fcf5c6",
+    "productId": "c4ee332a-e356-4993-8025-5a855518776f",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 4962,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697473-roland-fp-60x-digital-piano",
+    "scrapedAt": "2026-03-21T14:07:15.240Z"
+  },
+  {
+    "id": "ff869386-06a4-40c7-a71e-f8510d5c80bc",
+    "productId": "86834863-87ac-497b-b945-cf984cb173d1",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 7000,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp-90x-white/",
+    "scrapedAt": "2026-03-21T14:07:30.508Z"
+  },
+  {
+    "id": "91f9a30d-81ea-497f-b18b-02898667ef89",
+    "productId": "86834863-87ac-497b-b945-cf984cb173d1",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 7384,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697678-roland-fp-90x-white-digital-piano",
+    "scrapedAt": "2026-03-21T14:07:30.508Z"
   }
 ]

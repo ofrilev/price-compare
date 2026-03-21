@@ -333,7 +333,8 @@ scrapeRouter.post("/match-category", async (req, res) => {
     
     res.json({ ...result, saved: { productsAdded, resultsAdded } });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "התאמת קטגוריה נכשלה" });
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[match-category]", err);
+    res.status(500).json({ error: "התאמת קטגוריה נכשלה", details: msg });
   }
 });

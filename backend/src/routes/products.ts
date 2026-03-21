@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { readJson, writeJson } from "../services/store.js";
+import { KNOWN_DIEZ_CATEGORIES } from "../config/diezCategoryMapping.js";
 import type { Product } from "../types.js";
 
 export const productsRouter = Router();
@@ -11,8 +12,9 @@ async function getProducts(): Promise<Product[]> {
 
 export async function getCategories(): Promise<string[]> {
   const products = await getProducts();
-  const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
-  return categories.sort();
+  const fromProducts = [...new Set(products.map((p) => p.category).filter(Boolean))];
+  const merged = [...new Set([...fromProducts, ...KNOWN_DIEZ_CATEGORIES])];
+  return merged.sort();
 }
 
 productsRouter.get("/", async (req, res) => {

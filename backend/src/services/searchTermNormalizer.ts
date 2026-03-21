@@ -34,8 +34,8 @@ export function matchesProduct(productName: string, searchTerm: string): boolean
 
 /**
  * Generate fallback search terms when the original yields no results.
- * e.g. "Roland FP-10" → ["Roland FP-10", "Roland FP 10", "Roland FP10"]
- *      "Yamaha P-225" → ["Yamaha P-225", "Yamaha P 225", "Yamaha P225"]
+ * Uses product-specific variations when defined, plus general pattern-based fallbacks.
+ * e.g. "Roland FP-10" → ["Roland FP-10", "roland fp10", "roland fp 10", "Roland FP 10", "Roland FP10"]
  */
 export function getSearchTermFallbacks(searchTerm: string): string[] {
   const seen = new Set<string>();
@@ -58,6 +58,9 @@ export function getSearchTermFallbacks(searchTerm: string): string[] {
     const [full, letters, , rest] = m;
     add(searchTerm.replace(full, `${letters} ${rest}`)); // hyphen → space
     add(searchTerm.replace(full, letters + rest)); // no separator
+    add(searchTerm.replace(full, `${letters}-${rest}`)); // space → hyphen
+    add(searchTerm.replace(full, `${letters.toLowerCase()} ${rest}`)); // lowercase + space
+    add(searchTerm.replace(full, `${letters.toLowerCase()}${rest}`)); // lowercase, no separator
   }
 
   return result;

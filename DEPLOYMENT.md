@@ -39,7 +39,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 Create a `.env.production` file in the `backoffice` directory:
 
 ```bash
-VITE_API_URL=https://your-backend.railway.app
+# Must include /api path - e.g. https://your-backend.up.railway.app/api
+VITE_API_URL=https://your-backend.railway.app/api
 ```
 
 ## Step 2: Deploy Backend (Railway)
@@ -113,7 +114,7 @@ If you encounter "npm: command not found" errors:
    - **Build Command**: `npm run build`
    - **Output Directory**: `dist`
 5. Add environment variable:
-   - `VITE_API_URL` = your backend URL (from Railway/Render)
+   - `VITE_API_URL` = your backend URL **including /api** (e.g. `https://your-backend.up.railway.app/api`)
 6. Deploy
 
 ## Step 4: Create Initial User

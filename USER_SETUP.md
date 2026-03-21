@@ -9,19 +9,20 @@ There are several ways to create a user account for the application:
 ### For Local Development:
 
 1. **Navigate to backend directory:**
+
    ```bash
    cd backend
    ```
 
 2. **Install dependencies** (if not already done):
+
    ```bash
    npm install
    ```
 
-3. **Run the setup script:**
-   ```bash
-   npm run setup-user
-   ```
+3. **Run the setup script** (choose one):
+   - **Without building:** `npm run setup-user:dev` (uses tsx)
+   - **After building:** `npm run build && npm run setup-user`
 
 4. **Follow the prompts:**
    - Enter your desired username
@@ -32,27 +33,29 @@ There are several ways to create a user account for the application:
 
 ### For Production (Railway/Render):
 
-**Option A: Using Railway Console**
-1. Go to your Railway project dashboard
-2. Click on your service
-3. Click "View Logs" or "Open Terminal"
-4. Run:
-   ```bash
-   cd backend
-   npm run setup-user
-   ```
-5. Follow the prompts
+**Option A: Non-interactive (recommended for Railway CLI)**
 
-**Option B: Using Render Shell**
-1. Go to your Render dashboard
-2. Click on your service
-3. Click "Shell" tab
-4. Run:
+Set environment variables in your Railway/Render dashboard, then run the script:
+
+1. Add variables: `SETUP_USERNAME` and `SETUP_PASSWORD`
+2. Open the service shell/terminal
+3. Run:
    ```bash
    cd backend
    npm run setup-user
    ```
-5. Follow the prompts
+4. The script uses the env vars and creates the user without prompts
+
+**Option B: Interactive (if your shell supports stdin)**
+
+1. Go to your Railway/Render project dashboard
+2. Open the service shell/terminal
+3. Run:
+   ```bash
+   cd backend
+   npm run setup-user
+   ```
+4. Follow the prompts (username, password, confirm)
 
 ## Method 2: Using the Registration API Endpoint
 
@@ -68,6 +71,7 @@ curl -X POST http://localhost:3001/api/auth/register \
 ```
 
 **For production**, replace `http://localhost:3001` with your backend URL:
+
 ```bash
 curl -X POST https://your-backend.railway.app/api/auth/register \
   -H "Content-Type: application/json" \
@@ -82,6 +86,7 @@ curl -X POST https://your-backend.railway.app/api/auth/register \
 If you need to create a user manually:
 
 1. **Generate password hash** using Node.js:
+
    ```bash
    node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('your-password', 10).then(hash => console.log(hash))"
    ```
@@ -120,18 +125,22 @@ You can create multiple users by running `npm run setup-user` multiple times. Ea
 ## Troubleshooting
 
 **"User already exists" error:**
+
 - The username is already taken
 - Choose a different username
 
 **"Password must be at least 6 characters":**
+
 - Your password is too short
 - Use at least 6 characters
 
 **Can't find `data/users.json`:**
+
 - The file will be created automatically when you run the setup script
 - Make sure the `data` directory exists (it will be created automatically)
 
 **Forgot password:**
+
 - Currently, there's no password reset feature
 - You can create a new user with a different username
 - Or manually edit `data/users.json` to change the password hash (requires generating a new hash)

@@ -29,11 +29,17 @@ function usePlaywright(site: Site): boolean {
   return site.scraperConfig?.searchStrategy === "searchBar" || site.usePlaywright;
 }
 
+export interface ScrapeSiteOptions {
+  /** When set, navigate directly to this URL instead of building from search. Skips search bar. */
+  urlOverride?: string;
+}
+
 async function scrapeWithPlaywright(
   url: string,
   site: Site,
   searchTerm: string,
-  browser?: Browser
+  browser?: Browser,
+  skipSearchBar = false
 ): Promise<RawProduct[]> {
   const cfg = site.scraperConfig;
   const userAgent = cfg?.userAgent ?? DEFAULT_USER_AGENT;
@@ -64,7 +70,7 @@ async function scrapeWithPlaywright(
       }
     }
 
-    if (cfg?.searchStrategy === "searchBar" && cfg?.searchInputSelector) {
+    if (!skipSearchBar && cfg?.searchStrategy === "searchBar" && cfg?.searchInputSelector) {
       await logScrape(`${site.name}: typing search searchTerm="${searchTerm}" (selector=${cfg.searchInputSelector})`);
       const searchInput = page.locator(cfg.searchInputSelector).first();
       const inputVisible = await searchInput.waitFor({ state: "visible", timeout: 10000 }).then(() => true).catch(() => false);
@@ -115,14 +121,21 @@ async function scrapeWithCheerio(url: string, site: Site): Promise<RawProduct[]>
 /**
  * Scrape a site for a search term. Returns raw product list.
  * If browser is provided, reuses it; otherwise launches and closes.
+ * When options.urlOverride is set (e.g. direct category URL), navigates there and skips search bar.
  */
 export async function scrapeSite(
   site: Site,
   searchTerm: string,
-  browser?: Browser
+  browser?: Browser,
+  options?: ScrapeSiteOptions
 ): Promise<RawProduct[]> {
-  const url = getInitialUrl(site, searchTerm);
-  const searchParams = { searchTerm, encoded: encodeURIComponent(searchTerm || ""), searchStrategy: site.scraperConfig?.searchStrategy ?? "url" };
+  const url = options?.urlOverride ?? getInitialUrl(site, searchTerm);
+  const searchParams = {
+    searchTerm,
+    encoded: encodeURIComponent(searchTerm || ""),
+    searchStrategy: site.scraperConfig?.searchStrategy ?? "url",
+    urlOverride: !!options?.urlOverride,
+  };
   if (!url) {
     await logScrape(`${site.name}: no URL (empty searchUrlTemplate for searchBar sites), baseUrl=${site.baseUrl}, searchParams=${JSON.stringify(searchParams)}`);
     return [];
@@ -131,8 +144,9 @@ export async function scrapeSite(
   const method = usePlaywright(site) ? "Playwright" : "Cheerio";
   await logScrape(`${site.name}: scraping searchParams=${JSON.stringify(searchParams)} via ${method} | initialUrl=${url}`);
 
+  const skipSearchBar = !!options?.urlOverride;
   if (usePlaywright(site)) {
-    return scrapeWithPlaywright(url, site, searchTerm, browser);
+    return scrapeWithPlaywright(url, site, searchTerm, browser, skipSearchBar);
   }
   return scrapeWithCheerio(url, site);
 }

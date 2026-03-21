@@ -21,6 +21,7 @@ export async function parseSiteHtml(html: string, site: Site): Promise<RawProduc
   const cfg = site.scraperConfig;
   const resultItemSelector = cfg?.resultItemSelector;
   const priceStrategy = cfg?.priceStrategy ?? "first";
+  const excludePriceInDel = cfg?.excludePriceInDel ?? false;
   const productNameSelector = site.selectors.productName ?? site.selectors.price;
   const productLinkSelector = site.selectors.productLink;
 
@@ -42,7 +43,10 @@ export async function parseSiteHtml(html: string, site: Site): Promise<RawProduc
       const allPrices: number[] = [];
 
       for (const sel of priceSelectors) {
-        const text = $el.find(sel).first().text().trim();
+        const $priceEl = excludePriceInDel
+          ? $el.find(sel).filter((_, el) => !$(el).closest("del").length).first()
+          : $el.find(sel).first();
+        const text = $priceEl.text().trim();
         const p = parsePrice(text);
         if (p !== null) {
           allPrices.push(p);
@@ -83,7 +87,10 @@ export async function parseSiteHtml(html: string, site: Site): Promise<RawProduc
     let priceText = "";
     const scope = $.root();
     for (const sel of priceSelectors) {
-      const text = scope.find(sel).first().text().trim();
+      const $priceEl = excludePriceInDel
+        ? scope.find(sel).filter((_, el) => !$(el).closest("del").length).first()
+        : scope.find(sel).first();
+      const text = $priceEl.text().trim();
       const p = parsePrice(text);
       if (p !== null) {
         price = p;

@@ -17,8 +17,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   define: {
+    // Dev: /api (local backend) unless VITE_API_URL set. Prod: Railway
     "import.meta.env.VITE_API_URL": JSON.stringify(
-      process.env.VITE_API_URL ?? RAILWAY_API,
+      process.env.VITE_API_URL ?? (mode === "development" ? "/api" : RAILWAY_API),
     ),
   },
 }));

@@ -12,6 +12,8 @@ export interface ScraperConfig {
   resultItemSelector?: string;
   /** When multiple prices found: "first" | "lowest" | "sale" (prefer sale/original) */
   priceStrategy?: "first" | "lowest" | "sale";
+  /** Exclude prices inside <del> (old/strikethrough price). Use current/sale price only. */
+  excludePriceInDel?: boolean;
   /** Wait before extracting: "domcontentloaded" | "networkidle" | "selector" | "timeout" */
   waitStrategy?: "domcontentloaded" | "networkidle" | "selector" | "timeout";
   /** Selector to wait for (when waitStrategy is "selector") */
