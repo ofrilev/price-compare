@@ -1420,5 +1420,41 @@
     "currency": "ILS",
     "productUrl": "https://www.halilit.com/items/7891450-roland-rd-2000-ex-stage-piano",
     "scrapedAt": "2026-03-21T14:49:56.704Z"
+  },
+  {
+    "id": "1662dd6b-bc7f-4233-a0e8-bc1e7f9fbb40",
+    "productId": "e73f70bd-ddab-4001-8eee-5005dce1823d",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/yamaha-p-225%E2%80%93black",
+    "scrapedAt": "2026-03-21T19:49:25.666Z"
+  },
+  {
+    "id": "86546f37-861e-4111-8ae9-efa0d9970d53",
+    "productId": "d7b83ac2-9a2e-4515-b01a-32494490dfa4",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 7560,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/yamaha-ck88-stage-keyboard",
+    "scrapedAt": "2026-03-21T20:47:12.569Z"
+  },
+  {
+    "id": "eb8c4989-e342-4768-a7f7-410c0dd38e9a",
+    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 550,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/?s=Casio+CT-S100&post_type=product#menu-nextpro-nav",
+    "scrapedAt": "2026-03-21T21:28:13.069Z"
+  },
+  {
+    "id": "6962e1a9-c4ec-485e-ab92-c79f7fd34941",
+    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 632525,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-%d7%a7%d7%a1%d7%99%d7%95-casio-ct-s100/",
+    "scrapedAt": "2026-03-21T21:28:13.069Z"
   }
 ]

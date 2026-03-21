@@ -7,6 +7,7 @@ import { parsePrice } from "./priceParser.js";
 import { matchesProduct, getSearchTermFallbacks } from "./searchTermNormalizer.js";
 import { emit as progressEmit } from "./scrapeProgress.js";
 import { scrapeWithLLMFallback } from "./llmScraper.js";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
 const RATE_LIMIT_MS = 2000;
@@ -258,14 +259,15 @@ export async function runScrape(options: {
         progressEmit("status", `Now searching for ${product.name} in ${site.name}`);
         console.log(`[Scrape] --- ${product.name} @ ${site.name} ---`);
 
-        const searchTermsToTry = getSearchTermFallbacks(product.searchTerm);
+        const primaryQuery = productSearchQuery(product);
+        const searchTermsToTry = getSearchTermFallbacks(primaryQuery);
         const usePlaywright = site.scraperConfig?.searchStrategy === "searchBar" || site.usePlaywright;
         let price: number | null = null;
         let productUrl = "";
 
         for (const searchTerm of searchTermsToTry) {
           const url = getInitialUrl(site, searchTerm);
-          if (searchTerm !== product.searchTerm) {
+          if (searchTerm !== primaryQuery) {
             console.log(`[Scrape] Retrying with fallback: "${searchTerm}"`);
           }
           const result = usePlaywright
@@ -282,8 +284,8 @@ export async function runScrape(options: {
           console.log(`[Scrape] Regular scraping failed, trying LLM fallback...`);
           progressEmit("status", `Trying LLM fallback for ${product.name} on ${site.name}`);
           try {
-            const url = getInitialUrl(site, product.searchTerm);
-            const llmResult = await scrapeWithLLMFallback(url, site, product.searchTerm);
+            const url = getInitialUrl(site, primaryQuery);
+            const llmResult = await scrapeWithLLMFallback(url, site, primaryQuery);
             if (llmResult.price !== null) {
               price = llmResult.price;
               productUrl = llmResult.productUrl;

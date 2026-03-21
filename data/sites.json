@@ -1,45 +1,5 @@
 [
   {
-    "id": "f23c873f-d398-476c-b583-eb00f8755272",
-    "name": "דיאז",
-    "baseUrl": "https://diez.co.il/",
-    "siteUrl": "https://diez.co.il/",
-    "searchUrlTemplate": "https://diez.co.il/?s={searchTerm}",
-    "selectors": {
-      "price": ".price, .product-price, [class*='price'], [data-price], .woocommerce-Price-amount",
-      "productName": ".product-title, .product-name, .woocommerce-loop-product__title, h2, h3, h4",
-      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
-    },
-    "selectorType": "css",
-    "usePlaywright": true,
-    "enabled": true,
-    "scraperConfig": {
-      "searchStrategy": "url",
-      "priceSelectors": [
-        ".price ins .woocommerce-Price-amount",
-        ".price ins .amount",
-        ".woocommerce-Price-amount bdi",
-        ".woocommerce-Price-amount.amount",
-        ".price .amount",
-        ".product-price",
-        "[data-price]"
-      ],
-      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
-      "priceStrategy": "first",
-      "excludePriceInDel": true,
-      "waitStrategy": "domcontentloaded",
-      "waitExtraMs": 2000,
-      "preSteps": [
-        {
-          "type": "click",
-          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
-        }
-      ],
-      "navigatorEnabled": true,
-      "navigatorResultContainer": "main, .site-main, .woocommerce"
-    }
-  },
-  {
     "id": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
     "name": "חלילית",
     "baseUrl": "https://www.halilit.com/",
@@ -186,6 +146,53 @@
       ],
       "navigatorEnabled": true,
       "navigatorResultContainer": "main, .site-main, .woocommerce"
+    }
+  },
+  {
+    "id": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "name": "דיאז",
+    "baseUrl": "https://diez.co.il/",
+    "siteUrl": "https://diez.co.il/",
+    "searchUrlTemplate": "https://diez.co.il/?s={searchTerm}",
+    "selectors": {
+      "price": ".price, .product-price, [class*='price'], [data-price], .woocommerce-Price-amount",
+      "productName": ".product-title, .product-name, h2, h3, h4",
+      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "searchBar",
+      "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='Search']",
+      "priceSelectors": [
+        ".price",
+        ".product-price",
+        "[class*='price']",
+        "[data-price]",
+        ".woocommerce-Price-amount.amount"
+      ],
+      "resultItemSelector": ".product, .product-item, .product-card, article, li.product, .woocommerce-loop-product",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2000,
+      "preSteps": [
+        {
+          "type": "click",
+          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cli-bar-btn, #cn-accept-cookie"
+        }
+      ],
+      "navigatorEnabled": true,
+      "navigatorResultContainer": "main, .site-main, .woocommerce, #content",
+      "categoryUrlByProductCategory": {
+        "פסנתרים": "https://diez.co.il/product-category/פסנתרים/",
+        "גיטרות ומגברים": "https://diez.co.il/product-category/גיטרות_ומגברים/",
+        "כלי הקשה": "https://diez.co.il/product-category/כלי-הקשה/",
+        "כלי קשת": "https://diez.co.il/product-category/כלי-קשת/",
+        "כלי מיתר": "https://diez.co.il/product-category/כלי-מיתר/",
+        "אקורדיונים": "https://diez.co.il/product-category/אקורדיונים/",
+        "סאונד והגברה": "https://diez.co.il/product-category/סאונד-והגברה/"
+      }
     }
   }
 ]

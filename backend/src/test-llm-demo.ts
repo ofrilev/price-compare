@@ -1,4 +1,5 @@
 import { readJson } from "./services/store.js";
+import { productSearchQuery } from "./utils/productSearchQuery.js";
 import type { Product, Site } from "./types.js";
 
 /**
@@ -23,14 +24,15 @@ async function demonstrateLLMComparison() {
 
     console.log("📦 Product:");
     console.log(`   Name: ${product.name}`);
-    console.log(`   Search Term: ${product.searchTerm}`);
+    const q = productSearchQuery(product);
+    console.log(`   Search query: ${q}`);
     console.log(`   Category: ${product.category}\n`);
 
     console.log("🌐 Sites to Compare:");
     enabledSites.forEach((site, i) => {
       const searchUrl = site.searchUrlTemplate.replace(
         "{searchTerm}",
-        encodeURIComponent(product.searchTerm)
+        encodeURIComponent(q)
       );
       console.log(`   ${i + 1}. ${site.name}`);
       console.log(`      Base URL: ${site.baseUrl}`);
@@ -46,7 +48,7 @@ async function demonstrateLLMComparison() {
     console.log("📊 Expected Response Format:");
     console.log(`   {
       "productName": "${product.name}",
-      "searchTerm": "${product.searchTerm}",
+      "searchTerm": "${q}",
       "results": [
         {
           "siteName": "חלילית",

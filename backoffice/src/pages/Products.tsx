@@ -7,6 +7,7 @@ export default function Products() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [companyFilter, setCompanyFilter] = useState<string>("");
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
@@ -16,11 +17,17 @@ export default function Products() {
     queryFn: () => api.categories(),
   });
 
+  const { data: brands = [] } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => api.products.brands(),
+  });
+
   const { data: products = [], isLoading, isError, error } = useQuery({
-    queryKey: ["products", categoryFilter, search],
+    queryKey: ["products", categoryFilter, companyFilter, search],
     queryFn: () =>
       api.products.list({
         ...(categoryFilter ? { category: categoryFilter } : {}),
+        ...(companyFilter ? { brand: companyFilter } : {}),
         ...(search ? { search } : {}),
       }),
   });
@@ -99,6 +106,19 @@ export default function Products() {
             </option>
           ))}
         </select>
+        <select
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value)}
+          className="border rounded px-2 py-1 min-w-[10rem]"
+        >
+          <option value="">כל החברות</option>
+          <option value="__none__">ללא חברה</option>
+          {brands.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
         <input
           type="text"
           placeholder="חיפוש..."
@@ -142,7 +162,7 @@ export default function Products() {
               />
             </th>
             <th className="border p-2 text-left">שם</th>
-            <th className="border p-2 text-left">מונח חיפוש</th>
+            <th className="border p-2 text-left">חברה</th>
             <th className="border p-2 text-left">קטגוריה</th>
             <th className="border p-2 text-left">פעולות</th>
           </tr>
@@ -160,7 +180,7 @@ export default function Products() {
               </td>
               <td className="border p-2">{product.name}</td>
               <td className="border p-2 text-sm text-gray-600">
-                {product.searchTerm}
+                {product.brand ?? "—"}
               </td>
               <td className="border p-2">{product.category}</td>
               <td className="border p-2">
@@ -187,6 +207,7 @@ export default function Products() {
 
       {creating && (
         <ProductForm
+          key="__create__"
           categories={categories}
           onSave={(data) => createMutation.mutate(data)}
           onCancel={() => {
@@ -198,6 +219,7 @@ export default function Products() {
       )}
       {editing && (
         <ProductForm
+          key={editing.id}
           product={editing}
           categories={categories}
           onSave={(data) => updateMutation.mutate({ id: editing.id, data })}
@@ -212,23 +234,42 @@ export default function Products() {
         <BulkActionsModal
           products={selectedProducts}
           categories={categories}
+          brands={brands}
           onUpdateCategory={async (newCategory) => {
-            await Promise.all(
-              selectedProducts.map((p) =>
-                api.products.update(p.id, { category: newCategory }),
-              ),
-            );
+            await api.products.bulkUpdate({
+              ids: selectedProducts.map((p) => p.id),
+              category: newCategory,
+            });
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["categories"] });
             setSelectedIds(new Set());
             setBulkModalOpen(false);
           }}
+          onUpdateBrand={async (newBrand) => {
+            await api.products.bulkUpdate({
+              ids: selectedProducts.map((p) => p.id),
+              brand: newBrand,
+            });
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["brands"] });
+            setSelectedIds(new Set());
+            setBulkModalOpen(false);
+          }}
+          onClearBrand={async () => {
+            await api.products.bulkUpdate({
+              ids: selectedProducts.map((p) => p.id),
+              brand: "",
+            });
+            queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["brands"] });
+            setSelectedIds(new Set());
+            setBulkModalOpen(false);
+          }}
           onDelete={async () => {
-            await Promise.all(
-              selectedProducts.map((p) => api.products.delete(p.id)),
-            );
+            await api.products.bulkDelete(selectedProducts.map((p) => p.id));
             queryClient.invalidateQueries({ queryKey: ["products"] });
             queryClient.invalidateQueries({ queryKey: ["categories"] });
+            queryClient.invalidateQueries({ queryKey: ["brands"] });
             setSelectedIds(new Set());
             setBulkModalOpen(false);
           }}
@@ -242,17 +283,24 @@ export default function Products() {
 function BulkActionsModal({
   products,
   categories,
+  brands,
   onUpdateCategory,
+  onUpdateBrand,
+  onClearBrand,
   onDelete,
   onCancel,
 }: {
   products: Product[];
   categories: string[];
+  brands: string[];
   onUpdateCategory: (newCategory: string) => Promise<void>;
+  onUpdateBrand: (newBrand: string) => Promise<void>;
+  onClearBrand: () => Promise<void>;
   onDelete: () => Promise<void>;
   onCancel: () => void;
 }) {
   const [newCategory, setNewCategory] = useState("");
+  const [newBrand, setNewBrand] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -265,6 +313,26 @@ function BulkActionsModal({
       } finally {
         setIsUpdating(false);
       }
+    }
+  };
+
+  const handleUpdateBrand = async () => {
+    if (newBrand.trim()) {
+      setIsUpdating(true);
+      try {
+        await onUpdateBrand(newBrand.trim());
+      } finally {
+        setIsUpdating(false);
+      }
+    }
+  };
+
+  const handleClearBrand = async () => {
+    setIsUpdating(true);
+    try {
+      await onClearBrand();
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -322,6 +390,41 @@ function BulkActionsModal({
           </div>
           <div className="border-t pt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              שנה חברה לכל הנבחרים
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              <input
+                list="bulk-brands"
+                value={newBrand}
+                onChange={(e) => setNewBrand(e.target.value)}
+                className="flex-1 min-w-[8rem] border rounded px-2 py-1.5 text-right"
+                placeholder="בחר או הקלד שם חברה"
+              />
+              <datalist id="bulk-brands">
+                {brands.map((b) => (
+                  <option key={b} value={b} />
+                ))}
+              </datalist>
+              <button
+                type="button"
+                onClick={handleUpdateBrand}
+                disabled={!newBrand.trim() || isUpdating}
+                className="px-3 py-1.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {isUpdating ? "..." : "עדכן חברה"}
+              </button>
+              <button
+                type="button"
+                onClick={handleClearBrand}
+                disabled={isUpdating}
+                className="px-3 py-1.5 border border-gray-400 text-gray-700 rounded hover:bg-gray-50 disabled:opacity-50"
+              >
+                הסר חברה
+              </button>
+            </div>
+          </div>
+          <div className="border-t pt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               מחק את כל הנבחרים
             </label>
             {confirmDelete ? (
@@ -373,13 +476,27 @@ function ProductForm({
   onCancel: () => void;
   error?: string;
 }) {
-  const [form, setForm] = useState<Partial<Product>>(
-    product ?? { name: "", searchTerm: "", category: "" },
+  const [form, setForm] = useState<Partial<Product>>(() =>
+    product
+      ? { name: product.name, brand: product.brand ?? "" }
+      : { name: "", brand: "" }
   );
-  const [categoryInput, setCategoryInput] = useState(product?.category ?? "");
+  const [categoryInput, setCategoryInput] = useState(() => product?.category ?? "");
+
+  useEffect(() => {
+    if (product) {
+      setForm({ name: product.name, brand: product.brand ?? "" });
+      setCategoryInput(product.category ?? "");
+    } else {
+      setForm({ name: "", brand: "" });
+      setCategoryInput("");
+    }
+  }, [product?.id, product?.name, product?.brand, product?.category]);
 
   const handleSave = () => {
-    onSave({ ...form, category: categoryInput });
+    const name = (form.name ?? "").trim();
+    if (!name) return;
+    onSave({ ...form, name, category: categoryInput });
   };
 
   return (
@@ -396,22 +513,30 @@ function ProductForm({
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              שם
+              שם מוצר
             </label>
             <input
               value={form.name ?? ""}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full border rounded px-2 py-1"
+              placeholder="שם להצגה והשוואה"
+              autoComplete="off"
             />
+            {product && (
+              <p className="text-xs text-gray-500 mt-1 text-right">
+                ניתן לערוך את השם; השמירה מעדכנת את המוצר בכל הטבלאות.
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              מונח חיפוש
+              חברה (מותווסף לכל חיפוש)
             </label>
             <input
-              value={form.searchTerm ?? ""}
-              onChange={(e) => setForm({ ...form, searchTerm: e.target.value })}
+              value={form.brand ?? ""}
+              onChange={(e) => setForm({ ...form, brand: e.target.value })}
               className="w-full border rounded px-2 py-1"
+              placeholder="לדוגמה: Yamaha, Roland"
             />
           </div>
           <div>
@@ -435,7 +560,8 @@ function ProductForm({
         <div className="flex gap-2 mt-4">
           <button
             onClick={handleSave}
-            className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+            disabled={!(form.name ?? "").trim()}
+            className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             שמור
           </button>

@@ -1,23 +1,89 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, API_BASE, type CategoryMatchResult } from "../api/client";
-import { useState, useRef, useEffect } from "react";
+import { api, API_BASE, type Product, type Site } from "../api/client";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { toHrefUrl } from "../utils/url";
+import { useAtom } from "jotai";
+import {
+  scrapeCategoryFilterAtom,
+  scrapeBrandFilterAtom,
+  scrapeSelectedProductIdsAtom,
+  scrapeSelectedSiteIdsAtom,
+  lastSearchRunStatusAtom,
+} from "../atoms/scrapeAtoms";
+import { isDiezConfiguredSite } from "../utils/comparisonTableSites";
+import { APP_TITLE } from "../config/app";
+
+/** Navigator is the only scrape mode for now */
+const SCRAPE_MODE = "navigator" as const;
+
+function getDiezSiteId(sitesList: Site[]): string | undefined {
+  return sitesList.find((s) => s.enabled && isDiezConfiguredSite(s))?.id;
+}
+
+/** Always include enabled Diez in the selection when it exists in config */
+function withRequiredDiezIds(ids: string[], sitesList: Site[]): string[] {
+  const diezId = getDiezSiteId(sitesList);
+  if (!diezId || ids.includes(diezId)) return [...ids];
+  return [...ids, diezId];
+}
+
+function formatNavigatorScopeHint(
+  productIds: string[] | undefined,
+  productsList: Product[],
+): string | undefined {
+  if (!productIds?.length) return undefined;
+  const names = productIds
+    .map((id) => productsList.find((p) => p.id === id)?.name)
+    .filter(Boolean) as string[];
+  if (names.length === 0) return undefined;
+  if (names.length === 1) return `מוצר: ${names[0]}`;
+  if (names.length === 2) return `מוצרים: ${names[0]} · ${names[1]}`;
+  return `מוצרים: ${names[0]} · ${names[1]} ועוד ${names.length - 2}`;
+}
+
+function getDefaultSiteIdsForBrand(
+  brandFilter: string,
+  sitesList: Site[],
+): string[] {
+  if (!brandFilter || brandFilter === "__none__") return [];
+  const b = brandFilter.toLowerCase();
+  const enabled = sitesList.filter((s) => s.enabled);
+  if (b.includes("yamaha")) {
+    const s =
+      enabled.find((x) => /kley|klei|זמר/i.test(x.name)) ||
+      enabled.find((x) => x.baseUrl.toLowerCase().includes("kley-zemer"));
+    return s ? [s.id] : [];
+  }
+  if (b.includes("roland")) {
+    const s =
+      enabled.find((x) => /halilit|חלילית/i.test(x.name)) ||
+      enabled.find((x) => x.baseUrl.toLowerCase().includes("halilit.com"));
+    return s ? [s.id] : [];
+  }
+  return [];
+}
 
 export default function Scrape() {
   const queryClient = useQueryClient();
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
-  const [categorySearch, setCategorySearch] = useState<string>("");
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
-  const [selectedSiteIds, setSelectedSiteIds] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useAtom(scrapeCategoryFilterAtom);
+  const [scrapeBrandFilter, setScrapeBrandFilter] = useAtom(
+    scrapeBrandFilterAtom,
+  );
+  const [showProductsDropdown, setShowProductsDropdown] = useState(false);
+  const [productDropdownSearch, setProductDropdownSearch] = useState("");
+  const [selectedProductIds, setSelectedProductIds] = useAtom(
+    scrapeSelectedProductIdsAtom,
+  );
+  const [selectedSiteIds, setSelectedSiteIds] = useAtom(
+    scrapeSelectedSiteIdsAtom,
+  );
+  const [lastSearchStatus, setLastSearchStatus] = useAtom(
+    lastSearchRunStatusAtom,
+  );
   const [scrapeLog, setScrapeLog] = useState<
     Array<{ type: string; message: string; timestamp: number }>
   >([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [categoryMatchResult, setCategoryMatchResult] =
-    useState<CategoryMatchResult | null>(null);
-  const [isMatchingCategory, setIsMatchingCategory] = useState(false);
   const [lastLlmPrompt, setLastLlmPrompt] = useState<{
     product?: string;
     category?: string;
@@ -30,16 +96,18 @@ export default function Scrape() {
     parsedResult: unknown;
   } | null>(null);
   const [showLlmDebug, setShowLlmDebug] = useState(false);
-  const [scrapeMode, setScrapeMode] = useState<
-    "scraper" | "llm_websearch" | "navigator"
-  >("scraper");
   const eventSourceRef = useRef<EventSource | null>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
-  const categoryDropdownRef = useRef<HTMLDivElement>(null);
+  const productsDropdownRef = useRef<HTMLDivElement>(null);
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: () => api.categories(),
+  });
+
+  const { data: brands = [] } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => api.products.brands(),
   });
 
   const { data: sites = [] } = useQuery({
@@ -48,10 +116,30 @@ export default function Scrape() {
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ["products", categoryFilter],
+    queryKey: ["products", categoryFilter, scrapeBrandFilter],
     queryFn: () =>
-      api.products.list(categoryFilter ? { category: categoryFilter } : {}),
+      api.products.list({
+        ...(categoryFilter ? { category: categoryFilter } : {}),
+        ...(scrapeBrandFilter ? { brand: scrapeBrandFilter } : {}),
+      }),
   });
+
+  const filteredProductsForDropdown = useMemo(() => {
+    const q = productDropdownSearch.trim().toLowerCase();
+    if (!q) return products;
+    return products.filter((p) => {
+      const name = (p.name ?? "").toLowerCase();
+      const brand = (p.brand ?? "").toLowerCase();
+      const term = (p.searchTerm ?? "").toLowerCase();
+      const cat = (p.category ?? "").toLowerCase();
+      return (
+        name.includes(q) ||
+        brand.includes(q) ||
+        term.includes(q) ||
+        cat.includes(q)
+      );
+    });
+  }, [products, productDropdownSearch]);
 
   const { data: results = [], isLoading: resultsLoading } = useQuery({
     queryKey: ["scrape-results", categoryFilter],
@@ -162,36 +250,47 @@ export default function Scrape() {
         throw err;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      setLastSearchStatus({
+        updatedAt: new Date().toISOString(),
+        runType: "navigator",
+        state: "success",
+        summary: `השוואת Navigator הושלמה — ${data.count} תוצאות`,
+        resultsCount: data.count,
+        scopeHint: formatNavigatorScopeHint(variables?.productIds, products),
+      });
       queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
       queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
     },
-    onError: () => {
+    onError: (err, variables) => {
       setIsStreaming(false);
+      setLastSearchStatus({
+        updatedAt: new Date().toISOString(),
+        runType: "navigator",
+        state: "error",
+        summary: "שגיאה בהרצת Navigator",
+        detail: err instanceof Error ? err.message : String(err),
+        scopeHint: formatNavigatorScopeHint(variables?.productIds, products),
+      });
     },
   });
 
   const runScrape = () => {
-    // If category is selected, run category match instead
-    if (categoryFilter) {
-      handleMatchCategory();
-      return;
-    }
+    if (selectedSiteIds.length === 0 || sites.length === 0) return;
 
-    // Otherwise run regular scrape
     const body: {
       productIds?: string[];
-      category?: string;
-      siteIds?: string[];
-      mode?: "scraper" | "llm_websearch" | "navigator";
-    } = selectedProductIds.length > 0 ? { productIds: selectedProductIds } : {};
-
-    if (selectedSiteIds.length > 0) {
-      body.siteIds = selectedSiteIds;
+      siteIds: string[];
+      mode: typeof SCRAPE_MODE;
+    } = {
+      siteIds: selectedSiteIds,
+      mode: SCRAPE_MODE,
+    };
+    if (selectedProductIds.length > 0) {
+      body.productIds = selectedProductIds;
     }
-    body.mode = scrapeMode;
 
-    scrapeMutation.mutate(Object.keys(body).length > 0 ? body : {});
+    scrapeMutation.mutate(body);
   };
 
   const toggleProduct = (id: string) => {
@@ -200,24 +299,27 @@ export default function Scrape() {
     );
   };
 
-  const selectAllInCategory = () => {
-    const allProductIds = products.map((p) => p.id);
-    if (selectedProductIds.length === allProductIds.length) {
-      // Deselect all if all are selected
-      setSelectedProductIds([]);
+  /** Toggle selection for all products currently visible in the dropdown (after search filter) */
+  const selectAllFilteredInDropdown = () => {
+    const ids = filteredProductsForDropdown.map((p) => p.id);
+    if (ids.length === 0) return;
+    const allFilteredSelected = ids.every((id) =>
+      selectedProductIds.includes(id),
+    );
+    if (allFilteredSelected) {
+      setSelectedProductIds((prev) => prev.filter((id) => !ids.includes(id)));
     } else {
-      // Select all products in current filter
-      setSelectedProductIds(allProductIds);
+      setSelectedProductIds((prev) => [...new Set([...prev, ...ids])]);
     }
   };
 
   const selectAllSites = () => {
     const enabledSiteIds = sites.filter((s) => s.enabled).map((s) => s.id);
+    const diezId = getDiezSiteId(sites);
     if (selectedSiteIds.length === enabledSiteIds.length) {
-      // Deselect all if all are selected
-      setSelectedSiteIds([]);
+      // Deselect all except דיאז (חובה)
+      setSelectedSiteIds(diezId ? [diezId] : []);
     } else {
-      // Select all enabled sites
       setSelectedSiteIds(enabledSiteIds);
     }
   };
@@ -229,398 +331,373 @@ export default function Scrape() {
     }
   }, [scrapeLog]);
 
-  // Close category dropdown when clicking outside
+  const prevScrapeBrandRef = useRef<string | undefined>(undefined);
+  const brandHydratedRef = useRef(false);
+  // Default אתרים לפי חברה (רק כשהחברה במסנן משתנה): Yamaha → כלי זמר, Roland → חלילית
+  // Skip first run so Jotai/localStorage hydrated site ids are not overwritten on mount.
+  useEffect(() => {
+    if (!brandHydratedRef.current) {
+      brandHydratedRef.current = true;
+      prevScrapeBrandRef.current = scrapeBrandFilter;
+      return;
+    }
+    const brandChanged = prevScrapeBrandRef.current !== scrapeBrandFilter;
+    prevScrapeBrandRef.current = scrapeBrandFilter;
+    if (!brandChanged) return;
+    const ids = getDefaultSiteIdsForBrand(scrapeBrandFilter, sites);
+    if (ids.length > 0) setSelectedSiteIds(withRequiredDiezIds(ids, sites));
+  }, [scrapeBrandFilter, sites, setSelectedSiteIds]);
+
+  // דיאז תמיד נבחר (לא ניתן להסיר בממשק)
+  useEffect(() => {
+    const diezId = getDiezSiteId(sites);
+    if (!diezId) return;
+    setSelectedSiteIds((prev) =>
+      prev.includes(diezId) ? prev : [...prev, diezId],
+    );
+  }, [sites, setSelectedSiteIds]);
+
+  // נקה בחירת מוצרים שלא מופיעים ברשימה המסוננת
+  useEffect(() => {
+    const allowed = new Set(products.map((p) => p.id));
+    setSelectedProductIds((prev) => prev.filter((id) => allowed.has(id)));
+  }, [products, setSelectedProductIds]);
+
+  // Close product dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const t = event.target as Node;
       if (
-        categoryDropdownRef.current &&
-        !categoryDropdownRef.current.contains(event.target as Node)
+        productsDropdownRef.current &&
+        !productsDropdownRef.current.contains(t)
       ) {
-        setShowCategoryDropdown(false);
+        setShowProductsDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Filter categories based on search
-  const filteredCategories = categories.filter((cat) =>
-    cat.toLowerCase().includes(categorySearch.toLowerCase()),
-  );
-
-  const matchCategoryMutation = useMutation({
-    mutationFn: async (category: string) => {
-      setIsMatchingCategory(true);
-      setCategoryMatchResult(null);
-      setScrapeLog([]);
-      setLastLlmPrompt(null);
-      setLastLlmResponse(null);
-      setIsStreaming(true);
-
-      // Get auth token for EventSource (which can't send headers)
-      const token = localStorage.getItem("auth_token");
-      const streamUrl = token
-        ? `${API_BASE}/scrape/stream?token=${encodeURIComponent(token)}`
-        : `${API_BASE}/scrape/stream`;
-      const es = new EventSource(streamUrl);
-      eventSourceRef.current = es;
-
-      es.onopen = () => {
-        console.log("EventSource connection opened for category match");
-      };
-
-      es.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          if (data.type === "llm_prompt") {
-            try {
-              const parsed = JSON.parse(data.message || "{}");
-              setLastLlmPrompt(parsed);
-              setShowLlmDebug(true);
-            } catch {}
-            return;
-          }
-          if (data.type === "llm_response") {
-            try {
-              const parsed = JSON.parse(data.message || "{}");
-              setLastLlmResponse(parsed);
-              setShowLlmDebug(true);
-            } catch {}
-            return;
-          }
-          setScrapeLog((prev) => {
-            const newLog = [
-              ...prev,
-              {
-                type: data.type || "status",
-                message: data.message || "",
-                timestamp: Date.now(),
-              },
-            ];
-            setTimeout(() => {
-              if (logContainerRef.current) {
-                logContainerRef.current.scrollTop =
-                  logContainerRef.current.scrollHeight;
-              }
-            }, 10);
-            return newLog;
-          });
-        } catch (err) {
-          console.error("Error parsing EventSource message:", err);
-        }
-      };
-
-      es.onerror = (event) => {
-        console.error(
-          "EventSource error:",
-          event,
-          "readyState:",
-          es.readyState,
-        );
-        // EventSource.CONNECTING = 0, EventSource.OPEN = 1, EventSource.CLOSED = 2
-        // Only close if the connection is actually closed
-        if (es.readyState === EventSource.CLOSED) {
-          console.log("EventSource connection closed");
-          setIsStreaming(false);
-          es.close();
-        }
-        // If connecting or open, EventSource will try to reconnect automatically
-      };
-
-      try {
-        const result = await api.scrape.matchCategory({
-          category,
-          siteIds: selectedSiteIds.length > 0 ? selectedSiteIds : undefined,
-        });
-        setCategoryMatchResult(result);
-        setIsStreaming(false);
-        es.close();
-        eventSourceRef.current = null;
-        return result;
-      } catch (err) {
-        setIsStreaming(false);
-        es.close();
-        eventSourceRef.current = null;
-        throw err;
-      } finally {
-        setIsMatchingCategory(false);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
-      queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-    },
-  });
-
-  const handleMatchCategory = () => {
-    if (categoryFilter) {
-      matchCategoryMutation.mutate(categoryFilter);
-    }
-  };
+  useEffect(() => {
+    if (!showProductsDropdown) setProductDropdownSearch("");
+  }, [showProductsDropdown]);
 
   return (
     <div dir="rtl" className="text-right">
-      <h1 className="text-xl font-semibold mb-4 text-right">השוואת מחירים</h1>
+      <h1 className="text-xl font-semibold mb-4 text-right">{APP_TITLE}</h1>
 
-      <div className="flex flex-wrap gap-4 mb-4 justify-end items-center">
-        {!categoryFilter && (
-          <div className="flex rounded-lg border border-gray-200 overflow-hidden bg-gray-50">
-            <button
-              type="button"
-              onClick={() => setScrapeMode("scraper")}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                scrapeMode === "scraper"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              גריפה + LLM
-            </button>
-            <button
-              type="button"
-              onClick={() => setScrapeMode("llm_websearch")}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                scrapeMode === "llm_websearch"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              LLM + חיפוש אינטרנט
-            </button>
-            <button
-              type="button"
-              onClick={() => setScrapeMode("navigator")}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                scrapeMode === "navigator"
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              Navigator (סוכן)
-            </button>
-          </div>
-        )}
-        <div className="relative" ref={categoryDropdownRef}>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="חפש קטגוריה..."
-                value={categorySearch}
-                onChange={(e) => {
-                  setCategorySearch(e.target.value);
-                  setShowCategoryDropdown(true);
-                }}
-                onFocus={() => setShowCategoryDropdown(true)}
-                className="border rounded px-3 py-2 pr-10 text-right min-w-[200px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <svg
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-            {categoryFilter && (
-              <div className="flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
-                <span className="text-sm font-medium">{categoryFilter}</span>
-                <button
-                  onClick={() => {
-                    setCategoryFilter("");
-                    setCategorySearch("");
-                    setSelectedProductIds([]);
-                  }}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-          {showCategoryDropdown && (
-            <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto min-w-[200px] right-0">
-              <div className="p-2">
-                <button
-                  onClick={() => {
-                    setCategoryFilter("");
-                    setCategorySearch("");
-                    setShowCategoryDropdown(false);
-                    setSelectedProductIds([]);
-                    setCategoryMatchResult(null); // Clear match results when clearing category
-                  }}
-                  className={`w-full text-right px-3 py-2 rounded hover:bg-gray-100 transition-colors ${
-                    categoryFilter === ""
-                      ? "bg-blue-50 text-blue-700 font-medium"
-                      : ""
-                  }`}
-                >
-                  כל הקטגוריות
-                </button>
-                {filteredCategories.length > 0 ? (
-                  filteredCategories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setCategoryFilter(cat);
-                        setCategorySearch(cat);
-                        setShowCategoryDropdown(false);
-                        setSelectedProductIds([]); // Clear product selection when category is selected
-                        setCategoryMatchResult(null); // Clear previous match results
-                      }}
-                      className={`w-full text-right px-3 py-2 rounded hover:bg-gray-100 transition-colors ${
-                        categoryFilter === cat
-                          ? "bg-blue-50 text-blue-700 font-medium"
-                          : ""
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))
-                ) : (
-                  <div className="px-3 py-2 text-gray-500 text-sm text-right">
-                    לא נמצאו קטגוריות
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+      {lastSearchStatus.updatedAt ? (
         <div
-          className="inline-block rounded-lg p-[2px] bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          style={{
-            boxShadow:
-              "0 10px 25px -5px rgba(147, 51, 234, 0.4), 0 10px 10px -5px rgba(219, 39, 119, 0.3), 0 10px 15px -3px rgba(37, 99, 235, 0.3)",
-          }}
+          className={`mb-4 rounded-lg border px-4 py-3 text-sm text-right ${
+            lastSearchStatus.state === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+              : lastSearchStatus.state === "error"
+                ? "border-red-200 bg-red-50 text-red-900"
+                : "border-gray-200 bg-gray-50 text-gray-800"
+          }`}
         >
-          <button
-            onClick={runScrape}
-            disabled={
-              scrapeMutation.isPending ||
-              isStreaming ||
-              isMatchingCategory ||
-              (!categoryFilter && selectedProductIds.length === 0)
-            }
-            className="px-6 py-3 bg-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold transition-all duration-200 w-full"
-          >
-            {isStreaming || isMatchingCategory ? (
-              <svg
-                className="animate-spin h-5 w-5"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                style={{ stroke: "url(#gradient)" }}
-              >
-                <defs>
-                  <linearGradient
-                    id="gradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="0%"
-                  >
-                    <stop
-                      offset="0%"
-                      style={{ stopColor: "#9333ea", stopOpacity: 1 }}
-                    />
-                    <stop
-                      offset="50%"
-                      style={{ stopColor: "#db2777", stopOpacity: 1 }}
-                    />
-                    <stop
-                      offset="100%"
-                      style={{ stopColor: "#2563eb", stopOpacity: 1 }}
-                    />
-                  </linearGradient>
-                </defs>
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="url(#gradient)"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="url(#gradient)"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-            ) : (
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <linearGradient
-                    id="starGradient"
-                    x1="0%"
-                    y1="0%"
-                    x2="100%"
-                    y2="0%"
-                  >
-                    <stop
-                      offset="0%"
-                      style={{ stopColor: "#9333ea", stopOpacity: 1 }}
-                    />
-                    <stop
-                      offset="50%"
-                      style={{ stopColor: "#db2777", stopOpacity: 1 }}
-                    />
-                    <stop
-                      offset="100%"
-                      style={{ stopColor: "#2563eb", stopOpacity: 1 }}
-                    />
-                  </linearGradient>
-                </defs>
-                <path
-                  fill="url(#starGradient)"
-                  d="M12 2L9.09 8.26L2 9.27L7 14.14L5.18 21.02L12 17.77L18.82 21.02L17 14.14L22 9.27L14.91 8.26L12 2Z"
-                />
-              </svg>
-            )}
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              {isMatchingCategory
-                ? "מתאים מוצרים..."
-                : scrapeMutation.isPending || isStreaming
-                  ? "משווה מחירים..."
-                  : categoryFilter
-                    ? "התאם מוצרים בקטגוריה"
-                    : "השווה מחירים"}
-            </span>
-          </button>
+          <div className="flex flex-col gap-1 items-end">
+            <div className="font-medium">
+              {lastSearchStatus.state === "success"
+                ? "✓ "
+                : lastSearchStatus.state === "error"
+                  ? "✗ "
+                  : ""}
+              {lastSearchStatus.summary}
+            </div>
+            {lastSearchStatus.scopeHint ? (
+              <div className="text-sm font-medium text-gray-800 opacity-90">
+                {lastSearchStatus.scopeHint}
+              </div>
+            ) : null}
+            <div className="text-xs opacity-80">
+              {lastSearchStatus.runType === "navigator"
+                ? "Navigator"
+                : lastSearchStatus.runType === "category_match"
+                  ? "התאמת קטגוריה"
+                  : ""}{" "}
+              · {new Date(lastSearchStatus.updatedAt).toLocaleString("he-IL")}
+            </div>
+            {lastSearchStatus.detail ? (
+              <div className="text-xs opacity-90 mt-1 max-w-full break-all">
+                {lastSearchStatus.detail}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      <div className="mb-3 flex flex-wrap gap-3 justify-end">
+        <div
+          className="px-4 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-900 text-sm font-medium"
+          title="שאר מצבי השוואה מושבתים זמנית"
+        >
+          מצב: Navigator (סוכן) בלבד
         </div>
       </div>
+
+      <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+        <h2 className="text-sm font-semibold text-gray-700 mb-3 text-right">
+          סינון ומיון
+        </h2>
+        <div className="flex flex-wrap gap-4 items-end justify-end">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 text-right">
+              קטגוריה
+            </label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+              }}
+              className="border rounded px-3 py-2 text-right min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">כל הקטגוריות</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 text-right">
+              חברה
+            </label>
+            <select
+              value={scrapeBrandFilter}
+              onChange={(e) => {
+                setScrapeBrandFilter(e.target.value);
+                setShowProductsDropdown(false);
+              }}
+              className="border rounded px-3 py-2 text-right min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">כל החברות</option>
+              <option value="__none__">ללא חברה</option>
+              {brands.map((br) => (
+                <option key={br} value={br}>
+                  {br}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div
+            className="relative max-w-[min(36rem,calc(100vw-1rem))] w-full sm:w-auto shrink-0"
+            ref={productsDropdownRef}
+          >
+            <label className="block text-xs text-gray-500 mb-1 text-right">
+              מוצרים
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowProductsDropdown((v) => !v)}
+              className="border rounded px-3 py-2 text-right w-full min-w-0 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white flex items-center justify-between gap-2"
+            >
+              <span className="min-w-0 truncate">
+                {selectedProductIds.length === 0
+                  ? "בחר מוצרים…"
+                  : `${selectedProductIds.length} נבחרו`}
+              </span>
+              <span className="text-gray-400 text-sm shrink-0">
+                {showProductsDropdown ? "▲" : "▼"}
+              </span>
+            </button>
+            {showProductsDropdown && products.length > 0 && (
+              <div className="absolute top-full mt-1 right-0 left-0 sm:left-auto sm:w-full max-w-[min(36rem,calc(100vw-1rem))] bg-white border rounded-lg shadow-lg z-50 max-h-[28rem] flex flex-col min-w-0">
+                <div className="p-2 border-b border-gray-100 flex justify-between items-center gap-2 flex-row-reverse flex-wrap">
+                  <span className="text-xs text-gray-600">
+                    {filteredProductsForDropdown.length === products.length
+                      ? `${products.length} מוצרים`
+                      : `${filteredProductsForDropdown.length} מתוך ${products.length} מוצרים`}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={selectAllFilteredInDropdown}
+                    disabled={filteredProductsForDropdown.length === 0}
+                    className="text-xs px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {filteredProductsForDropdown.length > 0 &&
+                    filteredProductsForDropdown.every((p) =>
+                      selectedProductIds.includes(p.id),
+                    )
+                      ? "בטל הכל (במסונן)"
+                      : "בחר הכל (במסונן)"}
+                  </button>
+                </div>
+                <div className="p-2 border-b border-gray-100">
+                  <input
+                    type="search"
+                    dir="rtl"
+                    placeholder="חפש במוצרים (שם, חברה, קטגוריה)…"
+                    value={productDropdownSearch}
+                    onChange={(e) => setProductDropdownSearch(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-full border rounded px-3 py-2 text-right text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div className="overflow-y-auto flex-1 p-1 min-h-0">
+                  {filteredProductsForDropdown.length === 0 ? (
+                    <p className="px-3 py-6 text-sm text-gray-500 text-center">
+                      לא נמצאו מוצרים התואמים לחיפוש
+                    </p>
+                  ) : (
+                    filteredProductsForDropdown.map((p) => (
+                      <label
+                        key={p.id}
+                        className="flex gap-2 px-3 py-2 rounded hover:bg-gray-50 cursor-pointer text-right items-start flex-row-reverse"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedProductIds.includes(p.id)}
+                          onChange={() => toggleProduct(p.id)}
+                          className="w-4 h-4 text-indigo-600 rounded shrink-0 mt-1"
+                        />
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <span className="block font-medium text-sm whitespace-normal break-words">
+                            {p.name}
+                          </span>
+                          {p.brand ? (
+                            <span className="block text-xs text-gray-500 whitespace-normal break-words">
+                              {p.brand}
+                            </span>
+                          ) : null}
+                        </div>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2 items-end justify-end">
+            <div
+              className="inline-block rounded-lg p-[2px] bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              style={{
+                boxShadow:
+                  "0 10px 25px -5px rgba(147, 51, 234, 0.4), 0 10px 10px -5px rgba(219, 39, 119, 0.3), 0 10px 15px -3px rgba(37, 99, 235, 0.3)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={runScrape}
+                disabled={
+                  scrapeMutation.isPending ||
+                  isStreaming ||
+                  sites.length === 0 ||
+                  selectedSiteIds.length === 0 ||
+                  selectedProductIds.length === 0
+                }
+                className="px-6 py-3 bg-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold transition-all duration-200 w-full"
+              >
+                {isStreaming ? (
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    style={{ stroke: "url(#gradient)" }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="gradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop
+                          offset="0%"
+                          style={{ stopColor: "#9333ea", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="50%"
+                          style={{ stopColor: "#db2777", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="100%"
+                          style={{ stopColor: "#2563eb", stopOpacity: 1 }}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="url(#gradient)"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="url(#gradient)"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                ) : (
+                  <svg
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <defs>
+                      <linearGradient
+                        id="starGradient"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="0%"
+                      >
+                        <stop
+                          offset="0%"
+                          style={{ stopColor: "#9333ea", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="50%"
+                          style={{ stopColor: "#db2777", stopOpacity: 1 }}
+                        />
+                        <stop
+                          offset="100%"
+                          style={{ stopColor: "#2563eb", stopOpacity: 1 }}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      fill="url(#starGradient)"
+                      d="M12 2L9.09 8.26L2 9.27L7 14.14L5.18 21.02L12 17.77L18.82 21.02L17 14.14L22 9.27L14.91 8.26L12 2Z"
+                    />
+                  </svg>
+                )}
+                <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+                  {scrapeMutation.isPending || isStreaming
+                    ? "משווה מחירים..."
+                    : "השווה מחירים"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      {(sites.length === 0 || selectedSiteIds.length === 0) && (
+        <p className="text-sm text-amber-800 text-right mb-3 px-1">
+          {sites.length === 0
+            ? "טוען אתרים… או שאין אתרים מוגדרים. כפתור ההשוואה יופעל לאחר טעינה ובחירת אתר."
+            : "יש לסמן לפחות אתר אחד — ההשוואה לא תרוץ על כל האתרים ללא בחירה."}
+        </p>
+      )}
 
       {sites.length > 0 && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 text-right">
           <div className="flex items-center justify-between mb-2 flex-row-reverse">
-            <p className="text-sm text-gray-700 font-medium">
-              בחר אתרים להשוואה (אופציונלי - כל האתרים הפעילים ישמשו אם לא
-              נבחרו):
-            </p>
+            <div className="text-sm text-gray-700 font-medium space-y-1">
+              <p>
+                חובה לבחור לפחות אתר אחד — ההשוואה לא רצה על כל האתרים אוטומטית.
+              </p>
+              <p className="text-xs font-normal text-indigo-800">
+                אתר דיאז נשאר תמיד מסומן ולא ניתן לבטל — בשרת הוא נכלל בכל השוואה;
+                ב-Navigator דילוג על דיאז רק כשכבר יש תוצאה מאותו מוצר מאותו יום (UTC).
+              </p>
+            </div>
             <button
               onClick={selectAllSites}
               className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2 font-medium"
@@ -647,89 +724,63 @@ export default function Scrape() {
           <div className="flex flex-wrap gap-2 justify-end">
             {sites
               .filter((s) => s.enabled)
-              .map((site) => (
-                <label
-                  key={site.id}
-                  className="flex items-center gap-1.5 text-sm px-2 py-1 rounded-md hover:bg-blue-100 transition-colors cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSiteIds.includes(site.id)}
-                    onChange={() =>
-                      setSelectedSiteIds((prev) =>
-                        prev.includes(site.id)
-                          ? prev.filter((id) => id !== site.id)
-                          : [...prev, site.id],
-                      )
+              .map((site) => {
+                const lockedDiez = isDiezConfiguredSite(site);
+                return (
+                  <label
+                    key={site.id}
+                    className={`flex items-center gap-1.5 text-sm px-2 py-1 rounded-md transition-colors ${
+                      lockedDiez
+                        ? "cursor-not-allowed bg-slate-100 border border-slate-200"
+                        : "hover:bg-blue-100 cursor-pointer"
+                    }`}
+                    title={
+                      lockedDiez
+                        ? "דיאז — נדרש לכל השוואה, לא ניתן לבטל"
+                        : undefined
                     }
-                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  <span className="font-medium">{site.name}</span>
-                </label>
-              ))}
+                  >
+                    <input
+                      type="checkbox"
+                      disabled={lockedDiez}
+                      checked={selectedSiteIds.includes(site.id)}
+                      onChange={() => {
+                        if (lockedDiez) return;
+                        setSelectedSiteIds((prev) =>
+                          prev.includes(site.id)
+                            ? prev.filter((id) => id !== site.id)
+                            : [...prev, site.id],
+                        );
+                      }}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed"
+                    />
+                    <span className="font-medium">{site.name}</span>
+                    {lockedDiez ? (
+                      <span className="text-[10px] text-slate-500 font-normal">
+                        (חובה)
+                      </span>
+                    ) : null}
+                  </label>
+                );
+              })}
           </div>
         </div>
       )}
 
-      <div className="mb-4 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 shadow-sm text-right">
-        <div className="flex items-center justify-between mb-3 flex-row-reverse">
-          <p className="text-sm text-gray-700 font-medium">
-            {categoryFilter
-              ? `קטגוריה נבחרה: "${categoryFilter}" - בחירת מוצרים ספציפיים מושבתת`
-              : selectedProductIds.length > 0
-                ? `משווה ${selectedProductIds.length} מוצר(ים) נבחר(ים)`
-                : "בחר מוצרים או קטגוריה להשוואה"}
-          </p>
-          {products.length > 0 && (
-            <button
-              onClick={selectAllInCategory}
-              disabled={!!categoryFilter}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {selectedProductIds.length === products.length
-                ? "בטל הכל"
-                : "בחר הכל בקטגוריה"}
-            </button>
-          )}
-        </div>
-        {products.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-end">
-            {products.map((p) => (
-              <label
-                key={p.id}
-                className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-md transition-colors border border-gray-200 hover:border-indigo-300 hover:shadow-sm ${
-                  categoryFilter
-                    ? "opacity-50 cursor-not-allowed bg-gray-100"
-                    : "hover:bg-white cursor-pointer"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedProductIds.includes(p.id)}
-                  onChange={() => toggleProduct(p.id)}
-                  disabled={!!categoryFilter}
-                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500 disabled:cursor-not-allowed"
-                />
-                <span className="font-medium">{p.name}</span>
-              </label>
-            ))}
-          </div>
+      <p className="mb-3 text-sm text-gray-600 text-right">
+        {selectedProductIds.length > 0 ? (
+          <>
+            נבחרו <strong>{selectedProductIds.length}</strong> מוצרים — לחצו
+            &quot;השווה מחירים&quot; ל-Navigator. אפשר לצמצם את הרשימה בסינון
+            קטגוריה/חברה למעלה.
+          </>
+        ) : (
+          <>
+            בחרו מוצרים מהרשימה (אחרי סינון קטגוריה/חברה לפי הצורך) ואז לחצו
+            &quot;השווה מחירים&quot;.
+          </>
         )}
-      </div>
+      </p>
 
       {(isStreaming || scrapeLog.length > 0) && (
         <div className="mb-6 p-4 bg-gradient-to-br from-blue-900 to-indigo-900 text-white rounded-lg shadow-lg text-right">
@@ -818,145 +869,6 @@ export default function Scrape() {
                   )}
                 </div>
               )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Category Match Results Section */}
-      {categoryFilter && categoryMatchResult && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-          <div className="flex items-center justify-between mb-3 flex-row-reverse">
-            <div>
-              <h2 className="text-lg font-semibold mb-1 text-right">
-                תוצאות התאמת מוצרים בקטגוריה
-              </h2>
-              <p className="text-sm text-gray-600 text-right">
-                מוצרים זהים שנמצאו בחנויות שונות
-              </p>
-            </div>
-          </div>
-
-          {categoryMatchResult && (
-            <div className="mt-4 space-y-4">
-              {categoryMatchResult.comparison.length > 0 && (
-                <div>
-                  <h3 className="text-md font-semibold mb-3 text-right">
-                    מוצרים משותפים (נמצאו ב-2+ חנויות)
-                  </h3>
-                  <div className="space-y-3">
-                    {categoryMatchResult.comparison.map((product, idx) => {
-                      const lowestPrice = Math.min(
-                        ...product.prices.map((p) => p.price),
-                      );
-                      const highestPrice = Math.max(
-                        ...product.prices.map((p) => p.price),
-                      );
-
-                      return (
-                        <div
-                          key={idx}
-                          className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
-                        >
-                          <div className="flex items-start justify-between flex-row-reverse mb-3">
-                            <div>
-                              <h4 className="font-semibold text-lg text-right">
-                                {product.model}
-                              </h4>
-                              {product.common_features && (
-                                <p className="text-sm text-gray-600 mt-1 text-right">
-                                  {product.common_features}
-                                </p>
-                              )}
-                            </div>
-                            <div className="text-left">
-                              <div className="text-sm text-gray-500">
-                                מחיר נמוך ביותר
-                              </div>
-                              <div className="text-xl font-bold text-green-600">
-                                ₪{lowestPrice.toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                            {product.prices.map((price, priceIdx) => {
-                              const isLowest = price.price === lowestPrice;
-                              const isHighest =
-                                price.price === highestPrice &&
-                                lowestPrice !== highestPrice;
-
-                              return (
-                                <div
-                                  key={priceIdx}
-                                  className={`p-3 rounded border ${
-                                    isLowest
-                                      ? "bg-green-50 border-green-300"
-                                      : isHighest
-                                        ? "bg-red-50 border-red-300"
-                                        : "bg-gray-50 border-gray-200"
-                                  }`}
-                                >
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span
-                                      className={`font-medium text-sm ${isLowest ? "text-green-700" : isHighest ? "text-red-700" : "text-gray-700"}`}
-                                    >
-                                      {price.site}
-                                    </span>
-                                    {isLowest && (
-                                      <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded">
-                                        הכי זול
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div
-                                    className={`text-lg font-semibold ${isLowest ? "text-green-700" : isHighest ? "text-red-700" : "text-gray-900"}`}
-                                  >
-                                    ₪{price.price.toLocaleString()}
-                                  </div>
-                                  <a
-                                    href={toHrefUrl(price.url)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-600 hover:underline mt-1 block"
-                                  >
-                                    צפה במוצר →
-                                  </a>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {categoryMatchResult.unmatched_highlights &&
-                categoryMatchResult.unmatched_highlights.length > 0 && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h3 className="text-md font-semibold mb-2 text-right">
-                      מוצרים ייחודיים (נמצאו בחנות אחת בלבד)
-                    </h3>
-                    <ul className="list-disc list-inside space-y-1 text-right">
-                      {categoryMatchResult.unmatched_highlights.map(
-                        (highlight, idx) => (
-                          <li key={idx} className="text-sm text-gray-700">
-                            {highlight}
-                          </li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-              {categoryMatchResult.comparison.length === 0 &&
-                (!categoryMatchResult.unmatched_highlights ||
-                  categoryMatchResult.unmatched_highlights.length === 0) && (
-                  <div className="text-center py-8 text-gray-500">
-                    לא נמצאו מוצרים משותפים בקטגוריה זו
-                  </div>
-                )}
             </div>
           )}
         </div>

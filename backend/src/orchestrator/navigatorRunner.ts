@@ -6,7 +6,14 @@ import { logScrape, logScrapeError } from "../services/scrapeLogger.js";
 import { planNavigatorQueries } from "../services/navigatorQueryPlanner.service.js";
 import { navigateAndExtractProduct } from "../services/navigatorSiteSession.js";
 import { compareWithGPT } from "../services/gptComparison.service.js";
-import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import { ensureAnchorSiteInList } from "../config/anchorSite.js";
+import {
+  getConfiguredDiezSite,
+  hasSameDayDiezResult,
+  isDiezSite,
+  todayUtcYmd,
+} from "../config/diezSite.js";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
 const DEFAULT_USER_AGENT =
@@ -27,21 +34,22 @@ export async function runNavigatorComparison(
 ): Promise<ScrapeResult[]> {
   const sites = await readJson<Site[]>("sites.json");
   const products = await readJson<Product[]>("products.json");
+  const existingResults = await readJson<ScrapeResult[]>("results.json").catch(
+    () => [],
+  );
+  const diezConfigured = getConfiguredDiezSite(sites);
+  const todayYmd = todayUtcYmd();
 
-  let targetSites = sites.filter((s) => s.enabled && s.scraperConfig?.navigatorEnabled === true);
-  if (options.siteIds?.length) {
-    targetSites = targetSites.filter((s) => options.siteIds!.includes(s.id));
+  if (!options.siteIds?.length) {
+    throw new Error("חובה לבחור לפחות אתר אחד (לא מריצים על כל האתרים כברירת מחדל)");
   }
 
-  const anchor = getAnchorSite(sites);
-  if (!anchor) {
-    throw new Error("אתר דיאז (diez.co.il) לא נמצא בקונפיגורציה");
-  }
-  if (!anchor.scraperConfig?.navigatorEnabled) {
-    throw new Error(
-      "מצב Navigator דורש navigatorEnabled: true לאתר דיאז ב-sites.json"
-    );
-  }
+  let targetSites = sites.filter(
+    (s) =>
+      s.enabled &&
+      s.scraperConfig?.navigatorEnabled === true &&
+      options.siteIds!.includes(s.id)
+  );
 
   targetSites = ensureAnchorSiteInList(targetSites, sites);
   targetSites = targetSites.filter((s) => s.scraperConfig?.navigatorEnabled === true);
@@ -89,6 +97,20 @@ export async function runNavigatorComparison(
         const siteResultsBySite = new Map<string, { price: number; productUrl: string }>();
 
         for (const site of targetSites) {
+          if (
+            isDiezSite(site) &&
+            hasSameDayDiezResult(
+              existingResults,
+              product.id,
+              diezConfigured,
+              todayYmd,
+            )
+          ) {
+            await logScrape(
+              `${site.name} (Navigator): skip — כבר יש רשומה מ-${todayYmd}`,
+            );
+            continue;
+          }
           const page = await browser.newPage();
           const ua = site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT;
           await page.setExtraHTTPHeaders({ "User-Agent": ua });
@@ -112,14 +134,6 @@ export async function runNavigatorComparison(
           }
         }
 
-        const anchorSite = getAnchorSite(targetSites);
-        const foundOnDiez = anchorSite && siteResultsBySite.has(anchorSite.id);
-        if (!foundOnDiez) {
-          progressEmit("status", `Navigator: לא נמצא ב-דיאז: ${product.name} - מדלג`);
-          await logScrape(`Navigator: ${product.name} not found on Diez — skip`);
-          continue;
-        }
-
         const siteResults = Array.from(siteResultsBySite.entries()).map(([siteId, data]) => ({
           siteName: siteMap.get(siteId)!.name,
           siteId,
@@ -135,7 +149,7 @@ export async function runNavigatorComparison(
         await logScrape(`Navigator: GPT compare for ${product.name} (${siteResults.length} sites)`);
         const gptResult = await compareWithGPT({
           productName: product.name,
-          searchTerm: product.searchTerm,
+          searchTerm: productSearchQuery(product),
           siteResults,
         });
 

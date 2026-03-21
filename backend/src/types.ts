@@ -53,7 +53,10 @@ export interface Site {
 export interface Product {
   id: string;
   name: string;
-  searchTerm: string;
+  /** Optional; defaults to name for search matching when empty */
+  searchTerm?: string;
+  /** Brand (חברה) — prepended to every search query with the product name/term */
+  brand?: string;
   category: string;
 }
 

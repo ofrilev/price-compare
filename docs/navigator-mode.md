@@ -16,7 +16,7 @@ In `data/sites.json`, under `scraperConfig`:
 - **`navigatorResultContainer`** (optional) — CSS selectors (comma-separated) limiting where result links are collected (e.g. `.productlist`, `main`).
 - **`categoryUrlByProductCategory`** (optional) — map `Product.category` values to category page paths or full URLs used when search returns no links.
 
-**Diez must have `navigatorEnabled: true`** for Navigator mode; the runner enforces anchor-site parity with the default scraper.
+Enable **`navigatorEnabled`: `true`** on each competitor site that should use Navigator (classic scraper remains the default for sites without it).
 
 ## API / UI
 

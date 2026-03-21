@@ -7,6 +7,7 @@ import { runNavigatorComparison } from "../orchestrator/navigatorRunner.js";
 import { runLLMWebSearch } from "../services/llmWebSearch.service.js";
 import { matchCategoryProducts } from "../services/categoryMatcher.js";
 import { subscribe } from "../services/scrapeProgress.js";
+import { mergeDiezSiteId } from "../config/diezSite.js";
 import type { ScrapeResult, Product, Site } from "../types.js";
 
 interface CategoryMatchPrice {
@@ -183,15 +184,23 @@ scrapeRouter.post("/", async (req, res) => {
     const { productIds, category, siteIds, mode } = req.body ?? {};
     const useLegacy = process.env.USE_LEGACY_LLM_SCRAPE === "true";
 
+    const sitesList = await readJson<Site[]>("sites.json");
+    const ids = mergeDiezSiteId(Array.isArray(siteIds) ? siteIds : [], sitesList);
+    if (ids.length === 0) {
+      return res.status(400).json({
+        error: "יש לבחור לפחות אתר אחד לפני ההשוואה",
+      });
+    }
+
     let results: ScrapeResult[];
     if (mode === "navigator") {
-      results = await runNavigatorComparison({ productIds, category, siteIds });
+      results = await runNavigatorComparison({ productIds, category, siteIds: ids });
     } else if (mode === "llm_websearch") {
-      results = await runLLMWebSearch({ productIds, category, siteIds });
+      results = await runLLMWebSearch({ productIds, category, siteIds: ids });
     } else if (useLegacy) {
-      results = await runLLMComparison({ productIds, category, siteIds });
+      results = await runLLMComparison({ productIds, category, siteIds: ids });
     } else {
-      results = await runScraperComparison({ productIds, category, siteIds });
+      results = await runScraperComparison({ productIds, category, siteIds: ids });
     }
     
     // Save results (merge with existing, avoiding duplicates)
@@ -294,8 +303,16 @@ scrapeRouter.post("/match-category", async (req, res) => {
     if (!category) {
       return res.status(400).json({ error: "קטגוריה נדרשת" });
     }
-    
-    const result = await matchCategoryProducts(category, siteIds);
+
+    const sitesForCategory = await readJson<Site[]>("sites.json");
+    const mIds = mergeDiezSiteId(Array.isArray(siteIds) ? siteIds : [], sitesForCategory);
+    if (mIds.length === 0) {
+      return res.status(400).json({
+        error: "יש לבחור לפחות אתר אחד להתאמת קטגוריה",
+      });
+    }
+
+    const result = await matchCategoryProducts(category, mIds);
     
     if (!result) {
       return res.status(500).json({ error: "התאמת קטגוריה נכשלה" });

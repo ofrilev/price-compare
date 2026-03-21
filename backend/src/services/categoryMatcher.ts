@@ -47,12 +47,7 @@ function extractMatchingJsonFromResponse(content: string): string | null {
 
 import { emit as progressEmit } from "./scrapeProgress.js";
 import { logScrape, logScrapeError } from "./scrapeLogger.js";
-import {
-  ensureAnchorSiteInList,
-  getAnchorSite,
-  isAnchorSite,
-} from "../config/anchorSite.js";
-import { getDiezCategoryUrl } from "../config/diezCategoryMapping.js";
+import { ensureAnchorSiteInList } from "../config/anchorSite.js";
 import { logLLMRequest, logLLMResponse, logLLMError } from "./llmLogger.js";
 import type { ScrapeResult, Product, Site } from "../types.js";
 
@@ -98,31 +93,25 @@ interface SiteProductItem {
 
 /**
  * Scrape product list from a single site for a category using Playwright/Cheerio.
- * For Diez: uses scrapeDiezCategory which handles subcategory navigation (ul.products.elementor-grid).
- * For other sites: uses search bar with category as search term.
+ * Uses optional per-site category URL from scraperConfig, otherwise searches by category name.
  */
 async function scrapeCategoryFromSite(
   site: Site,
   category: string,
   browser?: import("playwright").Browser,
 ): Promise<SiteProductItem[]> {
-  const directUrl = isAnchorSite(site) ? getDiezCategoryUrl(category) : null;
+  const categoryUrl = site.scraperConfig?.categoryUrlByProductCategory?.[category];
 
   progressEmit("status", `מחפש מוצרים ב-${site.name}...`);
   await logScrape(
-    `Category match: scraping ${site.name} | category="${category}" | ${directUrl ? `directUrl=${directUrl}` : `searchUrlTemplate=${site.searchUrlTemplate || "(none)"}`}`,
+    `Category match: scraping ${site.name} | category="${category}" | ${categoryUrl ? `categoryUrl=${categoryUrl}` : `search="${category}"`}`,
   );
 
   try {
-    if (isAnchorSite(site) && directUrl && browser) {
-      const { scrapeDiezCategory } = await import("./diezCategoryScraper.js");
-      return scrapeDiezCategory(directUrl, site, browser);
-    }
-
     const { scrapeSite } = await import("./scraperService.js");
     const { normalizeProduct, dedupeByUrl } =
       await import("./normalization.service.js");
-    const options = directUrl ? { urlOverride: directUrl } : undefined;
+    const options = categoryUrl ? { urlOverride: categoryUrl } : undefined;
     const raw = await scrapeSite(site, category, browser, options);
     await logScrape(
       `Category match: ${site.name} raw=${raw.length} product(s)`,
@@ -192,11 +181,12 @@ export async function matchCategoryProducts(
   const products = await readJson<Product[]>("products.json");
   const sites = await readJson<Site[]>("sites.json");
 
-  // Filter sites
-  let targetSites = sites.filter((s) => s.enabled);
-  if (siteIds?.length) {
-    targetSites = targetSites.filter((s) => siteIds.includes(s.id));
+  if (!siteIds?.length) {
+    throw new Error("חובה לבחור לפחות אתר אחד להתאמת קטגוריה");
   }
+
+  // Filter sites — רק מה שנבחר בלקוח (ללא ברירת מחדל לכל האתרים)
+  let targetSites = sites.filter((s) => s.enabled && siteIds.includes(s.id));
   targetSites = ensureAnchorSiteInList(targetSites, sites);
 
   if (targetSites.length === 0) {
@@ -222,12 +212,14 @@ export async function matchCategoryProducts(
 
   const whitelistKeys = new Set(
     products.flatMap((p) =>
-      [p.name, p.searchTerm].filter(Boolean).map((s) => s.toLowerCase().trim()),
+      [p.name, p.searchTerm, p.brand]
+        .filter(Boolean)
+        .map((s) => String(s).toLowerCase().trim()),
     ),
   );
 
-  const anchorSite = getAnchorSite(targetSites);
-  const otherSites = targetSites.filter((s) => !isAnchorSite(s));
+  const leadSite = targetSites[0];
+  const otherSites = targetSites.slice(1);
 
   const usePlaywrightSites = targetSites.filter(
     (s) => s.scraperConfig?.searchStrategy === "searchBar" || s.usePlaywright,
@@ -240,39 +232,34 @@ export async function matchCategoryProducts(
       : undefined;
 
   await logScrape(
-    `Category match: category="${category}", Diez-first flow, ${targetSites.length} site(s)`,
+    `Category match: category="${category}", lead="${leadSite.name}", ${targetSites.length} site(s)`,
   );
 
   const siteProducts: SiteProductData[] = [];
 
   try {
-    // Step 1: Scrape Diez category page only (direct URL, no search bar)
-    if (!anchorSite) {
-      progressEmit("error", "אתר דיאז לא נמצא");
-      return { comparison: [], unmatched_highlights: [] };
-    }
-
-    const diezProducts = await scrapeCategoryFromSite(
-      anchorSite,
+    // Step 1: Scrape lead site (first in list) for category discovery
+    const leadProducts = await scrapeCategoryFromSite(
+      leadSite,
       category,
       browser,
     );
-    const newProducts = diezProducts.filter(
+    const newProducts = leadProducts.filter(
       (p) => !isInWhitelist(p.name, whitelistKeys),
     );
 
     progressEmit(
       "status",
-      `דיאז: ${diezProducts.length} מוצרים, ${newProducts.length} חדשים (לא בוויטליסט)`,
+      `${leadSite.name}: ${leadProducts.length} מוצרים, ${newProducts.length} חדשים (לא בוויטליסט)`,
     );
     await logScrape(
-      `Category match: Diez ${diezProducts.length} products, ${newProducts.length} new (not in whitelist)`,
+      `Category match: ${leadSite.name} ${leadProducts.length} products, ${newProducts.length} new (not in whitelist)`,
     );
 
     siteProducts.push({
-      siteName: anchorSite.name,
-      siteUrl: anchorSite.siteUrl || anchorSite.baseUrl,
-      products: diezProducts,
+      siteName: leadSite.name,
+      siteUrl: leadSite.siteUrl || leadSite.baseUrl,
+      products: leadProducts,
     });
 
     // Step 2: For new products, search in other sites via search bar (with fallback variations)
@@ -380,7 +367,7 @@ export async function matchCategoryProducts(
 **Rules for Matching**:
 1. **Fuzzy Matching**: Identify if products are the same even if titles vary (e.g., "Roland FP10" vs "Roland FP-10 Black").
 2. **Exclusion**: Ignore accessories (cases, stands) unless they are part of a bundle for the main product.
-3. **Threshold**: Only include products that appear in **דיאז (Diez)** AND at least one other store. Products NOT found in Diez must be excluded.
+3. **Threshold**: Only include products that appear in **at least two different stores** when multiple stores are listed; if only one store was scraped, one price is enough.
 4. **Normalization**: Extract the core Model Name as the primary key.
 
 **Category**: ${category}
@@ -419,7 +406,7 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
 
 **Important**:
 - Match products intelligently across sites (e.g., "Roland FP-10" = "Roland FP10" = "Roland FP 10")
-- Only include products found in **דיאז (Diez)** AND at least one other store
+- Only include products found in **at least two stores** when the input lists multiple stores
 - Sort prices from lowest to highest
 - Set "best_deal" to the site with the lowest price
 - Return ONLY valid JSON, no markdown, no explanations`;
@@ -486,15 +473,10 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
 
     const result: CategoryMatchResponse = JSON.parse(jsonStr);
 
-    // Filter: only keep products found in Diez (anchor site)
-    const anchorSite = getAnchorSite(targetSites);
-    const diezName = anchorSite?.name || "דיאז";
-    const filteredComparison = (result.comparison || []).filter((item) => {
-      const hasDiez = item.prices?.some(
-        (p) => p.site === diezName || p.site?.toLowerCase().includes("diez"),
-      );
-      return hasDiez && (item.prices?.length ?? 0) >= 2;
-    });
+    const minPrices = targetSites.length >= 2 ? 2 : 1;
+    const filteredComparison = (result.comparison || []).filter(
+      (item) => (item.prices?.length ?? 0) >= minPrices,
+    );
     result.comparison = filteredComparison;
 
     await logLLMResponse(`Category Match: ${category}`, response, result).catch(
@@ -514,7 +496,7 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
 
     progressEmit(
       "status",
-      `התאמה הושלמה: נמצאו ${result.comparison.length} מוצרים משותפים (דיאז + אתרים נוספים)`,
+      `התאמה הושלמה: נמצאו ${result.comparison.length} מוצרים משותפים`,
     );
     if (result.unmatched_highlights && result.unmatched_highlights.length > 0) {
       progressEmit(

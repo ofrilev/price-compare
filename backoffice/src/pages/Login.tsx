@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { APP_TITLE } from "../config/app";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -28,7 +29,12 @@ export default function Login() {
   return (
     <div dir="rtl" className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-2xl font-semibold mb-6 text-right">התחברות</h1>
+        <h1 className="text-2xl font-bold text-right text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 mb-2">
+          {APP_TITLE}
+        </h1>
+        <h2 className="text-lg font-semibold mb-6 text-right text-gray-700">
+          התחברות
+        </h2>
         
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-right">

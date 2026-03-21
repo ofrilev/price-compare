@@ -7,6 +7,7 @@ import Products from "./pages/Products";
 import Scrape from "./pages/Scrape";
 import Results from "./pages/Results";
 import Login from "./pages/Login";
+import { APP_TITLE } from "./config/app";
 
 function NavLink({ to, children }: { to: string; children: ReactNode }) {
   const location = useLocation();
@@ -33,14 +34,20 @@ function AppContent() {
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {isAuthenticated && (
         <nav className="border-b bg-white px-4 py-3 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex gap-2">
+          <div className="flex items-center justify-between gap-4 flex-wrap w-full">
+            <span
+              className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 truncate max-w-[220px] sm:max-w-md"
+              title={APP_TITLE}
+            >
+              {APP_TITLE}
+            </span>
+            <div className="flex gap-2 flex-wrap justify-center flex-1">
               <NavLink to="/scrape">השוואת מחירים</NavLink>
               <NavLink to="/results">תוצאות</NavLink>
               <NavLink to="/products">מוצרים</NavLink>
               <NavLink to="/">אתרים</NavLink>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 shrink-0">
               <span className="text-sm text-gray-600">{user?.username}</span>
               <button
                 onClick={logout}

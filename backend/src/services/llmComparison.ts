@@ -10,7 +10,8 @@ import {
   logLLMComparisonStart,
   logLLMComparisonEnd,
 } from "./llmLogger.js";
-import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import { ensureAnchorSiteInList } from "../config/anchorSite.js";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import { getSearchTermFallbacks } from "./normalization.service.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
@@ -50,7 +51,7 @@ async function comparePricesWithLLM(
     return null;
   }
 
-  const searchTerm = (product.searchTerm || product.name || "").trim();
+  const searchTerm = productSearchQuery(product);
   const encodedSearch = encodeURIComponent(searchTerm);
 
   // Build site information for LLM
@@ -133,7 +134,7 @@ IMPORTANT: This is a price comparison task. Your goal is to help the user find t
     : (process.env.OPENAI_MODEL || "gpt-4o-mini");
 
   // Log the request
-  await logLLMRequest(product.name, product.searchTerm, siteInfo, prompt, model).catch((err) =>
+  await logLLMRequest(product.name, searchTerm, siteInfo, prompt, model).catch((err) =>
     console.error("[LLM Logger] Failed to log request:", err)
   );
 
@@ -204,7 +205,7 @@ IMPORTANT: This is a price comparison task. Your goal is to help the user find t
   } catch (err: any) {
     // Log the error
     await logLLMError(product.name, err, {
-      product: { name: product.name, searchTerm: product.searchTerm },
+      product: { name: product.name, searchTerm },
       sites: siteInfo,
       model,
     }).catch((logErr) => console.error("[LLM Logger] Failed to log error:", logErr));
@@ -286,16 +287,9 @@ export async function runLLMComparison(
       // Sites to check with LLM (exclude sites with today's data)
       const sitesToCheck = targetSites.filter((site) => !existingBySite.has(site.id));
 
-      const anchorSite = getAnchorSite(targetSites);
-      const hasDiezExisting = anchorSite && existingBySite.has(anchorSite.id);
-
       if (sitesToCheck.length === 0) {
         progressEmit("status", `כל האתרים עבור ${product.name} כבר מכילים נתונים מהיום, מדלג על קריאת LLM`);
-        if (hasDiezExisting) {
-          existingToday.forEach((r) => allResults.push(r));
-        } else {
-          progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
-        }
+        existingToday.forEach((r) => allResults.push(r));
         continue;
       }
 
@@ -307,16 +301,7 @@ export async function runLLMComparison(
       const comparison = await comparePricesWithLLM(product, sitesToCheck);
       if (!comparison) {
         progressEmit("error", `השוואה נכשלה עבור ${product.name}`);
-        if (hasDiezExisting) existingToday.forEach((r) => allResults.push(r));
-        continue;
-      }
-
-      const hasDiezInNew = anchorSite && comparison.results.some(
-        (r) => r.price !== null && (r.siteName === anchorSite.name || r.siteUrl?.includes("diez.co.il"))
-      );
-      const hasDiez = hasDiezExisting || hasDiezInNew;
-      if (!hasDiez) {
-        progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
+        existingToday.forEach((r) => allResults.push(r));
         continue;
       }
 

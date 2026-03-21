@@ -52,12 +52,17 @@ export const api = {
       fetchApi<void>(`/sites/${id}`, { method: "DELETE" }),
   },
   products: {
-    list: (params?: { category?: string; search?: string }) => {
+    list: (params?: { category?: string; brand?: string; search?: string }) => {
       const q = new URLSearchParams(
-        params as Record<string, string>,
+        Object.fromEntries(
+          Object.entries(params ?? {}).filter(
+            ([, v]) => v !== undefined && v !== "",
+          ),
+        ) as Record<string, string>,
       ).toString();
       return fetchApi<Product[]>(`/products${q ? `?${q}` : ""}`);
     },
+    brands: () => fetchApi<string[]>(`/products/brands`),
     get: (id: string) => fetchApi<Product>(`/products/${id}`),
     create: (data: Partial<Product>) =>
       fetchApi<Product>(`/products`, {
@@ -68,6 +73,16 @@ export const api = {
       fetchApi<Product>(`/products/${id}`, {
         method: "PUT",
         body: JSON.stringify(data),
+      }),
+    bulkUpdate: (body: { ids: string[]; brand?: string; category?: string }) =>
+      fetchApi<{ ok: boolean; count: number }>(`/products/bulk-update`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    bulkDelete: (ids: string[]) =>
+      fetchApi<{ ok: boolean; deleted: number }>(`/products/bulk-delete`, {
+        method: "POST",
+        body: JSON.stringify({ ids }),
       }),
     delete: (id: string) =>
       fetchApi<void>(`/products/${id}`, { method: "DELETE" }),
@@ -158,7 +173,9 @@ export interface Site {
 export interface Product {
   id: string;
   name: string;
-  searchTerm: string;
+  searchTerm?: string;
+  /** Brand (חברה) — combined with name for searches on the server */
+  brand?: string;
   category: string;
 }
 

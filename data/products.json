@@ -1,104 +1,126 @@
 [
   {
     "id": "5b59c91d-f506-4a60-9429-779b39dbe153",
-    "name": "Roland FP-10",
+    "name": "FP-10",
     "searchTerm": "Roland FP-10",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Roland"
   },
   {
     "id": "4905a710-5795-492b-b0b3-c2de5bb0707c",
-    "name": "Roland RD-08",
+    "name": "RD-08",
     "searchTerm": "Roland RD-08",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Roland"
   },
   {
     "id": "cfbb37c8-2d00-4ae2-8e49-f360ebd4c631",
-    "name": "Roland FP-E50",
+    "name": "FP-E50",
     "searchTerm": "Roland FP-E50",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Roland"
   },
   {
     "id": "c4ee332a-e356-4993-8025-5a855518776f",
-    "name": "Roland FP-60X",
+    "name": "FP-60X",
     "searchTerm": "Roland FP-60X",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Roland"
   },
   {
     "id": "86834863-87ac-497b-b945-cf984cb173d1",
-    "name": "Roland FP-90X",
+    "name": "FP-90X",
     "searchTerm": "Roland FP-90X",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Roland"
   },
   {
     "id": "bbe4e964-dca2-4f1d-a45b-4787c9ed8597",
-    "name": "Roland RD-2000",
+    "name": "RD-2000",
     "searchTerm": "Roland RD-2000",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Roland"
   },
   {
     "id": "3398150c-59cd-452a-8519-b0096f4a889e",
-    "name": "Yamaha NP-35",
+    "name": "NP-35",
     "searchTerm": "Yamaha NP-35",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "af237686-e81e-47fa-b2eb-8ed1303ac11f",
     "name": "Yamaha P-45",
     "searchTerm": "Yamaha P-45",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "0174a7e8-aa71-4004-9271-596c79d1a243",
     "name": "Yamaha P-145",
     "searchTerm": "Yamaha P-145",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "e73f70bd-ddab-4001-8eee-5005dce1823d",
     "name": "Yamaha P-225",
     "searchTerm": "Yamaha P-225",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "1909cb54-406c-4669-9612-498019028769",
     "name": "Yamaha CK61",
     "searchTerm": "Yamaha CK61",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "d7b83ac2-9a2e-4515-b01a-32494490dfa4",
     "name": "Yamaha CK88",
     "searchTerm": "Yamaha CK88",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "2222275b-0c77-4633-aa2c-9efd5bd77b2d",
     "name": "Yamaha P-S500",
     "searchTerm": "Yamaha P-S500",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "3eeff377-a043-4036-85a1-229f102ecd14",
     "name": "Yamaha P525",
     "searchTerm": "Yamaha P525",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "3c50f513-0d28-4251-b1a5-120a14971390",
-    "name": "Roland FP30X",
-    "searchTerm": "",
-    "category": "פסנתרים"
+    "name": "FP30X",
+    "category": "פסנתרים",
+    "brand": "Roland",
+    "searchTerm": "Roland FP30X"
   },
   {
     "id": "bc9d7b51-fedd-4304-8552-f78291612da0",
     "name": "Yamaha DGX-670",
-    "searchTerm": "",
-    "category": "פסנתרים"
+    "category": "פסנתרים",
+    "brand": "Yamaha"
   },
   {
     "id": "4738eab6-0316-485a-8a77-3e0d6f84d07a",
     "name": "Roland RD 2000 EX",
-    "searchTerm": "",
+    "category": "פסנתרים",
+    "brand": "Roland"
+  },
+  {
+    "id": "413142eb-26be-4c1a-83e2-912e7152c843",
+    "name": "CT-S100",
+    "searchTerm": "CT-S100",
+    "brand": "Casio",
     "category": "פסנתרים"
   }
 ]

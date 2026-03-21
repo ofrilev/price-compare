@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getSearchTermFallbacks } from "./normalization.service.js";
 import { logScrape, logScrapeError } from "./scrapeLogger.js";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product } from "../types.js";
 
 export interface NavigatorQueryPlan {
@@ -43,7 +44,7 @@ export async function planNavigatorQueries(
   }
 
   const prompt = `Product name: "${product.name}"
-Search term: "${product.searchTerm || product.name}"
+Search term (use for site search, includes brand if any): "${productSearchQuery(product)}"
 Category: "${product.category}"
 
 Return JSON only:

@@ -17,18 +17,47 @@ export async function getCategories(): Promise<string[]> {
   return merged.sort();
 }
 
+/** Distinct non-empty brand (חברה) values for filters */
+export async function getBrands(): Promise<string[]> {
+  const products = await getProducts();
+  const set = new Set<string>();
+  for (const p of products) {
+    const b = (p.brand ?? "").trim();
+    if (b) set.add(b);
+  }
+  return [...set].sort((a, b) => a.localeCompare(b, "he"));
+}
+
+productsRouter.get("/brands", async (_req, res) => {
+  try {
+    const brands = await getBrands();
+    res.json(brands);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch brands" });
+  }
+});
+
 productsRouter.get("/", async (req, res) => {
   try {
     let products = await getProducts();
     const category = req.query.category as string | undefined;
+    const brand = req.query.brand as string | undefined;
     const search = req.query.search as string | undefined;
     if (category) products = products.filter((p) => p.category === category);
+    if (brand === "__none__") {
+      products = products.filter((p) => !(p.brand ?? "").trim());
+    } else if (brand?.trim()) {
+      const b = brand.trim();
+      products = products.filter((p) => (p.brand ?? "").trim() === b);
+    }
     if (search) {
       const q = search.toLowerCase();
       products = products.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
-          p.searchTerm.toLowerCase().includes(q) ||
+          (p.searchTerm && p.searchTerm.toLowerCase().includes(q)) ||
+          (p.brand && p.brand.toLowerCase().includes(q)) ||
           p.category.toLowerCase().includes(q)
       );
     }
@@ -51,11 +80,101 @@ productsRouter.get("/:id", async (req, res) => {
   }
 });
 
+/**
+ * Apply brand and/or category to many products in one read/write (avoids parallel PUT races on products.json).
+ */
+productsRouter.post("/bulk-update", async (req, res) => {
+  try {
+    const ids: unknown = req.body?.ids;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "ids array required" });
+    }
+    const idSet = new Set(ids.map((x) => String(x)));
+    const hasBrand = Object.prototype.hasOwnProperty.call(req.body, "brand");
+    const hasCategory = Object.prototype.hasOwnProperty.call(req.body, "category");
+    if (!hasBrand && !hasCategory) {
+      return res.status(400).json({ error: "Provide brand and/or category" });
+    }
+
+    const products = await getProducts();
+    let changed = 0;
+
+    for (let i = 0; i < products.length; i++) {
+      if (!idSet.has(products[i].id)) continue;
+      const p = products[i];
+      const name = p.name.trim();
+      const category = (
+        hasCategory ? String(req.body.category ?? "").trim() : p.category
+      ).trim();
+      const brand = hasBrand
+        ? String(req.body.brand ?? "").trim()
+        : (p.brand ?? "").trim();
+      const searchTerm = (p.searchTerm ?? p.name).trim();
+
+      if (hasCategory) {
+        const dup = products.find(
+          (x) =>
+            x.id !== p.id &&
+            x.name.trim().toLowerCase() === name.toLowerCase() &&
+            x.category.trim().toLowerCase() === category.toLowerCase()
+        );
+        if (dup) {
+          return res.status(400).json({
+            error: `Product '${name}' already exists in category '${category}'`,
+          });
+        }
+      }
+
+      products[i] = {
+        ...p,
+        id: p.id,
+        name,
+        category: hasCategory ? category : p.category,
+        brand: hasBrand ? brand || undefined : p.brand,
+        searchTerm: searchTerm || undefined,
+      };
+      changed++;
+    }
+
+    if (changed === 0) {
+      return res.status(404).json({ error: "No matching product ids" });
+    }
+
+    await writeJson("products.json", products);
+    res.json({ ok: true, count: changed });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Bulk update failed" });
+  }
+});
+
+productsRouter.post("/bulk-delete", async (req, res) => {
+  try {
+    const ids: unknown = req.body?.ids;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "ids array required" });
+    }
+    const idSet = new Set(ids.map((x) => String(x)));
+    const products = await getProducts();
+    const filtered = products.filter((p) => !idSet.has(p.id));
+    const deleted = products.length - filtered.length;
+    if (deleted === 0) {
+      return res.status(404).json({ error: "No matching product ids" });
+    }
+    await writeJson("products.json", filtered);
+    res.json({ ok: true, deleted });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Bulk delete failed" });
+  }
+});
+
 productsRouter.post("/", async (req, res) => {
   try {
     const products = await getProducts();
     const name = (req.body.name ?? "").trim();
-    const searchTerm = (req.body.searchTerm ?? "").trim();
+    const searchTerm = (req.body.searchTerm ?? name).trim();
+    const brand = (req.body.brand ?? "").trim();
     const category = (req.body.category ?? "").trim();
 
     const existingByNameAndCategory = products.find(
@@ -70,17 +189,11 @@ productsRouter.post("/", async (req, res) => {
       return res.status(400).json({ error: msg });
     }
 
-    const existingBySearchTerm = searchTerm && products.find(
-      (p) => p.searchTerm.trim().toLowerCase() === searchTerm.toLowerCase()
-    );
-    if (existingBySearchTerm) {
-      return res.status(400).json({ error: `Search term '${searchTerm}' already exists` });
-    }
-
     const product: Product = {
       id: uuidv4(),
       name,
-      searchTerm,
+      searchTerm: searchTerm || undefined,
+      brand: brand || undefined,
       category,
     };
     products.push(product);
@@ -99,7 +212,9 @@ productsRouter.put("/:id", async (req, res) => {
     if (idx === -1) return res.status(404).json({ error: "Product not found" });
 
     const name = (req.body.name ?? products[idx].name).trim();
-    const searchTerm = (req.body.searchTerm ?? products[idx].searchTerm).trim();
+    const prev = products[idx];
+    const searchTerm = (req.body.searchTerm ?? prev.searchTerm ?? prev.name).trim();
+    const brand = (req.body.brand !== undefined ? String(req.body.brand) : prev.brand ?? "").trim();
     const category = (req.body.category ?? products[idx].category).trim();
 
     const existingByNameAndCategory = products.find(
@@ -115,14 +230,14 @@ productsRouter.put("/:id", async (req, res) => {
       return res.status(400).json({ error: msg });
     }
 
-    const existingBySearchTerm = searchTerm && products.find(
-      (p) => p.id !== req.params.id && p.searchTerm.trim().toLowerCase() === searchTerm.toLowerCase()
-    );
-    if (existingBySearchTerm) {
-      return res.status(400).json({ error: `Search term '${searchTerm}' already exists` });
-    }
-
-    products[idx] = { ...products[idx], ...req.body, id: products[idx].id };
+    products[idx] = {
+      ...products[idx],
+      id: products[idx].id,
+      name,
+      searchTerm: searchTerm || undefined,
+      brand: brand || undefined,
+      category,
+    };
     await writeJson("products.json", products);
     res.json(products[idx]);
   } catch (err) {

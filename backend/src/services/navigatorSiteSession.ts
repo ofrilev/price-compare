@@ -1,4 +1,5 @@
 import type { Page } from "playwright";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product, Site } from "../types.js";
 import { extractNavigatorPriceFromHtml } from "./navigatorPriceExtract.js";
 import { similarityScore } from "./navigatorStringSimilarity.js";
@@ -202,7 +203,7 @@ async function openBestCandidate(
 ): Promise<boolean> {
   if (candidates.length === 0) return false;
   const name = product.name;
-  const term = product.searchTerm || name;
+  const term = productSearchQuery(product);
 
   let best: LinkCandidate = candidates[0];
   let bestScore = similarityScore(best.text + " " + best.href, name, term);

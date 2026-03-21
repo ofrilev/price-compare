@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import { readJson } from "./store.js";
 import { emit as progressEmit } from "./scrapeProgress.js";
 import { parsePrice } from "./priceParser.js";
-import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import { ensureAnchorSiteInList } from "../config/anchorSite.js";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import { getSearchTermFallbacks } from "./normalization.service.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
@@ -95,7 +96,7 @@ export async function runLLMWebSearch(
 
   for (const product of targetProducts) {
     try {
-      const searchTerm = (product.searchTerm || product.name || "").trim();
+      const searchTerm = productSearchQuery(product);
       const fallbacks = getSearchTermFallbacks(searchTerm);
       const fallbackHint =
         fallbacks.length > 1
@@ -113,7 +114,7 @@ Category: ${product.category}${fallbackHint}
 Sites to check (use the exact siteId in your response):
 ${targetSites.map((s) => `- ${s.name}: siteId="${s.id}", ${s.baseUrl}`).join("\n")}
 
-Search for the product on each site (e.g. "${product.name} diez.co.il מחיר", "${product.name} kilombo.co.il price"). Return ONLY valid JSON in this exact format:
+Search for the product on each site (e.g. "${searchTerm} site-name.co.il מחיר"). Return ONLY valid JSON in this exact format:
 {
   "productName": "${product.name}",
   "results": [
@@ -192,15 +193,9 @@ Rules:
 
       const parsed = extractJsonFromContent(content);
       if (parsed && Array.isArray(parsed.results)) {
-        const anchorSite = getAnchorSite(targetSites);
         const results = (parsed.results as LLMPriceResult[]).filter(
           (r) => r.price !== null && (r.price ?? parsePrice(String(r.price))) > 0 && r.siteId
         );
-        const hasDiez = anchorSite && results.some((r) => r.siteId === anchorSite.id);
-        if (!hasDiez) {
-          progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
-          continue;
-        }
         for (const r of results) {
           const price = r.price ?? parsePrice(String(r.price));
           if (price !== null && price > 0 && r.siteId) {

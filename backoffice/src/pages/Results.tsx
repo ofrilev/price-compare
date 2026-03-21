@@ -3,6 +3,10 @@ import { api } from "../api/client";
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { toHrefUrl } from "../utils/url";
+import {
+  buildComparisonTableSiteColumns,
+  findResultForComparisonColumn,
+} from "../utils/comparisonTableSites";
 
 const PAGE_SIZES = [10, 25, 50, 100];
 type SortField = "product" | "category" | "lowestPrice" | "siteCount";
@@ -10,6 +14,7 @@ type SortDir = "asc" | "desc";
 
 export default function Results() {
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [brandFilter, setBrandFilter] = useState<string>("");
   const [siteFilter, setSiteFilter] = useState<string[]>([]);
   const [searchFilter, setSearchFilter] = useState<string>("");
   const [sortField, setSortField] = useState<SortField>("product");
@@ -33,9 +38,18 @@ export default function Results() {
   });
 
   const enabledSites = sites.filter((s) => s.enabled);
+  const tableSiteColumns = useMemo(
+    () => buildComparisonTableSiteColumns(sites.filter((s) => s.enabled)),
+    [sites]
+  );
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: () => api.categories(),
+  });
+
+  const { data: brands = [] } = useQuery({
+    queryKey: ["brands"],
+    queryFn: () => api.products.brands(),
   });
 
   const { rows, totalPages, totalRows } = useMemo(() => {
@@ -59,6 +73,14 @@ export default function Results() {
       rows = rows.filter((r) => r.product.category === categoryFilter);
     }
 
+    // Filter by brand (חברה)
+    if (brandFilter === "__none__") {
+      rows = rows.filter((r) => !(r.product.brand ?? "").trim());
+    } else if (brandFilter.trim()) {
+      const b = brandFilter.trim();
+      rows = rows.filter((r) => (r.product.brand ?? "").trim() === b);
+    }
+
     // Filter by site (product must have at least one result in selected sites)
     if (siteFilter.length > 0) {
       rows = rows.filter((r) =>
@@ -73,7 +95,8 @@ export default function Results() {
         (r) =>
           r.product.name.toLowerCase().includes(q) ||
           r.product.category.toLowerCase().includes(q) ||
-          r.product.searchTerm.toLowerCase().includes(q)
+          (r.product.searchTerm?.toLowerCase().includes(q) ?? false) ||
+          (r.product.brand?.toLowerCase().includes(q) ?? false)
       );
     }
 
@@ -112,6 +135,7 @@ export default function Results() {
     results,
     products,
     categoryFilter,
+    brandFilter,
     siteFilter,
     searchFilter,
     sortField,
@@ -186,6 +210,25 @@ export default function Results() {
               {categories.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1 text-right">חברה</label>
+            <select
+              value={brandFilter}
+              onChange={(e) => {
+                setBrandFilter(e.target.value);
+                setPage(1);
+              }}
+              className="border rounded px-3 py-2 text-right min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">כל החברות</option>
+              <option value="__none__">ללא חברה</option>
+              {brands.map((br) => (
+                <option key={br} value={br}>
+                  {br}
                 </option>
               ))}
             </select>
@@ -267,15 +310,26 @@ export default function Results() {
                   <th className="border p-2 text-right sticky right-[180px] bg-gray-100 z-10 min-w-[100px]">
                     קטגוריה
                   </th>
-                  {enabledSites.map((site) => (
-                    <th key={site.id} className="border p-2 text-center min-w-[130px]">
+                  {tableSiteColumns.map((site) => (
+                    <th
+                      key={site.id}
+                      className={`border p-2 text-center min-w-[130px] ${
+                        site.isDiez
+                          ? "bg-amber-100 border-amber-200 text-amber-950"
+                          : ""
+                      }`}
+                    >
                       <div className="font-semibold">{site.name}</div>
                       {site.siteUrl && (
                         <a
                           href={site.siteUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:underline"
+                          className={`text-xs hover:underline ${
+                            site.isDiez
+                              ? "text-amber-800"
+                              : "text-blue-600"
+                          }`}
                         >
                           אתר
                         </a>
@@ -295,11 +349,21 @@ export default function Results() {
                       <td className="border p-2 text-sm text-gray-600 sticky right-[180px] bg-white z-10">
                         {product.category}
                       </td>
-                      {enabledSites.map((site) => {
-                        const siteResult = productResults.find((r) => r.siteId === site.id);
+                      {tableSiteColumns.map((site) => {
+                        const siteResult = findResultForComparisonColumn(
+                          site,
+                          productResults
+                        );
+                        const diezBase =
+                          "border-amber-100 bg-amber-50/90 text-amber-950";
                         if (!siteResult) {
                           return (
-                            <td key={site.id} className="border p-2 text-center text-gray-400">
+                            <td
+                              key={site.id}
+                              className={`border p-2 text-center text-gray-400 ${
+                                site.isDiez ? diezBase : ""
+                              }`}
+                            >
                               -
                             </td>
                           );
@@ -312,16 +376,23 @@ export default function Results() {
                           priceRange.min !== priceRange.max;
                         const cellDate = new Date(siteResult.scrapedAt);
 
+                        const priceBg = isLowest
+                          ? "bg-green-100 font-semibold text-green-800"
+                          : isHighest
+                            ? "bg-red-100 font-semibold text-red-800"
+                            : site.isDiez
+                              ? diezBase
+                              : "";
+
+                        const diezRing =
+                          site.isDiez && (isLowest || isHighest)
+                            ? " ring-2 ring-amber-300/80 ring-inset"
+                            : "";
+
                         return (
                           <td
                             key={site.id}
-                            className={`border p-2 text-center ${
-                              isLowest
-                                ? "bg-green-100 font-semibold text-green-800"
-                                : isHighest
-                                  ? "bg-red-100 font-semibold text-red-800"
-                                  : ""
-                            }`}
+                            className={`border p-2 text-center ${priceBg}${diezRing}`}
                           >
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-lg">
@@ -331,7 +402,11 @@ export default function Results() {
                                 href={toHrefUrl(siteResult.productUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-blue-600 hover:underline"
+                                className={`text-xs hover:underline ${
+                                  site.isDiez
+                                    ? "text-amber-800"
+                                    : "text-blue-600"
+                                }`}
                               >
                                 קישור
                               </a>

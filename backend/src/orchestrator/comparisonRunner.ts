@@ -12,7 +12,8 @@ import {
 } from "../services/normalization.service.js";
 import { compareWithGPT } from "../services/gptComparison.service.js";
 import { validateProductMatch } from "../services/productMatchValidator.service.js";
-import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import { ensureAnchorSiteInList } from "../config/anchorSite.js";
+import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
 export interface RunScraperComparisonOptions {
@@ -65,8 +66,8 @@ export async function runScraperComparison(
     for (const product of targetProducts) {
       try {
         progressEmit("status", `מחפש ${product.name}...`);
-        const effectiveSearchTerm = (product.searchTerm || product.name || "").trim();
-        await logScrape(`--- Product: ${product.name} (searchTerm: "${product.searchTerm}", effective: "${effectiveSearchTerm}") ---`);
+        const effectiveSearchTerm = productSearchQuery(product);
+        await logScrape(`--- Product: ${product.name} (brand: "${product.brand ?? ""}", effective search: "${effectiveSearchTerm}") ---`);
 
         const searchTerms = getSearchTermFallbacks(effectiveSearchTerm);
         await logScrape(`Search terms to try: [${searchTerms.map((t) => `"${t}"`).join(", ")}]`);
@@ -149,14 +150,6 @@ export async function runScraperComparison(
           if (foundCount > 0 && searchTerm === searchTerms[0]) break;
         }
 
-        const anchorSite = getAnchorSite(targetSites);
-        const foundOnDiez = anchorSite && siteResultsBySite.has(anchorSite.id);
-        if (!foundOnDiez) {
-          progressEmit("status", `לא נמצא ב-דיאז: ${product.name} - מדלג`);
-          await logScrape(`Product ${product.name} not found on Diez - skipping`);
-          continue;
-        }
-
         const siteResults = Array.from(siteResultsBySite.entries()).map(([siteId, data]) => ({
           siteName: siteMap.get(siteId)!.name,
           siteId,
@@ -173,7 +166,7 @@ export async function runScraperComparison(
         await logScrape(`Sending to GPT: ${product.name} with ${siteResults.length} site(s)`);
         const gptResult = await compareWithGPT({
           productName: product.name,
-          searchTerm: product.searchTerm,
+          searchTerm: productSearchQuery(product),
           siteResults,
         });
 
