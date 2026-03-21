@@ -25,11 +25,11 @@ Enable **`navigatorEnabled`: `true`** on each competitor site that should use Na
 
 ## vs other modes
 
-| Mode            | Browser | Typical use                                      |
-|----------------|---------|--------------------------------------------------|
-| `scraper`       | Yes     | Fast CSS/Cheerio extraction from search HTML     |
-| `llm_websearch` | No      | OpenAI search-preview; no DOM / variants         |
-| `navigator`     | Yes     | Slower; handles naming fallbacks & PDP variants  |
+| Mode            | Browser | Typical use                                     |
+| --------------- | ------- | ----------------------------------------------- |
+| `scraper`       | Yes     | Fast CSS/Cheerio extraction from search HTML    |
+| `llm_websearch` | No      | OpenAI search-preview; no DOM / variants        |
+| `navigator`     | Yes     | Slower; handles naming fallbacks & PDP variants |
 
 ## Cost & reliability
 

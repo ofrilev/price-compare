@@ -22,7 +22,12 @@ export default function Products() {
     queryFn: () => api.products.brands(),
   });
 
-  const { data: products = [], isLoading, isError, error } = useQuery({
+  const {
+    data: products = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["products", categoryFilter, companyFilter, search],
     queryFn: () =>
       api.products.list({
@@ -88,7 +93,12 @@ export default function Products() {
   }, [selectedIds.size, products.length]);
 
   if (isLoading) return <div className="text-gray-500">טוען...</div>;
-  if (isError) return <div className="text-red-600 p-4">שגיאה בטעינה: {error?.message ?? "שגיאה לא ידועה"}</div>;
+  if (isError)
+    return (
+      <div className="text-red-600 p-4">
+        שגיאה בטעינה: {error?.message ?? "שגיאה לא ידועה"}
+      </div>
+    );
 
   return (
     <div dir="rtl" className="text-right">
@@ -147,62 +157,62 @@ export default function Products() {
           אין מוצרים. הוסף מוצר כדי להתחיל.
         </div>
       ) : (
-      <table className="w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border p-2 text-left w-12">
-              <input
-                ref={checkAllRef}
-                type="checkbox"
-                checked={
-                  products.length > 0 && selectedIds.size === products.length
-                }
-                onChange={toggleSelectAll}
-                className="w-4 h-4 rounded"
-              />
-            </th>
-            <th className="border p-2 text-left">שם</th>
-            <th className="border p-2 text-left">חברה</th>
-            <th className="border p-2 text-left">קטגוריה</th>
-            <th className="border p-2 text-left">פעולות</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.map((product) => (
-            <tr key={product.id} className="border">
-              <td className="border p-2">
+        <table className="w-full border-collapse border border-gray-200">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border p-2 text-left w-12">
                 <input
+                  ref={checkAllRef}
                   type="checkbox"
-                  checked={selectedIds.has(product.id)}
-                  onChange={() => toggleSelect(product.id)}
+                  checked={
+                    products.length > 0 && selectedIds.size === products.length
+                  }
+                  onChange={toggleSelectAll}
                   className="w-4 h-4 rounded"
                 />
-              </td>
-              <td className="border p-2">{product.name}</td>
-              <td className="border p-2 text-sm text-gray-600">
-                {product.brand ?? "—"}
-              </td>
-              <td className="border p-2">{product.category}</td>
-              <td className="border p-2">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setEditing(product)}
-                    className="px-3 py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50"
-                  >
-                    ערוך
-                  </button>
-                  <button
-                    onClick={() => deleteMutation.mutate(product.id)}
-                    className="px-3 py-1 border border-red-600 text-red-600 rounded hover:bg-red-50"
-                  >
-                    מחק
-                  </button>
-                </div>
-              </td>
+              </th>
+              <th className="border p-2 text-left">שם</th>
+              <th className="border p-2 text-left">חברה</th>
+              <th className="border p-2 text-left">קטגוריה</th>
+              <th className="border p-2 text-left">פעולות</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id} className="border">
+                <td className="border p-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(product.id)}
+                    onChange={() => toggleSelect(product.id)}
+                    className="w-4 h-4 rounded"
+                  />
+                </td>
+                <td className="border p-2">{product.name}</td>
+                <td className="border p-2 text-sm text-gray-600">
+                  {product.brand ?? "—"}
+                </td>
+                <td className="border p-2">{product.category}</td>
+                <td className="border p-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setEditing(product)}
+                      className="px-3 py-1 border border-blue-600 text-blue-600 rounded hover:bg-blue-50"
+                    >
+                      ערוך
+                    </button>
+                    <button
+                      onClick={() => deleteMutation.mutate(product.id)}
+                      className="px-3 py-1 border border-red-600 text-red-600 rounded hover:bg-red-50"
+                    >
+                      מחק
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
 
       {creating && (
@@ -479,9 +489,11 @@ function ProductForm({
   const [form, setForm] = useState<Partial<Product>>(() =>
     product
       ? { name: product.name, brand: product.brand ?? "" }
-      : { name: "", brand: "" }
+      : { name: "", brand: "" },
   );
-  const [categoryInput, setCategoryInput] = useState(() => product?.category ?? "");
+  const [categoryInput, setCategoryInput] = useState(
+    () => product?.category ?? "",
+  );
 
   useEffect(() => {
     if (product) {

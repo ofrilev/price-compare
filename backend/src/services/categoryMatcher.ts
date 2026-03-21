@@ -100,7 +100,8 @@ async function scrapeCategoryFromSite(
   category: string,
   browser?: import("playwright").Browser,
 ): Promise<SiteProductItem[]> {
-  const categoryUrl = site.scraperConfig?.categoryUrlByProductCategory?.[category];
+  const categoryUrl =
+    site.scraperConfig?.categoryUrlByProductCategory?.[category];
 
   progressEmit("status", `מחפש מוצרים ב-${site.name}...`);
   await logScrape(
