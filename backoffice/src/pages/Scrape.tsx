@@ -30,7 +30,9 @@ export default function Scrape() {
     parsedResult: unknown;
   } | null>(null);
   const [showLlmDebug, setShowLlmDebug] = useState(false);
-  const [scrapeMode, setScrapeMode] = useState<"scraper" | "llm_websearch">("scraper");
+  const [scrapeMode, setScrapeMode] = useState<
+    "scraper" | "llm_websearch" | "navigator"
+  >("scraper");
   const eventSourceRef = useRef<EventSource | null>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
@@ -69,6 +71,7 @@ export default function Scrape() {
         productIds?: string[];
         category?: string;
         siteIds?: string[];
+        mode?: "scraper" | "llm_websearch" | "navigator";
       } = {},
     ) => {
       setScrapeLog([]);
@@ -180,7 +183,7 @@ export default function Scrape() {
       productIds?: string[];
       category?: string;
       siteIds?: string[];
-      mode?: "scraper" | "llm_websearch";
+      mode?: "scraper" | "llm_websearch" | "navigator";
     } = selectedProductIds.length > 0 ? { productIds: selectedProductIds } : {};
 
     if (selectedSiteIds.length > 0) {
@@ -384,6 +387,17 @@ export default function Scrape() {
               }`}
             >
               LLM + חיפוש אינטרנט
+            </button>
+            <button
+              type="button"
+              onClick={() => setScrapeMode("navigator")}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${
+                scrapeMode === "navigator"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-800"
+              }`}
+            >
+              Navigator (סוכן)
             </button>
           </div>
         )}

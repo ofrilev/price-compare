@@ -3,15 +3,20 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, "../../../data");
+const DEFAULT_DATA_DIR = join(__dirname, "../../../data");
+
+/** Lazy so callers (e.g. setup-user) can set process.env.DATA_DIR before first I/O */
+function getDataDir(): string {
+  return process.env.DATA_DIR || DEFAULT_DATA_DIR;
+}
 
 async function ensureDataDir() {
-  await mkdir(DATA_DIR, { recursive: true });
+  await mkdir(getDataDir(), { recursive: true });
 }
 
 export async function readJson<T>(filename: string): Promise<T> {
   await ensureDataDir();
-  const path = join(DATA_DIR, filename);
+  const path = join(getDataDir(), filename);
   try {
     const content = await readFile(path, "utf-8");
     const trimmed = content.trim();
@@ -33,6 +38,6 @@ export async function readJson<T>(filename: string): Promise<T> {
 
 export async function writeJson<T>(filename: string, data: T): Promise<void> {
   await ensureDataDir();
-  const path = join(DATA_DIR, filename);
+  const path = join(getDataDir(), filename);
   await writeFile(path, JSON.stringify(data, null, 2), "utf-8");
 }

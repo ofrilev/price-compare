@@ -1,4 +1,18 @@
 /**
+ * Treat letter–hyphen–digit like letter+digit (e.g. DGX-670 ≡ DGX670) for matching.
+ */
+export function collapseHyphensInLetterDigitModels(s: string): string {
+  let out = s;
+  // Repeated passes for patterns like A-B-123
+  for (let i = 0; i < 4; i++) {
+    const next = out.replace(/([a-zA-Z])-+(\d)/gi, "$1$2");
+    if (next === out) break;
+    out = next;
+  }
+  return out;
+}
+
+/**
  * Normalize search term for flexible product matching.
  * e.g. "piano cx40" matches "CX-40", "CX 40", "cx40", "Yamaha P-225" matches "P 225", "P-225"
  */
@@ -29,7 +43,9 @@ export function buildProductMatchRegex(searchTerm: string): RegExp {
 }
 
 export function matchesProduct(productName: string, searchTerm: string): boolean {
-  return buildProductMatchRegex(searchTerm).test(productName);
+  const pn = collapseHyphensInLetterDigitModels(productName);
+  const st = collapseHyphensInLetterDigitModels(searchTerm);
+  return buildProductMatchRegex(st).test(pn);
 }
 
 /**
@@ -50,6 +66,7 @@ export function getSearchTermFallbacks(searchTerm: string): string[] {
   };
 
   add(searchTerm);
+  add(collapseHyphensInLetterDigitModels(searchTerm));
 
   // Match model patterns: letters + hyphen/space + digits (e.g. FP-10, P 225)
   const modelPattern = /([a-zA-Z]+)([\s\-]+)([0-9][a-zA-Z0-9]*)/g;

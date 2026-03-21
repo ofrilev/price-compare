@@ -30,6 +30,7 @@ OPENAI_MODEL=gpt-4o-mini
 ```
 
 **Generate JWT Secret:**
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
@@ -70,17 +71,20 @@ VITE_API_URL=https://your-backend.railway.app/api
 If you encounter "npm: command not found" errors:
 
 **Solution 1** (Recommended): Set Root Directory in Railway
+
 1. Go to your Railway project → Settings → Service Settings
 2. Find "Root Directory" setting
 3. Set it to `backend`
 4. Redeploy
 
 **Solution 2**: Use Nixpacks Configuration
+
 - The `nixpacks.toml` file in the root should configure Railway to use Node.js
 - Ensure it's committed to your repository
 - Railway will use it automatically
 
 **Solution 3**: Remove Dockerfile (if using Nixpacks)
+
 - If Railway detects a Dockerfile, it may try to use Docker instead of Nixpacks
 - You can temporarily rename `backend/Dockerfile` to `backend/Dockerfile.backup`
 - Or configure Railway to use Nixpacks explicitly in the dashboard
@@ -125,10 +129,12 @@ After deployment, create your first user account:
 
 1. Open the Railway/Render console/terminal
 2. Run:
+
 ```bash
 cd backend
 npm run setup-user
 ```
+
 3. Follow the prompts to create a user
 
 ### Option B: Using Local Setup
@@ -136,11 +142,13 @@ npm run setup-user
 1. Clone your repository locally
 2. Create a `.env` file in `backend` with production values
 3. Run:
+
 ```bash
 cd backend
 npm install
 npm run setup-user
 ```
+
 4. Commit the `data/users.json` file (or manually add it to your hosting platform)
 
 ### Option C: Using Registration Endpoint
@@ -169,16 +177,19 @@ After deploying frontend, update the backend `FRONTEND_URL` environment variable
 ### Backend Issues
 
 **Playwright not working:**
+
 - Ensure Dockerfile includes Playwright dependencies
 - Check Railway/Render logs for browser installation errors
 - Consider using headless mode if needed
 
 **File storage issues:**
+
 - Ensure persistent disk is mounted correctly (Render)
 - Check file permissions
 - Verify `data/` directory exists
 
 **CORS errors:**
+
 - Verify `FRONTEND_URL` matches your Vercel domain exactly
 - Check backend logs for CORS errors
 - Ensure credentials are enabled in CORS config
@@ -186,11 +197,13 @@ After deploying frontend, update the backend `FRONTEND_URL` environment variable
 ### Frontend Issues
 
 **API connection errors:**
+
 - Verify `VITE_API_URL` is set correctly
 - Check browser console for network errors
 - Ensure backend is running and accessible
 
 **Authentication issues:**
+
 - Check that JWT_SECRET is set
 - Verify token is being stored in localStorage
 - Check backend logs for auth errors
@@ -198,11 +211,13 @@ After deploying frontend, update the backend `FRONTEND_URL` environment variable
 ### General Issues
 
 **Build failures:**
+
 - Check build logs in hosting platform
 - Ensure all dependencies are in package.json
 - Verify Node.js version compatibility
 
 **Environment variables:**
+
 - Double-check all variables are set correctly
 - Restart services after changing env vars
 - Use platform-specific variable syntax if needed
@@ -245,6 +260,7 @@ After making changes:
 ## Support
 
 For platform-specific issues:
+
 - Railway: [docs.railway.app](https://docs.railway.app)
 - Render: [render.com/docs](https://render.com/docs)
 - Vercel: [vercel.com/docs](https://vercel.com/docs)

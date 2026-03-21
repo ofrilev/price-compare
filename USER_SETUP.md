@@ -29,7 +29,7 @@ There are several ways to create a user account for the application:
    - Enter your password (minimum 6 characters)
    - Confirm your password
 
-5. **The user will be created** and saved to `data/users.json`
+5. **The user will be created** and saved under **`/app/data/users.json`** by default (intended for containers with `WORKDIR /app`). For local development, set **`DATA_DIR`** in `backend/.env` to your project’s `data` folder (e.g. absolute path to `price-scraper/data`) so the file matches where `npm run dev` reads users.
 
 ### For Production (Railway/Render):
 
@@ -120,7 +120,7 @@ Once you've created a user:
 
 ## Multiple Users
 
-You can create multiple users by running `npm run setup-user` multiple times. Each user will be added to the `data/users.json` file.
+You can create multiple users by running `npm run setup-user` multiple times. Each user is appended to **`users.json`** in the configured data directory (`/app/data` by default for the setup script, or `DATA_DIR` / the backend’s default `data/` when unset for other entrypoints).
 
 ## Troubleshooting
 
@@ -134,10 +134,10 @@ You can create multiple users by running `npm run setup-user` multiple times. Ea
 - Your password is too short
 - Use at least 6 characters
 
-**Can't find `data/users.json`:**
+**Can't find `users.json` / login doesn’t see the user:**
 
-- The file will be created automatically when you run the setup script
-- Make sure the `data` directory exists (it will be created automatically)
+- The setup script creates **`/app/data/users.json`** unless `DATA_DIR` is set; the API uses `DATA_DIR` if set, otherwise the repo’s `data/` folder. Use the **same** `DATA_DIR` for both so setup and the server read one file.
+- The directory is created automatically on first write.
 
 **Forgot password:**
 

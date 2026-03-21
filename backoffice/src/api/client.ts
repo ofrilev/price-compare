@@ -78,7 +78,7 @@ export const api = {
       productIds?: string[];
       category?: string;
       siteIds?: string[];
-      mode?: "scraper" | "llm_websearch";
+      mode?: "scraper" | "llm_websearch" | "navigator";
     }) =>
       fetchApi<{ results: ScrapeResult[]; count: number }>(`/scrape`, {
         method: "POST",
@@ -137,6 +137,9 @@ export interface ScraperConfig {
   waitExtraMs?: number;
   preSteps?: Array<{ type: "click" | "scroll"; selector?: string }>;
   userAgent?: string;
+  navigatorEnabled?: boolean;
+  navigatorResultContainer?: string;
+  categoryUrlByProductCategory?: Record<string, string>;
 }
 
 export interface Site {

@@ -24,6 +24,12 @@ export interface ScraperConfig {
   preSteps?: Array<{ type: "click" | "scroll"; selector?: string }>;
   /** Custom User-Agent override */
   userAgent?: string;
+  /** E-Commerce Navigator: use Playwright+LLM loop for this site (pilot / opt-in) */
+  navigatorEnabled?: boolean;
+  /** Scope link collection for navigator (e.g. `.productlist`, `main`) */
+  navigatorResultContainer?: string;
+  /** Optional category URL per product category key (e.g. פסנתרים → category page) */
+  categoryUrlByProductCategory?: Record<string, string>;
 }
 
 export interface Site {

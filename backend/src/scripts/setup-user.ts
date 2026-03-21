@@ -1,6 +1,12 @@
 import "dotenv/config";
 import { createUser } from "../services/auth.js";
 import readline from "readline";
+import { join } from "path";
+
+// Persist under /app when running this script (e.g. Docker WORKDIR); override with DATA_DIR in .env
+if (!process.env.DATA_DIR?.trim()) {
+  process.env.DATA_DIR = join("/app", "data");
+}
 
 const rl = readline.createInterface({
   input: process.stdin,

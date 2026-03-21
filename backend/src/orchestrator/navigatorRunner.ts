@@ -1,0 +1,186 @@
+import { v4 as uuidv4 } from "uuid";
+import { chromium } from "playwright";
+import { readJson } from "../services/store.js";
+import { emit as progressEmit } from "../services/scrapeProgress.js";
+import { logScrape, logScrapeError } from "../services/scrapeLogger.js";
+import { planNavigatorQueries } from "../services/navigatorQueryPlanner.service.js";
+import { navigateAndExtractProduct } from "../services/navigatorSiteSession.js";
+import { compareWithGPT } from "../services/gptComparison.service.js";
+import { ensureAnchorSiteInList, getAnchorSite } from "../config/anchorSite.js";
+import type { Site, Product, ScrapeResult } from "../types.js";
+
+const DEFAULT_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+export interface RunNavigatorComparisonOptions {
+  productIds?: string[];
+  category?: string;
+  siteIds?: string[];
+}
+
+/**
+ * E-Commerce Navigator: Playwright + query planner + result ranking + variant handling.
+ * Only sites with scraperConfig.navigatorEnabled === true participate.
+ */
+export async function runNavigatorComparison(
+  options: RunNavigatorComparisonOptions
+): Promise<ScrapeResult[]> {
+  const sites = await readJson<Site[]>("sites.json");
+  const products = await readJson<Product[]>("products.json");
+
+  let targetSites = sites.filter((s) => s.enabled && s.scraperConfig?.navigatorEnabled === true);
+  if (options.siteIds?.length) {
+    targetSites = targetSites.filter((s) => options.siteIds!.includes(s.id));
+  }
+
+  const anchor = getAnchorSite(sites);
+  if (!anchor) {
+    throw new Error("אתר דיאז (diez.co.il) לא נמצא בקונפיגורציה");
+  }
+  if (!anchor.scraperConfig?.navigatorEnabled) {
+    throw new Error(
+      "מצב Navigator דורש navigatorEnabled: true לאתר דיאז ב-sites.json"
+    );
+  }
+
+  targetSites = ensureAnchorSiteInList(targetSites, sites);
+  targetSites = targetSites.filter((s) => s.scraperConfig?.navigatorEnabled === true);
+
+  let targetProducts: Product[] = products;
+  if (options.productIds?.length) {
+    targetProducts = products.filter((p) => options.productIds!.includes(p.id));
+  } else if (options.category) {
+    targetProducts = products.filter((p) => p.category === options.category);
+  }
+
+  if (targetSites.length === 0) {
+    throw new Error("לא נמצאו אתרים עם navigatorEnabled — הפעל ב-sites.json");
+  }
+  if (targetProducts.length === 0) throw new Error("לא נמצאו מוצרים");
+
+  const siteMap = new Map(targetSites.map((s) => [s.id, s]));
+  const allResults: ScrapeResult[] = [];
+
+  progressEmit(
+    "status",
+    `Navigator: ${targetProducts.length} מוצר(ים), ${targetSites.length} אתר(ים)`
+  );
+  await logScrape(
+    `Navigator started: ${targetProducts.length} product(s), ${targetSites.length} site(s)`
+  );
+  await logScrape(
+    `Navigator params: productIds=${JSON.stringify(options.productIds)}, category=${options.category}, siteIds=${JSON.stringify(options.siteIds)}`
+  );
+
+  const browser = await chromium.launch({ headless: true });
+  await logScrape("Navigator: browser launched");
+
+  try {
+    for (const product of targetProducts) {
+      try {
+        progressEmit("status", `Navigator: מחפש ${product.name}...`);
+        await logScrape(`--- Navigator product: ${product.name} ---`);
+
+        const plan = await planNavigatorQueries(product);
+        await logScrape(
+          `Navigator queries: primary="${plan.primary}" secondary="${plan.secondary}" tertiary="${plan.tertiary}"`
+        );
+
+        const siteResultsBySite = new Map<string, { price: number; productUrl: string }>();
+
+        for (const site of targetSites) {
+          const page = await browser.newPage();
+          const ua = site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT;
+          await page.setExtraHTTPHeaders({ "User-Agent": ua });
+          try {
+            const extracted = await navigateAndExtractProduct(page, site, product, plan);
+            if (extracted && extracted.price > 0) {
+              siteResultsBySite.set(site.id, {
+                price: extracted.price,
+                productUrl: extracted.productUrl,
+              });
+              await logScrape(
+                `${site.name} (Navigator): ${extracted.price} ILS @ ${extracted.productUrl}`
+              );
+            } else {
+              await logScrape(`${site.name} (Navigator): no price extracted`);
+            }
+          } catch (err) {
+            await logScrapeError(`${site.name} Navigator failed`, err);
+          } finally {
+            await page.close().catch(() => null);
+          }
+        }
+
+        const anchorSite = getAnchorSite(targetSites);
+        const foundOnDiez = anchorSite && siteResultsBySite.has(anchorSite.id);
+        if (!foundOnDiez) {
+          progressEmit("status", `Navigator: לא נמצא ב-דיאז: ${product.name} - מדלג`);
+          await logScrape(`Navigator: ${product.name} not found on Diez — skip`);
+          continue;
+        }
+
+        const siteResults = Array.from(siteResultsBySite.entries()).map(([siteId, data]) => ({
+          siteName: siteMap.get(siteId)!.name,
+          siteId,
+          price: data.price,
+          productUrl: data.productUrl,
+        }));
+
+        if (siteResults.length === 0) {
+          await logScrape(`Navigator: no prices for ${product.name}`);
+          continue;
+        }
+
+        await logScrape(`Navigator: GPT compare for ${product.name} (${siteResults.length} sites)`);
+        const gptResult = await compareWithGPT({
+          productName: product.name,
+          searchTerm: product.searchTerm,
+          siteResults,
+        });
+
+        const siteNameToId = new Map(siteResults.map((s) => [s.siteName, s.siteId]));
+
+        if (gptResult) {
+          for (const r of gptResult.results) {
+            if (r.price > 0) {
+              const siteId = siteNameToId.get(r.siteName) ?? r.siteId;
+              allResults.push({
+                id: uuidv4(),
+                productId: product.id,
+                siteId,
+                price: r.price,
+                currency: "ILS",
+                productUrl: r.productUrl,
+                scrapedAt: new Date().toISOString(),
+              });
+            }
+          }
+        } else {
+          for (const r of siteResults) {
+            allResults.push({
+              id: uuidv4(),
+              productId: product.id,
+              siteId: r.siteId,
+              price: r.price,
+              currency: "ILS",
+              productUrl: r.productUrl,
+              scrapedAt: new Date().toISOString(),
+            });
+          }
+        }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        progressEmit("error", `Navigator נכשל עבור ${product.name}: ${errMsg}`);
+        await logScrapeError(`Navigator failed for ${product.name}`, err);
+      }
+    }
+  } finally {
+    await browser.close();
+    await logScrape("Navigator: browser closed");
+  }
+
+  progressEmit("done", `Navigator הושלם: ${allResults.length} תוצאות`);
+  await logScrape(`Navigator done: ${allResults.length} result(s) total`);
+  return allResults;
+}

@@ -1312,5 +1312,113 @@
     "currency": "ILS",
     "productUrl": "https://www.halilit.com/items/3697678-roland-fp-90x-white-digital-piano",
     "scrapedAt": "2026-03-21T14:07:30.508Z"
+  },
+  {
+    "id": "bb825257-d026-4dd0-a175-6c2f311482ad",
+    "productId": "234794a2-15c3-47b9-b47c-1e90632495fa",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4200,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%9c%d7%90-%d7%9b%d7%95%d7%9c%d7%9c-%d7%9e%d7%a2%d7%9e%d7%93-%d7%99%d7%9e%d7%94%d7%94-yamaha-dgx-670-black/",
+    "scrapedAt": "2026-03-21T14:12:16.855Z"
+  },
+  {
+    "id": "c33d2fe1-6c53-479f-9de5-c96cf549ef71",
+    "productId": "1909cb54-406c-4669-9612-498019028769",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4390,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a7%d7%9c%d7%99%d7%93%d7%99-%d7%91%d7%9e%d7%94-%d7%99%d7%9e%d7%94%d7%94-yamaha-ck61/",
+    "scrapedAt": "2026-03-21T14:12:30.113Z"
+  },
+  {
+    "id": "c22aa9bb-5c52-43f5-9f1f-010ad6a35bf8",
+    "productId": "1909cb54-406c-4669-9612-498019028769",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 4420,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/yamaha-ck61-stage-keyboard",
+    "scrapedAt": "2026-03-21T14:12:30.113Z"
+  },
+  {
+    "id": "df705b45-666e-42ee-b47b-786363c4f8a4",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 2750,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp30x-black/",
+    "scrapedAt": "2026-03-21T14:31:03.525Z"
+  },
+  {
+    "id": "303ea596-a93c-4fea-90a8-2e8ed64962f1",
+    "productId": "a6d604a5-90db-43be-b6f1-a53f339fcf7c",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2765,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697458-roland-fp-30x-digital-piano",
+    "scrapedAt": "2026-03-21T14:31:03.525Z"
+  },
+  {
+    "id": "82b3bc6c-3824-4598-ad10-df58f97610be",
+    "productId": "3c50f513-0d28-4251-b1a5-120a14971390",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 2750,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp30x-black/",
+    "scrapedAt": "2026-03-21T14:32:22.899Z"
+  },
+  {
+    "id": "49a76feb-64fd-4283-9f2f-c9c8a7736f18",
+    "productId": "3c50f513-0d28-4251-b1a5-120a14971390",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2765,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/3697458-roland-fp-30x-digital-piano",
+    "scrapedAt": "2026-03-21T14:33:07.511Z"
+  },
+  {
+    "id": "88173945-2c1c-4d09-ba16-eac6196f26a6",
+    "productId": "2e759adb-4455-46e4-97e5-2cbb6c4989a6",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4200,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%9c%d7%90-%d7%9b%d7%95%d7%9c%d7%9c-%d7%9e%d7%a2%d7%9e%d7%93-%d7%99%d7%9e%d7%94%d7%94-yamaha-dgx-670-black/",
+    "scrapedAt": "2026-03-21T14:34:19.314Z"
+  },
+  {
+    "id": "409d0b52-21f4-491e-b6f9-484275b81589",
+    "productId": "bc9d7b51-fedd-4304-8552-f78291612da0",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 4200,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%9c%d7%90-%d7%9b%d7%95%d7%9c%d7%9c-%d7%9e%d7%a2%d7%9e%d7%93-%d7%99%d7%9e%d7%94%d7%94-yamaha-dgx-670-black/",
+    "scrapedAt": "2026-03-21T14:47:03.554Z"
+  },
+  {
+    "id": "28415fdd-7841-4545-839d-663f6a3ce60d",
+    "productId": "bc9d7b51-fedd-4304-8552-f78291612da0",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 4790,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/yamaha-dgx670",
+    "scrapedAt": "2026-03-21T14:47:41.898Z"
+  },
+  {
+    "id": "77a793df-4179-4a98-8120-d7e2638c2a1f",
+    "productId": "4738eab6-0316-485a-8a77-3e0d6f84d07a",
+    "siteId": "f23c873f-d398-476c-b583-eb00f8755272",
+    "price": 12112,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-rd-2000-ex/",
+    "scrapedAt": "2026-03-21T14:49:56.703Z"
+  },
+  {
+    "id": "067a147d-8118-4578-b9df-581bb6317fd7",
+    "productId": "4738eab6-0316-485a-8a77-3e0d6f84d07a",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 12173,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/items/7891450-roland-rd-2000-ex-stage-piano",
+    "scrapedAt": "2026-03-21T14:49:56.704Z"
   }
 ]

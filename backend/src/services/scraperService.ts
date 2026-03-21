@@ -26,7 +26,9 @@ function getInitialUrl(site: Site, searchTerm: string): string {
 }
 
 function usePlaywright(site: Site): boolean {
-  return site.scraperConfig?.searchStrategy === "searchBar" || site.usePlaywright;
+  return (
+    site.scraperConfig?.searchStrategy === "searchBar" || site.usePlaywright
+  );
 }
 
 export interface ScrapeSiteOptions {
@@ -39,12 +41,13 @@ async function scrapeWithPlaywright(
   site: Site,
   searchTerm: string,
   browser?: Browser,
-  skipSearchBar = false
+  skipSearchBar = false,
 ): Promise<RawProduct[]> {
   const cfg = site.scraperConfig;
   const userAgent = cfg?.userAgent ?? DEFAULT_USER_AGENT;
   const waitStrategy = getWaitStrategy(site);
-  const waitUntil = waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
+  const waitUntil =
+    waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
   const shouldClose = !browser;
   const b = browser ?? (await chromium.launch({ headless: true }));
@@ -52,16 +55,26 @@ async function scrapeWithPlaywright(
   try {
     const page = await b.newPage();
     await page.setExtraHTTPHeaders({ "User-Agent": userAgent });
-    await logScrape(`${site.name}: navigating to url=${url} (waitUntil=${waitUntil})`);
+    await logScrape(
+      `${site.name}: navigating to url=${url} (waitUntil=${waitUntil})`,
+    );
     await page.goto(url, { waitUntil, timeout: 30000 });
     const urlAfterNav = page.url();
-    await logScrape(`${site.name}: after navigation, currentUrl=${urlAfterNav}`);
+    await logScrape(
+      `${site.name}: after navigation, currentUrl=${urlAfterNav}`,
+    );
 
     if (cfg?.preSteps?.length) {
-      await logScrape(`${site.name}: running ${cfg.preSteps.length} pre-step(s)`);
+      await logScrape(
+        `${site.name}: running ${cfg.preSteps.length} pre-step(s)`,
+      );
       for (const step of cfg.preSteps) {
         if (step.type === "click" && step.selector) {
-          await page.locator(step.selector).first().click({ timeout: 5000 }).catch(() => null);
+          await page
+            .locator(step.selector)
+            .first()
+            .click({ timeout: 5000 })
+            .catch(() => null);
         }
         if (step.type === "scroll") {
           await page.evaluate(() => window.scrollBy(0, 300));
@@ -70,51 +83,79 @@ async function scrapeWithPlaywright(
       }
     }
 
-    if (!skipSearchBar && cfg?.searchStrategy === "searchBar" && cfg?.searchInputSelector) {
-      await logScrape(`${site.name}: typing search searchTerm="${searchTerm}" (selector=${cfg.searchInputSelector})`);
+    if (
+      !skipSearchBar &&
+      cfg?.searchStrategy === "searchBar" &&
+      cfg?.searchInputSelector
+    ) {
+      await logScrape(
+        `${site.name}: typing search searchTerm="${searchTerm}" (selector=${cfg.searchInputSelector})`,
+      );
       const searchInput = page.locator(cfg.searchInputSelector).first();
-      const inputVisible = await searchInput.waitFor({ state: "visible", timeout: 10000 }).then(() => true).catch(() => false);
+      const inputVisible = await searchInput
+        .waitFor({ state: "visible", timeout: 10000 })
+        .then(() => true)
+        .catch(() => false);
       await logScrape(`${site.name}: search input visible=${inputVisible}`);
       await searchInput.fill("");
       await searchInput.fill(searchTerm);
       if (cfg.searchSubmitSelector) {
-        await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
+        await page
+          .locator(cfg.searchSubmitSelector)
+          .first()
+          .click({ timeout: 5000 })
+          .catch(() => null);
       } else {
         await searchInput.press("Enter");
       }
       await new Promise((r) => setTimeout(r, 2000));
       const urlAfterSearch = page.url();
-      await logScrape(`${site.name}: after search, currentUrl=${urlAfterSearch}`);
+      await logScrape(
+        `${site.name}: after search, currentUrl=${urlAfterSearch}`,
+      );
     }
 
     if (cfg?.waitExtraMs) {
-      await logScrape(`${site.name}: waiting ${cfg.waitExtraMs}ms for lazy content`);
+      await logScrape(
+        `${site.name}: waiting ${cfg.waitExtraMs}ms for lazy content`,
+      );
       await new Promise((r) => setTimeout(r, cfg.waitExtraMs));
     }
 
     if (cfg?.waitSelector) {
       await logScrape(`${site.name}: waiting for selector ${cfg.waitSelector}`);
-      await page.locator(cfg.waitSelector).first().waitFor({ state: "visible", timeout: 10000 }).catch(() => null);
+      await page
+        .locator(cfg.waitSelector)
+        .first()
+        .waitFor({ state: "visible", timeout: 10000 })
+        .catch(() => null);
     }
 
     const finalUrl = page.url();
     const html = await page.content();
     const products = await parseSiteHtml(html, site);
-    await logScrape(`${site.name} (Playwright): finalUrl=${finalUrl} | parsed ${products.length} product(s) | htmlLength=${html.length}`);
+    await logScrape(
+      `${site.name} (Playwright): finalUrl=${finalUrl} | parsed ${products.length} product(s) | htmlLength=${html.length}`,
+    );
     return products;
   } finally {
     if (shouldClose) await b.close();
   }
 }
 
-async function scrapeWithCheerio(url: string, site: Site): Promise<RawProduct[]> {
+async function scrapeWithCheerio(
+  url: string,
+  site: Site,
+): Promise<RawProduct[]> {
   const userAgent = site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT;
   const { data } = await axios.get(url, {
     headers: { "User-Agent": userAgent },
     timeout: 15000,
   });
   const products = await parseSiteHtml(data, site);
-  await logScrape(`${site.name} (Cheerio): url=${url} | parsed ${products.length} product(s) | htmlLength=${data.length}`);
+  await logScrape(
+    `${site.name} (Cheerio): url=${url} | parsed ${products.length} product(s) | htmlLength=${data.length}`,
+  );
   return products;
 }
 
@@ -127,7 +168,7 @@ export async function scrapeSite(
   site: Site,
   searchTerm: string,
   browser?: Browser,
-  options?: ScrapeSiteOptions
+  options?: ScrapeSiteOptions,
 ): Promise<RawProduct[]> {
   const url = options?.urlOverride ?? getInitialUrl(site, searchTerm);
   const searchParams = {
@@ -137,12 +178,16 @@ export async function scrapeSite(
     urlOverride: !!options?.urlOverride,
   };
   if (!url) {
-    await logScrape(`${site.name}: no URL (empty searchUrlTemplate for searchBar sites), baseUrl=${site.baseUrl}, searchParams=${JSON.stringify(searchParams)}`);
+    await logScrape(
+      `${site.name}: no URL (empty searchUrlTemplate for searchBar sites), baseUrl=${site.baseUrl}, searchParams=${JSON.stringify(searchParams)}`,
+    );
     return [];
   }
 
   const method = usePlaywright(site) ? "Playwright" : "Cheerio";
-  await logScrape(`${site.name}: scraping searchParams=${JSON.stringify(searchParams)} via ${method} | initialUrl=${url}`);
+  await logScrape(
+    `${site.name}: scraping searchParams=${JSON.stringify(searchParams)} via ${method} | initialUrl=${url}`,
+  );
 
   const skipSearchBar = !!options?.urlOverride;
   if (usePlaywright(site)) {

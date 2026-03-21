@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { readJson, writeJson } from "../services/store.js";
 import { runLLMComparison } from "../services/llmComparison.js";
 import { runScraperComparison } from "../orchestrator/comparisonRunner.js";
+import { runNavigatorComparison } from "../orchestrator/navigatorRunner.js";
 import { runLLMWebSearch } from "../services/llmWebSearch.service.js";
 import { matchCategoryProducts } from "../services/categoryMatcher.js";
 import { subscribe } from "../services/scrapeProgress.js";
@@ -183,7 +184,9 @@ scrapeRouter.post("/", async (req, res) => {
     const useLegacy = process.env.USE_LEGACY_LLM_SCRAPE === "true";
 
     let results: ScrapeResult[];
-    if (mode === "llm_websearch") {
+    if (mode === "navigator") {
+      results = await runNavigatorComparison({ productIds, category, siteIds });
+    } else if (mode === "llm_websearch") {
       results = await runLLMWebSearch({ productIds, category, siteIds });
     } else if (useLegacy) {
       results = await runLLMComparison({ productIds, category, siteIds });

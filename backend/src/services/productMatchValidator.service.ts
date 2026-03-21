@@ -48,6 +48,8 @@ export async function validateProductMatch(
   const prompt = `We are searching for "${productName}" (search term: "${searchTerm}").
 The main product we want is the core item (e.g. a digital piano), NOT accessories like stands, bags, cables, or add-ons.
 
+Model numbers may be written with or without hyphens — treat them as the SAME product (e.g. DGX-670 = DGX670 = DGX 670).
+
 Price note: The prices shown are the final/current price (the last price on each product page). Product pages often show two prices—one with strikethrough (original) and one as the new/sale price. We always use the last price (the current sale price) for comparison.
 
 Products found per site:
@@ -111,13 +113,38 @@ Rules:
 
     const result = new Map<string, NormalizedProduct>();
     for (const { siteId, siteName, products } of sitesWithProducts) {
-      const idx = selectionsObj[siteName];
-      if (idx == null || typeof idx !== "number" || idx < 1 || idx > products.length) continue;
-      const product = products[idx - 1];
+      const raw = selectionsObj[siteName];
+      if (raw === null || raw === undefined) {
+        const detail =
+          raw === null
+            ? "LLM returned null for this site"
+            : "site key omitted or missing in selections JSON";
+        await logScrape(
+          `ProductMatchValidator: rejection ${siteName} — ${detail} (no matching main product, only accessories, or name mismatch)`
+        );
+        continue;
+      }
+      if (typeof raw !== "number") {
+        await logScrape(
+          `ProductMatchValidator: rejection ${siteName} — invalid selection type (${typeof raw}), expected 1-based index`
+        );
+        continue;
+      }
+      if (raw < 1 || raw > products.length) {
+        await logScrape(
+          `ProductMatchValidator: rejection ${siteName} — index out of range (got ${raw}, valid 1–${products.length})`
+        );
+        continue;
+      }
+      const product = products[raw - 1];
       if (product) {
         result.set(siteId, product);
         await logScrape(
           `ProductMatchValidator: ${siteName} → "${product.name}" @ ${product.price} ILS`
+        );
+      } else {
+        await logScrape(
+          `ProductMatchValidator: rejection ${siteName} — empty product at index ${raw}`
         );
       }
     }

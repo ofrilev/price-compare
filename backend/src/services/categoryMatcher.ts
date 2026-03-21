@@ -27,7 +27,7 @@ function extractMatchingJsonFromResponse(content: string): string | null {
       }
     }
   }
-  const idx = trimmed.indexOf("{\"comparison\"");
+  const idx = trimmed.indexOf('{"comparison"');
   if (idx < 0) return null;
   let depth = 0;
   for (let i = idx; i < trimmed.length; i++) {
@@ -47,13 +47,13 @@ function extractMatchingJsonFromResponse(content: string): string | null {
 
 import { emit as progressEmit } from "./scrapeProgress.js";
 import { logScrape, logScrapeError } from "./scrapeLogger.js";
-import { ensureAnchorSiteInList, getAnchorSite, isAnchorSite } from "../config/anchorSite.js";
-import { getDiezCategoryUrl } from "../config/diezCategoryMapping.js";
 import {
-  logLLMRequest,
-  logLLMResponse,
-  logLLMError,
-} from "./llmLogger.js";
+  ensureAnchorSiteInList,
+  getAnchorSite,
+  isAnchorSite,
+} from "../config/anchorSite.js";
+import { getDiezCategoryUrl } from "../config/diezCategoryMapping.js";
+import { logLLMRequest, logLLMResponse, logLLMError } from "./llmLogger.js";
 import type { ScrapeResult, Product, Site } from "../types.js";
 
 interface SiteProductData {
@@ -104,13 +104,13 @@ interface SiteProductItem {
 async function scrapeCategoryFromSite(
   site: Site,
   category: string,
-  browser?: import("playwright").Browser
+  browser?: import("playwright").Browser,
 ): Promise<SiteProductItem[]> {
   const directUrl = isAnchorSite(site) ? getDiezCategoryUrl(category) : null;
 
   progressEmit("status", `מחפש מוצרים ב-${site.name}...`);
   await logScrape(
-    `Category match: scraping ${site.name} | category="${category}" | ${directUrl ? `directUrl=${directUrl}` : `searchUrlTemplate=${site.searchUrlTemplate || "(none)"}`}`
+    `Category match: scraping ${site.name} | category="${category}" | ${directUrl ? `directUrl=${directUrl}` : `searchUrlTemplate=${site.searchUrlTemplate || "(none)"}`}`,
   );
 
   try {
@@ -120,10 +120,13 @@ async function scrapeCategoryFromSite(
     }
 
     const { scrapeSite } = await import("./scraperService.js");
-    const { normalizeProduct, dedupeByUrl } = await import("./normalization.service.js");
+    const { normalizeProduct, dedupeByUrl } =
+      await import("./normalization.service.js");
     const options = directUrl ? { urlOverride: directUrl } : undefined;
     const raw = await scrapeSite(site, category, browser, options);
-    await logScrape(`Category match: ${site.name} raw=${raw.length} product(s)`);
+    await logScrape(
+      `Category match: ${site.name} raw=${raw.length} product(s)`,
+    );
     const normalized = raw
       .map((r) => normalizeProduct(r))
       .filter((n): n is NonNullable<typeof n> => n !== null);
@@ -138,18 +141,29 @@ async function scrapeCategoryFromSite(
         url: p.productUrl,
       }));
 
-    progressEmit("status", `נמצאו ${items.length} מוצרים ב-${site.name} (מוגבל ל-${MAX_PRODUCTS})`);
-    await logScrape(`Category match: ${site.name} → ${items.length} product(s) after normalize+dedupe (capped at ${MAX_PRODUCTS})`);
+    progressEmit(
+      "status",
+      `נמצאו ${items.length} מוצרים ב-${site.name} (מוגבל ל-${MAX_PRODUCTS})`,
+    );
+    await logScrape(
+      `Category match: ${site.name} → ${items.length} product(s) after normalize+dedupe (capped at ${MAX_PRODUCTS})`,
+    );
     return items;
   } catch (err: any) {
-    progressEmit("error", `שגיאה בחיפוש ב-${site.name}: ${err.message || "שגיאה לא ידועה"}`);
+    progressEmit(
+      "error",
+      `שגיאה בחיפוש ב-${site.name}: ${err.message || "שגיאה לא ידועה"}`,
+    );
     await logScrapeError(`Category match: ${site.name} failed`, err);
     return [];
   }
 }
 
 /** Check if product name matches whitelist (products.json) - fuzzy by normalized name/searchTerm */
-function isInWhitelist(productName: string, whitelistKeys: Set<string>): boolean {
+function isInWhitelist(
+  productName: string,
+  whitelistKeys: Set<string>,
+): boolean {
   const n = productName.toLowerCase().trim();
   if (!n) return false;
   for (const k of whitelistKeys) {
@@ -164,7 +178,7 @@ function isInWhitelist(productName: string, whitelistKeys: Set<string>): boolean
  */
 export async function matchCategoryProducts(
   category: string,
-  siteIds?: string[]
+  siteIds?: string[],
 ): Promise<CategoryMatchResponse | null> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -172,7 +186,9 @@ export async function matchCategoryProducts(
     return null;
   }
 
-  const results = await readJson<ScrapeResult[]>("results.json").catch(() => []);
+  const results = await readJson<ScrapeResult[]>("results.json").catch(
+    () => [],
+  );
   const products = await readJson<Product[]>("products.json");
   const sites = await readJson<Site[]>("sites.json");
 
@@ -193,27 +209,39 @@ export async function matchCategoryProducts(
   const productIdsInCategory = products
     .filter((p) => {
       const pCat = (p.category || "").toLowerCase().trim();
-      return p.category === category || pCat.includes(catLower) || catLower.includes(pCat);
+      return (
+        p.category === category ||
+        pCat.includes(catLower) ||
+        catLower.includes(pCat)
+      );
     })
     .map((p) => p.id);
-  const categoryResults = results.filter((r) => productIdsInCategory.includes(r.productId));
+  const categoryResults = results.filter((r) =>
+    productIdsInCategory.includes(r.productId),
+  );
 
   const whitelistKeys = new Set(
-    products.flatMap((p) => [p.name, p.searchTerm].filter(Boolean).map((s) => s.toLowerCase().trim()))
+    products.flatMap((p) =>
+      [p.name, p.searchTerm].filter(Boolean).map((s) => s.toLowerCase().trim()),
+    ),
   );
 
   const anchorSite = getAnchorSite(targetSites);
   const otherSites = targetSites.filter((s) => !isAnchorSite(s));
 
   const usePlaywrightSites = targetSites.filter(
-    (s) => s.scraperConfig?.searchStrategy === "searchBar" || s.usePlaywright
+    (s) => s.scraperConfig?.searchStrategy === "searchBar" || s.usePlaywright,
   );
   const browser =
     usePlaywrightSites.length > 0
-      ? await import("playwright").then((pw) => pw.chromium.launch({ headless: true }))
+      ? await import("playwright").then((pw) =>
+          pw.chromium.launch({ headless: true }),
+        )
       : undefined;
 
-  await logScrape(`Category match: category="${category}", Diez-first flow, ${targetSites.length} site(s)`);
+  await logScrape(
+    `Category match: category="${category}", Diez-first flow, ${targetSites.length} site(s)`,
+  );
 
   const siteProducts: SiteProductData[] = [];
 
@@ -224,11 +252,22 @@ export async function matchCategoryProducts(
       return { comparison: [], unmatched_highlights: [] };
     }
 
-    const diezProducts = await scrapeCategoryFromSite(anchorSite, category, browser);
-    const newProducts = diezProducts.filter((p) => !isInWhitelist(p.name, whitelistKeys));
+    const diezProducts = await scrapeCategoryFromSite(
+      anchorSite,
+      category,
+      browser,
+    );
+    const newProducts = diezProducts.filter(
+      (p) => !isInWhitelist(p.name, whitelistKeys),
+    );
 
-    progressEmit("status", `דיאז: ${diezProducts.length} מוצרים, ${newProducts.length} חדשים (לא בוויטליסט)`);
-    await logScrape(`Category match: Diez ${diezProducts.length} products, ${newProducts.length} new (not in whitelist)`);
+    progressEmit(
+      "status",
+      `דיאז: ${diezProducts.length} מוצרים, ${newProducts.length} חדשים (לא בוויטליסט)`,
+    );
+    await logScrape(
+      `Category match: Diez ${diezProducts.length} products, ${newProducts.length} new (not in whitelist)`,
+    );
 
     siteProducts.push({
       siteName: anchorSite.name,
@@ -238,8 +277,12 @@ export async function matchCategoryProducts(
 
     // Step 2: For new products, search in other sites via search bar (with fallback variations)
     const { scrapeSite } = await import("./scraperService.js");
-    const { normalizeProduct, filterMatchingProducts, dedupeByUrl, getSearchTermFallbacks } =
-      await import("./normalization.service.js");
+    const {
+      normalizeProduct,
+      filterMatchingProducts,
+      dedupeByUrl,
+      getSearchTermFallbacks,
+    } = await import("./normalization.service.js");
 
     for (const otherSite of otherSites) {
       const siteItems: SiteProductItem[] = [];
@@ -272,20 +315,31 @@ export async function matchCategoryProducts(
             const matched = filterMatchingProducts(normalized, newProduct.name);
             const deduped = dedupeByUrl(matched);
             if (deduped.length > 0) {
-              const best = deduped.reduce((a, b) => (a.price < b.price ? a : b));
-              siteItems.push({ name: best.name, price: best.price, url: best.productUrl });
+              const best = deduped.reduce((a, b) =>
+                a.price < b.price ? a : b,
+              );
+              siteItems.push({
+                name: best.name,
+                price: best.price,
+                url: best.productUrl,
+              });
               await logScrape(
-                `${otherSite.name}: found "${newProduct.name}" (via "${searchTerm}") @ ${best.price} ILS`
+                `${otherSite.name}: found "${newProduct.name}" (via "${searchTerm}") @ ${best.price} ILS`,
               );
               found = true;
               break;
             }
           } catch (err: any) {
-            await logScrapeError(`${otherSite.name} search for "${searchTerm}"`, err);
+            await logScrapeError(
+              `${otherSite.name} search for "${searchTerm}"`,
+              err,
+            );
           }
         }
         if (!found && searchTerms.length > 1) {
-          await logScrape(`${otherSite.name}: no results for "${newProduct.name}" after ${searchTerms.length} variations`);
+          await logScrape(
+            `${otherSite.name}: no results for "${newProduct.name}" after ${searchTerms.length} variations`,
+          );
         }
       }
 
@@ -299,15 +353,23 @@ export async function matchCategoryProducts(
     if (browser) await browser.close();
   }
 
-  const totalProducts = siteProducts.reduce((sum, s) => sum + s.products.length, 0);
+  const totalProducts = siteProducts.reduce(
+    (sum, s) => sum + s.products.length,
+    0,
+  );
   if (totalProducts === 0) {
     progressEmit("status", `לא נמצאו מוצרים בקטגוריה "${category}" באף אתר`);
     await logScrape("Category match: no products found in any site");
     return { comparison: [], unmatched_highlights: [] };
   }
 
-  progressEmit("status", `מתחיל התאמת מוצרים בקטגוריה "${category}" עבור ${siteProducts.length} אתר(ים)`);
-  await logScrape(`Category match: ${totalProducts} total product(s) across ${siteProducts.length} site(s), sending to GPT for matching`);
+  progressEmit(
+    "status",
+    `מתחיל התאמת מוצרים בקטגוריה "${category}" עבור ${siteProducts.length} אתר(ים)`,
+  );
+  await logScrape(
+    `Category match: ${totalProducts} total product(s) across ${siteProducts.length} site(s), sending to GPT for matching`,
+  );
   progressEmit("status", `סה"כ ${totalProducts} מוצרים נמצאו`);
 
   const prompt = `**Role**: Music Gear Data Matching Expert
@@ -368,9 +430,13 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
   await logLLMRequest(
     `Category Match: ${category}`,
     category,
-    siteProducts.map((s) => ({ name: s.siteName, baseUrl: s.siteUrl, searchUrl: s.siteUrl })),
+    siteProducts.map((s) => ({
+      name: s.siteName,
+      baseUrl: s.siteUrl,
+      searchUrl: s.siteUrl,
+    })),
     prompt,
-    model
+    model,
   ).catch((err) => console.error("[LLM Logger] Failed to log request:", err));
 
   progressEmit("llm_prompt", JSON.stringify({ category, prompt }));
@@ -401,7 +467,7 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
           "Content-Type": "application/json",
         },
         timeout: 60000,
-      }
+      },
     );
 
     const content = response.data.choices[0]?.message?.content?.trim();
@@ -409,7 +475,8 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
 
     const jsonStr = extractMatchingJsonFromResponse(content);
     if (!jsonStr) {
-      const isRefusal = /^(I'm sorry|I cannot|I'm unable|I don't have|As an AI)/i.test(content);
+      const isRefusal =
+        /^(I'm sorry|I cannot|I'm unable|I don't have|As an AI)/i.test(content);
       const msg = isRefusal
         ? "המודל לא יכול לבצע את המשימה - נסה מודל אחר"
         : "תשובה לא צפויה מהמודל - לא נמצא JSON";
@@ -423,32 +490,56 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
     const anchorSite = getAnchorSite(targetSites);
     const diezName = anchorSite?.name || "דיאז";
     const filteredComparison = (result.comparison || []).filter((item) => {
-      const hasDiez = item.prices?.some((p) => p.site === diezName || p.site?.toLowerCase().includes("diez"));
+      const hasDiez = item.prices?.some(
+        (p) => p.site === diezName || p.site?.toLowerCase().includes("diez"),
+      );
       return hasDiez && (item.prices?.length ?? 0) >= 2;
     });
     result.comparison = filteredComparison;
 
-    await logLLMResponse(`Category Match: ${category}`, response, result).catch((err) =>
-      console.error("[LLM Logger] Failed to log response:", err)
+    await logLLMResponse(`Category Match: ${category}`, response, result).catch(
+      (err) => console.error("[LLM Logger] Failed to log response:", err),
     );
 
-    const rawContent = response.data?.choices?.[0]?.message?.content?.trim() || "";
-    progressEmit("llm_response", JSON.stringify({ category, rawResponse: rawContent, parsedResult: result }));
+    const rawContent =
+      response.data?.choices?.[0]?.message?.content?.trim() || "";
+    progressEmit(
+      "llm_response",
+      JSON.stringify({
+        category,
+        rawResponse: rawContent,
+        parsedResult: result,
+      }),
+    );
 
-    progressEmit("status", `התאמה הושלמה: נמצאו ${result.comparison.length} מוצרים משותפים (דיאז + אתרים נוספים)`);
+    progressEmit(
+      "status",
+      `התאמה הושלמה: נמצאו ${result.comparison.length} מוצרים משותפים (דיאז + אתרים נוספים)`,
+    );
     if (result.unmatched_highlights && result.unmatched_highlights.length > 0) {
-      progressEmit("status", `נמצאו ${result.unmatched_highlights.length} מוצרים ייחודיים`);
+      progressEmit(
+        "status",
+        `נמצאו ${result.unmatched_highlights.length} מוצרים ייחודיים`,
+      );
     }
 
     return result;
   } catch (err: any) {
     await logLLMError(`Category Match: ${category}`, err, {
       category,
-      siteProducts: siteProducts.map((s) => ({ name: s.siteName, productCount: s.products.length })),
+      siteProducts: siteProducts.map((s) => ({
+        name: s.siteName,
+        productCount: s.products.length,
+      })),
       model,
-    }).catch((logErr) => console.error("[LLM Logger] Failed to log error:", logErr));
+    }).catch((logErr) =>
+      console.error("[LLM Logger] Failed to log error:", logErr),
+    );
 
-    progressEmit("error", `שגיאה בהתאמת קטגוריה: ${err.message || "שגיאה לא ידועה"}`);
+    progressEmit(
+      "error",
+      `שגיאה בהתאמת קטגוריה: ${err.message || "שגיאה לא ידועה"}`,
+    );
     console.error(`[Category Matcher] Error:`, err.message);
     return null;
   }
