@@ -48,6 +48,7 @@ function extractMatchingJsonFromResponse(content: string): string | null {
 import { emit as progressEmit } from "./scrapeProgress.js";
 import { logScrape, logScrapeError } from "./scrapeLogger.js";
 import { ensureAnchorSiteInList } from "../config/anchorSite.js";
+import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
 import { logLLMRequest, logLLMResponse, logLLMError } from "./llmLogger.js";
 import type { ScrapeResult, Product, Site } from "../types.js";
 
@@ -228,7 +229,7 @@ export async function matchCategoryProducts(
   const browser =
     usePlaywrightSites.length > 0
       ? await import("playwright").then((pw) =>
-          pw.chromium.launch({ headless: true }),
+          pw.chromium.launch(getChromiumLaunchOptions()),
         )
       : undefined;
 

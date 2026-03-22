@@ -1,4 +1,5 @@
 import type { Page } from "playwright";
+import { isDiezSite } from "../config/diezSite.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product, Site } from "../types.js";
 import { extractNavigatorPriceFromHtml } from "./navigatorPriceExtract.js";
@@ -21,6 +22,77 @@ async function runPreSteps(page: Page, site: Site): Promise<void> {
   }
 }
 
+function hostnameLooksLikeHalilit(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === "halilit.co.il" || h.endsWith(".halilit.co.il");
+  } catch {
+    return /halilit\.co\.il/i.test(url);
+  }
+}
+
+function isHalilitSite(site: Site): boolean {
+  return (
+    hostnameLooksLikeHalilit(site.baseUrl || "") ||
+    hostnameLooksLikeHalilit(site.siteUrl || "")
+  );
+}
+
+/** Remove sort `order` param so Halilit default relevance order is used. */
+function stripHalilitSortParams(url: string): string {
+  try {
+    const u = new URL(url);
+    u.searchParams.delete("order");
+    let out = u.href;
+    if (out.endsWith("?")) out = out.slice(0, -1);
+    return out;
+  } catch {
+    return url;
+  }
+}
+
+function normTitleForHalilitMatch(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Keep only result links whose visible title equals the product model (normalized). */
+function filterHalilitExactModelCandidates(
+  product: Product,
+  candidates: LinkCandidate[],
+): LinkCandidate[] {
+  const wanted =
+    normTitleForHalilitMatch(productSearchQuery(product)) ||
+    normTitleForHalilitMatch(product.name);
+  if (!wanted) return [];
+  return candidates.filter((c) => normTitleForHalilitMatch(c.text) === wanted);
+}
+
+async function revealDiezSearchBar(page: Page, site: Site): Promise<void> {
+  if (!isDiezSite(site)) return;
+  const toggles = [
+    "button.elementor-search-form__toggle",
+    ".elementor-search-form__toggle",
+    "[class*='elementor-search-form__toggle']",
+    "button[aria-label*='חיפוש' i]",
+    "button[aria-label*='search' i]",
+    ".search-toggle",
+    "[data-open-search]",
+  ];
+  for (const sel of toggles) {
+    const loc = page.locator(sel).first();
+    const vis = await loc.isVisible().catch(() => false);
+    if (vis) {
+      await loc.click({ timeout: 4000 }).catch(() => null);
+      await new Promise((r) => setTimeout(r, 450));
+      return;
+    }
+  }
+}
+
 function buildSearchUrl(site: Site, query: string): string {
   const encoded = encodeURIComponent(query);
   return site.searchUrlTemplate
@@ -36,6 +108,7 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
   if (cfg?.searchStrategy === "searchBar" && cfg.searchInputSelector) {
     await page.goto(root, { waitUntil: "domcontentloaded", timeout: 30000 });
     await runPreSteps(page, site);
+    await revealDiezSearchBar(page, site);
     const searchInput = page.locator(cfg.searchInputSelector).first();
     await searchInput.waitFor({ state: "visible", timeout: 10000 }).catch(() => null);
     await searchInput.fill("");
@@ -48,10 +121,18 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
     await new Promise((r) => setTimeout(r, 2000));
   } else if (site.searchUrlTemplate) {
     const pathOrUrl = buildSearchUrl(site, query);
-    const url = pathOrUrl.startsWith("http")
+    let url = pathOrUrl.startsWith("http")
       ? pathOrUrl
       : new URL(pathOrUrl.replace(/^\//, ""), site.baseUrl).href;
+    if (isHalilitSite(site)) url = stripHalilitSortParams(url);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+    if (isHalilitSite(site)) {
+      const current = page.url();
+      const fixed = stripHalilitSortParams(current);
+      if (fixed !== current) {
+        await page.goto(fixed, { waitUntil: "domcontentloaded", timeout: 30000 });
+      }
+    }
     await runPreSteps(page, site);
   } else {
     await page.goto(root, { waitUntil: "domcontentloaded", timeout: 30000 });
@@ -157,7 +238,8 @@ async function gotoCategoryIfConfigured(
 ): Promise<boolean> {
   const raw = site.scraperConfig?.categoryUrlByProductCategory?.[product.category];
   if (!raw) return false;
-  const url = raw.startsWith("http") ? raw : new URL(raw.replace(/^\//, ""), site.baseUrl).href;
+  let url = raw.startsWith("http") ? raw : new URL(raw.replace(/^\//, ""), site.baseUrl).href;
+  if (isHalilitSite(site)) url = stripHalilitSortParams(url);
   await logScrape(`Navigator ${site.name}: fallback category URL ${url}`);
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
   await runPreSteps(page, site);
@@ -167,6 +249,7 @@ async function gotoCategoryIfConfigured(
 async function searchFromCurrentPage(page: Page, site: Site, query: string): Promise<void> {
   const cfg = site.scraperConfig;
   if (cfg?.searchStrategy === "searchBar" && cfg.searchInputSelector) {
+    await revealDiezSearchBar(page, site);
     const si = page.locator(cfg.searchInputSelector).first();
     await si.waitFor({ state: "visible", timeout: 8000 }).catch(() => null);
     await si.fill("").catch(() => null);
@@ -260,12 +343,26 @@ export async function navigateAndExtractProduct(
     }
 
     let candidates = await collectCandidates(page, site);
+    if (isHalilitSite(site)) {
+      const before = candidates.length;
+      candidates = filterHalilitExactModelCandidates(product, candidates);
+      await logScrape(
+        `Navigator ${site.name}: Halilit exact-title filter ${before} → ${candidates.length} candidate(s)`,
+      );
+    }
     await logScrape(`Navigator ${site.name}: ${candidates.length} candidate link(s)`);
 
     if (candidates.length === 0 && categoryUrlConfigured) {
       await gotoCategoryIfConfigured(page, site, product);
       await searchFromCurrentPage(page, site, query);
       candidates = await collectCandidates(page, site);
+      if (isHalilitSite(site)) {
+        const before = candidates.length;
+        candidates = filterHalilitExactModelCandidates(product, candidates);
+        await logScrape(
+          `Navigator ${site.name}: Halilit exact-title filter (category path) ${before} → ${candidates.length}`,
+        );
+      }
       await logScrape(`Navigator ${site.name}: after category fallback, ${candidates.length} candidate(s)`);
     }
 

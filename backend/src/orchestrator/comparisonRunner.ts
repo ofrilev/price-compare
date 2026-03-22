@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { chromium } from "playwright";
+import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
 import { readJson } from "../services/store.js";
 import { emit as progressEmit } from "../services/scrapeProgress.js";
 import { logScrape, logScrapeError } from "../services/scrapeLogger.js";
@@ -59,7 +60,9 @@ export async function runScraperComparison(
   await logScrape(`Comparison started: ${targetProducts.length} product(s), ${targetSites.length} site(s)`);
   await logScrape(`Request params: productIds=${JSON.stringify(options.productIds)}, category=${options.category}, siteIds=${JSON.stringify(options.siteIds)}`);
 
-  const browser = hasPlaywright ? await chromium.launch({ headless: true }) : undefined;
+  const browser = hasPlaywright
+    ? await chromium.launch(getChromiumLaunchOptions())
+    : undefined;
   if (browser) await logScrape("Browser launched (reused across sites)");
 
   try {

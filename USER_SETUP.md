@@ -73,7 +73,8 @@ curl -X POST http://localhost:3001/api/auth/register \
 **For production**, replace `http://localhost:3001` with your backend URL:
 
 ```bash
-curl -X POST https://your-backend.railway.app/api/auth/register \
+curl -X POST https://price-scraper-backend-production-7ba3.up.railway.app/api/auth/login
+ \
   -H "Content-Type: application/json" \
   -d '{
     "username": "your-username",
