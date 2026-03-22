@@ -1,7 +1,10 @@
+import { mkdir } from "fs/promises";
+import { join } from "path";
 import type { Page } from "playwright";
 import { isDiezSite } from "../config/diezSite.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product, Site } from "../types.js";
+import { getDataDir } from "./store.js";
 import { extractNavigatorPriceFromHtml } from "./navigatorPriceExtract.js";
 import { similarityScore } from "./navigatorStringSimilarity.js";
 import { logScrape } from "./scrapeLogger.js";
@@ -10,6 +13,31 @@ import { tryNavigatorVariantAssist } from "./navigatorVariantAssist.service.js";
 
 /** Navigator Playwright timeouts (Railway / cost control) */
 const NAV_PLAYWRIGHT_TIMEOUT_MS = 10_000;
+
+/** Diez: wait for lazy search scripts after DOM ready (longer than navigation timeout). */
+const DIEZ_NETWORKIDLE_MS = 25_000;
+
+const DIEZ_DEBUG_SCREENSHOT_DIR = "navigator-diez-debug";
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+async function saveDiezSearchDebugScreenshot(
+  page: Page,
+  tag: string,
+): Promise<void> {
+  try {
+    const dir = join(getDataDir(), DIEZ_DEBUG_SCREENSHOT_DIR);
+    await mkdir(dir, { recursive: true });
+    const safe = tag.replace(/[^\w.-]+/g, "_").slice(0, 100);
+    const file = join(dir, `diez-${Date.now()}-${safe}.png`);
+    await page.screenshot({ path: file, fullPage: true });
+    await logScrape(`Diez debug screenshot: ${file}`);
+  } catch (e) {
+    await logScrape(`Diez screenshot failed (${tag}): ${String(e)}`);
+  }
+}
 
 const ELEMENTOR_SEARCH_TOGGLE =
   ".elementor-search-form__toggle, .search-toggle, .header-search-button";
@@ -109,23 +137,75 @@ function filterHalilitExactModelCandidates(
   return candidates.filter((c) => normTitleForHalilitMatch(c.text) === wanted);
 }
 
-/** Diez (and similar): header search icon must be clicked before the search field is usable. */
-async function clickDiezSearchIcon(page: Page, site: Site): Promise<void> {
-  if (!isDiezSite(site)) return;
-  try {
-    await page.click(".search-icon", { timeout: 5000 });
-    await new Promise((r) => setTimeout(r, 350));
-  } catch {
-    // Icon absent or not clickable — continue with Elementor toggle / input wait
-  }
-}
-
 async function revealElementorSearchUi(page: Page, site: Site): Promise<void> {
   if (!usesElementorSearchUi(site)) return;
   const searchToggle = page.locator(ELEMENTOR_SEARCH_TOGGLE).first();
   if (await searchToggle.isVisible().catch(() => false)) {
     await searchToggle.click({ timeout: 5000 }).catch(() => null);
     await new Promise((r) => setTimeout(r, 450));
+  }
+}
+
+/**
+ * Diez search bar: networkidle, .search-icon, Elementor toggle, then input.
+ * Each locator step is wrapped — failures write a PNG under data/navigator-diez-debug/.
+ */
+async function runDiezSearchBarFlow(
+  page: Page,
+  site: Site,
+  cfg: NonNullable<Site["scraperConfig"]>,
+  query: string,
+): Promise<void> {
+  if (!isDiezSite(site)) return;
+
+  try {
+    await page.waitForLoadState("networkidle", { timeout: DIEZ_NETWORKIDLE_MS });
+  } catch {
+    await logScrape(
+      `Diez: networkidle wait exceeded (${DIEZ_NETWORKIDLE_MS}ms), continuing with search UI`,
+    );
+  }
+
+  try {
+    await page.click(".search-icon", { timeout: 5000 });
+    await sleep(350);
+  } catch (err) {
+    await saveDiezSearchDebugScreenshot(page, "search-icon-click");
+    throw err;
+  }
+
+  try {
+    const searchToggle = page.locator(ELEMENTOR_SEARCH_TOGGLE).first();
+    if (await searchToggle.isVisible().catch(() => false)) {
+      await searchToggle.click({ timeout: 5000 });
+      await sleep(450);
+    }
+  } catch (err) {
+    await saveDiezSearchDebugScreenshot(page, "elementor-search-toggle");
+    throw err;
+  }
+
+  try {
+    const searchInput = page.locator(ELEMENTOR_SEARCH_INPUT).first();
+    await searchInput.waitFor({
+      state: "visible",
+      timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+    });
+    await searchInput.fill("");
+    await searchInput.fill(query);
+    if (cfg.searchSubmitSelector) {
+      await page
+        .locator(cfg.searchSubmitSelector)
+        .first()
+        .click({ timeout: 5000 })
+        .catch(() => null);
+    } else {
+      await searchInput.press("Enter");
+    }
+    await sleep(2000);
+  } catch (err) {
+    await saveDiezSearchDebugScreenshot(page, "search-input-submit");
+    throw err;
   }
 }
 
@@ -147,29 +227,32 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
   ) {
     await navigatorGoto(page, site, root);
     await runPreSteps(page, site);
-    await clickDiezSearchIcon(page, site);
-    await revealElementorSearchUi(page, site);
-    const searchInput = usesElementorSearchUi(site)
-      ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
-      : page.locator(cfg.searchInputSelector!).first();
-    if (usesElementorSearchUi(site)) {
-      await searchInput.waitFor({
-        state: "visible",
-        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
-      });
+    if (isDiezSite(site)) {
+      await runDiezSearchBarFlow(page, site, cfg, query);
     } else {
-      await searchInput
-        .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
-        .catch(() => null);
+      await revealElementorSearchUi(page, site);
+      const searchInput = usesElementorSearchUi(site)
+        ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
+        : page.locator(cfg.searchInputSelector!).first();
+      if (usesElementorSearchUi(site)) {
+        await searchInput.waitFor({
+          state: "visible",
+          timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+        });
+      } else {
+        await searchInput
+          .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
+          .catch(() => null);
+      }
+      await searchInput.fill("");
+      await searchInput.fill(query);
+      if (cfg.searchSubmitSelector) {
+        await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
+      } else {
+        await searchInput.press("Enter");
+      }
+      await new Promise((r) => setTimeout(r, 2000));
     }
-    await searchInput.fill("");
-    await searchInput.fill(query);
-    if (cfg.searchSubmitSelector) {
-      await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
-    } else {
-      await searchInput.press("Enter");
-    }
-    await new Promise((r) => setTimeout(r, 2000));
   } else if (site.searchUrlTemplate) {
     const pathOrUrl = buildSearchUrl(site, query);
     const url = pathOrUrl.startsWith("http")
@@ -294,29 +377,32 @@ async function searchFromCurrentPage(page: Page, site: Site, query: string): Pro
     cfg?.searchStrategy === "searchBar" &&
     (cfg.searchInputSelector || usesElementorSearchUi(site))
   ) {
-    await clickDiezSearchIcon(page, site);
-    await revealElementorSearchUi(page, site);
-    const si = usesElementorSearchUi(site)
-      ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
-      : page.locator(cfg.searchInputSelector!).first();
-    if (usesElementorSearchUi(site)) {
-      await si.waitFor({
-        state: "visible",
-        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
-      });
+    if (isDiezSite(site)) {
+      await runDiezSearchBarFlow(page, site, cfg, query);
     } else {
-      await si
-        .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
-        .catch(() => null);
+      await revealElementorSearchUi(page, site);
+      const si = usesElementorSearchUi(site)
+        ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
+        : page.locator(cfg.searchInputSelector!).first();
+      if (usesElementorSearchUi(site)) {
+        await si.waitFor({
+          state: "visible",
+          timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+        });
+      } else {
+        await si
+          .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
+          .catch(() => null);
+      }
+      await si.fill("").catch(() => null);
+      await si.fill(query).catch(() => null);
+      if (cfg.searchSubmitSelector) {
+        await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
+      } else {
+        await si.press("Enter").catch(() => null);
+      }
+      await new Promise((r) => setTimeout(r, 2000));
     }
-    await si.fill("").catch(() => null);
-    await si.fill(query).catch(() => null);
-    if (cfg.searchSubmitSelector) {
-      await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
-    } else {
-      await si.press("Enter").catch(() => null);
-    }
-    await new Promise((r) => setTimeout(r, 2000));
   }
   if (cfg?.waitExtraMs) {
     await new Promise((r) => setTimeout(r, cfg.waitExtraMs));

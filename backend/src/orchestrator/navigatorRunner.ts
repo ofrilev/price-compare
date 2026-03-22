@@ -17,8 +17,11 @@ import {
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
+/** Real desktop Chrome UA — avoids HeadlessChrome fingerprint that some sites block */
 const DEFAULT_USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+const DIEZ_VIEWPORT = { width: 1920, height: 1080 } as const;
 
 export interface RunNavigatorComparisonOptions {
   productIds?: string[];
@@ -112,9 +115,12 @@ export async function runNavigatorComparison(
             );
             continue;
           }
-          const page = await browser.newPage();
           const ua = site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT;
-          await page.setExtraHTTPHeaders({ "User-Agent": ua });
+          const context = await browser.newContext({
+            userAgent: ua,
+            ...(isDiezSite(site) ? { viewport: DIEZ_VIEWPORT } : {}),
+          });
+          const page = await context.newPage();
           try {
             const extracted = await navigateAndExtractProduct(page, site, product, plan);
             if (extracted && extracted.price > 0) {
@@ -132,6 +138,7 @@ export async function runNavigatorComparison(
             await logScrapeError(`${site.name} Navigator failed`, err);
           } finally {
             await page.close().catch(() => null);
+            await context.close().catch(() => null);
           }
         }
 

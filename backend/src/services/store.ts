@@ -6,7 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_DATA_DIR = join(__dirname, "../../../data");
 
 /** Lazy so callers (e.g. setup-user) can set process.env.DATA_DIR before first I/O */
-function getDataDir(): string {
+export function getDataDir(): string {
   return process.env.DATA_DIR || DEFAULT_DATA_DIR;
 }
 

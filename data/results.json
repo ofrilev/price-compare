@@ -1445,7 +1445,7 @@
     "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
     "price": 550,
     "currency": "ILS",
-    "productUrl": "https://www.next-pro.co.il/?s=Casio+CT-S100&post_type=product#menu-nextpro-nav",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-casio-ct-s100/",
     "scrapedAt": "2026-03-21T21:28:13.069Z"
   },
   {
@@ -1492,5 +1492,14 @@
     "currency": "ILS",
     "productUrl": "https://www.kley-zemer.co.il/yamaha-p-225%E2%80%93black",
     "scrapedAt": "2026-03-22T20:25:57.669Z"
+  },
+  {
+    "id": "2aa9548a-16da-483b-9884-2a18da71502e",
+    "productId": "5b59c91d-f506-4a60-9429-779b39dbe153",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 2200,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp-10-bk/",
+    "scrapedAt": "2026-03-22T20:54:05.597Z"
   }
 ]

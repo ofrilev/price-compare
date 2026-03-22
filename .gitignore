@@ -6,3 +6,4 @@ dist
 .DS_Store
 logs/
 data/users.json
+data/navigator-diez-debug/
