@@ -427,14 +427,7 @@ export default function Scrape() {
         </div>
       ) : null}
 
-      <div className="mb-3 flex flex-wrap gap-3 justify-end">
-        <div
-          className="px-4 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-900 text-sm font-medium"
-          title="שאר מצבי השוואה מושבתים זמנית"
-        >
-          מצב: Navigator (סוכן) בלבד
-        </div>
-      </div>
+      <div className="mb-3 flex flex-wrap gap-3 justify-end"></div>
 
       <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
         <h2 className="text-sm font-semibold text-gray-700 mb-3 text-right">
@@ -694,8 +687,9 @@ export default function Scrape() {
                 חובה לבחור לפחות אתר אחד — ההשוואה לא רצה על כל האתרים אוטומטית.
               </p>
               <p className="text-xs font-normal text-indigo-800">
-                אתר דיאז נשאר תמיד מסומן ולא ניתן לבטל — בשרת הוא נכלל בכל השוואה;
-                ב-Navigator דילוג על דיאז רק כשכבר יש תוצאה מאותו מוצר מאותו יום (UTC).
+                אתר דיאז נשאר תמיד מסומן ולא ניתן לבטל — בשרת הוא נכלל בכל
+                השוואה; ב-Navigator דילוג על דיאז רק כשכבר יש תוצאה מאותו מוצר
+                מאותו יום (UTC).
               </p>
             </div>
             <button

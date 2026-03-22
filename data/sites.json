@@ -166,6 +166,10 @@
       "searchStrategy": "searchBar",
       "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='Search']",
       "priceSelectors": [
+        ".elementor-widget-container p.price ins",
+        ".elementor-widget-container p.price",
+        "p.price ins",
+        "p.price",
         ".price",
         ".product-price",
         "[class*='price']",
@@ -176,6 +180,7 @@
       "priceStrategy": "first",
       "waitStrategy": "domcontentloaded",
       "waitExtraMs": 2000,
+      "excludePriceInDel": true,
       "preSteps": [
         {
           "type": "click",
