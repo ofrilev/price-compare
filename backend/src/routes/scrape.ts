@@ -366,6 +366,26 @@ scrapeRouter.patch("/results/:id", async (req, res) => {
 });
 
 /**
+ * DELETE /api/scrape/results/:id
+ * Remove one stored price row (product × site).
+ */
+scrapeRouter.delete("/results/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const results = await readJson<ScrapeResult[]>("results.json");
+    const next = results.filter((r) => r.id !== id);
+    if (next.length === results.length) {
+      return res.status(404).json({ error: "תוצאה לא נמצאה" });
+    }
+    await writeJson("results.json", next);
+    res.status(204).send();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "מחיקת תוצאה נכשלה" });
+  }
+});
+
+/**
  * POST /api/scrape/match-category
  * Match products across sites for a category using LLM
  */

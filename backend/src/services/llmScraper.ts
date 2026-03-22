@@ -1,5 +1,9 @@
 import axios from "axios";
 import { chromium } from "playwright";
+import {
+  getChromiumLaunchOptions,
+  playwrightHeadlessForEnvironment,
+} from "../config/playwrightLaunch.js";
 import { parsePrice } from "./priceParser.js";
 import { matchesProduct } from "./searchTermNormalizer.js";
 import { logLLMRequest, logLLMResponse, logLLMError } from "./llmLogger.js";
@@ -226,7 +230,11 @@ export async function scrapeWithLLMFallback(
   const waitUntil =
     waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch(
+    getChromiumLaunchOptions({
+      headless: playwrightHeadlessForEnvironment(),
+    }),
+  );
   try {
     const page = await browser.newPage();
     await page.setExtraHTTPHeaders({ "User-Agent": userAgent });

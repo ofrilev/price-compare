@@ -1,4 +1,8 @@
 import { chromium } from "playwright";
+import {
+  getChromiumLaunchOptions,
+  playwrightHeadlessForEnvironment,
+} from "../config/playwrightLaunch.js";
 import * as cheerio from "cheerio";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
@@ -49,7 +53,11 @@ async function scrapeWithPlaywright(
   const waitStrategy = getWaitStrategy(site);
   const waitUntil = waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch(
+    getChromiumLaunchOptions({
+      headless: playwrightHeadlessForEnvironment(),
+    }),
+  );
   try {
     const page = await browser.newPage();
 

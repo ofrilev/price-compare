@@ -1465,5 +1465,32 @@
     "currency": "ILS",
     "productUrl": "https://www.kley-zemer.co.il/yamaha-ck88-stage-keyboard",
     "scrapedAt": "2026-03-22T19:57:43.175Z"
+  },
+  {
+    "id": "18334d27-17b3-4208-b781-85f0f9e1e5c2",
+    "productId": "d7b83ac2-9a2e-4515-b01a-32494490dfa4",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 6980,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%aa%d7%97%d7%a0%d7%aa-%d7%a2%d7%91%d7%95%d7%93%d7%94-%d7%99%d7%9e%d7%94%d7%94-yamaha-ck88/",
+    "scrapedAt": "2026-03-22T20:24:51.680Z"
+  },
+  {
+    "id": "f592d786-b8aa-4c47-979b-77d1b7553be1",
+    "productId": "e73f70bd-ddab-4001-8eee-5005dce1823d",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 3290,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%99%d7%9e%d7%94%d7%94-yamaha-p-225-white-%d7%9b%d7%95%d7%9c%d7%9c-%d7%a9%d7%a0%d7%90%d7%99-%d7%9e%d7%a7%d7%95%d7%a8%d7%99/",
+    "scrapedAt": "2026-03-22T20:25:57.669Z"
+  },
+  {
+    "id": "cec62e68-3a10-4e08-b4a2-552c53d7fc58",
+    "productId": "e73f70bd-ddab-4001-8eee-5005dce1823d",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 3990,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/yamaha-p-225%E2%80%93black",
+    "scrapedAt": "2026-03-22T20:25:57.669Z"
   }
 ]

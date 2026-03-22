@@ -109,6 +109,17 @@ function filterHalilitExactModelCandidates(
   return candidates.filter((c) => normTitleForHalilitMatch(c.text) === wanted);
 }
 
+/** Diez (and similar): header search icon must be clicked before the search field is usable. */
+async function clickDiezSearchIcon(page: Page, site: Site): Promise<void> {
+  if (!isDiezSite(site)) return;
+  try {
+    await page.click(".search-icon", { timeout: 5000 });
+    await new Promise((r) => setTimeout(r, 350));
+  } catch {
+    // Icon absent or not clickable — continue with Elementor toggle / input wait
+  }
+}
+
 async function revealElementorSearchUi(page: Page, site: Site): Promise<void> {
   if (!usesElementorSearchUi(site)) return;
   const searchToggle = page.locator(ELEMENTOR_SEARCH_TOGGLE).first();
@@ -136,6 +147,7 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
   ) {
     await navigatorGoto(page, site, root);
     await runPreSteps(page, site);
+    await clickDiezSearchIcon(page, site);
     await revealElementorSearchUi(page, site);
     const searchInput = usesElementorSearchUi(site)
       ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
@@ -282,6 +294,7 @@ async function searchFromCurrentPage(page: Page, site: Site, query: string): Pro
     cfg?.searchStrategy === "searchBar" &&
     (cfg.searchInputSelector || usesElementorSearchUi(site))
   ) {
+    await clickDiezSearchIcon(page, site);
     await revealElementorSearchUi(page, site);
     const si = usesElementorSearchUi(site)
       ? page.locator(ELEMENTOR_SEARCH_INPUT).first()

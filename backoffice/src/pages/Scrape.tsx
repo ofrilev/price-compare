@@ -443,7 +443,7 @@ export default function Scrape() {
               onChange={(e) => {
                 setCategoryFilter(e.target.value);
               }}
-              className="border rounded px-3 py-2 text-right min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border rounded px-3 py-2 text-right min-w-[240px] w-full max-w-[min(28rem,100%)] sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">כל הקטגוריות</option>
               {categories.map((cat) => (
@@ -463,7 +463,7 @@ export default function Scrape() {
                 setScrapeBrandFilter(e.target.value);
                 setShowProductsDropdown(false);
               }}
-              className="border rounded px-3 py-2 text-right min-w-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border rounded px-3 py-2 text-right min-w-[240px] w-full max-w-[min(28rem,100%)] sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">כל החברות</option>
               <option value="__none__">ללא חברה</option>
@@ -475,7 +475,7 @@ export default function Scrape() {
             </select>
           </div>
           <div
-            className="relative max-w-[min(36rem,calc(100vw-1rem))] w-full sm:w-auto shrink-0"
+            className="relative max-w-[min(52rem,calc(100vw-1rem))] w-full sm:w-auto sm:min-w-[min(52rem,calc(100vw-2rem))] shrink-0"
             ref={productsDropdownRef}
           >
             <label className="block text-xs text-gray-500 mb-1 text-right">
@@ -484,7 +484,11 @@ export default function Scrape() {
             <button
               type="button"
               onClick={() => setShowProductsDropdown((v) => !v)}
-              className="border rounded px-3 py-2 text-right w-full min-w-0 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white flex items-center justify-between gap-2"
+              className={`border rounded px-3 py-2 text-right w-full min-w-0 max-w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white flex items-center justify-between gap-2 ${
+                selectedProductIds.length > 0
+                  ? "sm:min-w-[28rem]"
+                  : "sm:min-w-[20rem]"
+              }`}
             >
               <span className="min-w-0 truncate">
                 {selectedProductIds.length === 0
@@ -496,7 +500,7 @@ export default function Scrape() {
               </span>
             </button>
             {showProductsDropdown && products.length > 0 && (
-              <div className="absolute top-full mt-1 right-0 left-0 sm:left-auto sm:w-full max-w-[min(36rem,calc(100vw-1rem))] bg-white border rounded-lg shadow-lg z-50 max-h-[28rem] flex flex-col min-w-0">
+              <div className="absolute top-full mt-1 right-0 left-0 sm:left-auto sm:w-full max-w-[min(52rem,calc(100vw-1rem))] min-w-[min(100%,20rem)] bg-white border rounded-lg shadow-lg z-50 max-h-[28rem] flex flex-col min-w-0">
                 <div className="p-2 border-b border-gray-100 flex justify-between items-center gap-2 flex-row-reverse flex-wrap">
                   <span className="text-xs text-gray-600">
                     {filteredProductsForDropdown.length === products.length

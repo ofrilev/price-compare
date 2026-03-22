@@ -52,6 +52,29 @@ export default function Results() {
     },
   });
 
+  const deleteResultMutation = useMutation({
+    mutationFn: (id: string) => api.scrape.deleteResult(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
+      queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
+    },
+  });
+
+  const confirmDeleteResult = (
+    resultId: string,
+    productName: string,
+    siteName: string,
+  ) => {
+    if (
+      !window.confirm(
+        `למחוק את התוצאה עבור "${productName}" באתר ${siteName}?`,
+      )
+    ) {
+      return;
+    }
+    deleteResultMutation.mutate(resultId);
+  };
+
   useEffect(() => {
     if (editModal) {
       modalPriceInputRef.current?.focus();
@@ -409,6 +432,9 @@ export default function Results() {
                   <th className="border p-2 text-right sticky right-[180px] bg-gray-100 z-10 min-w-[100px]">
                     קטגוריה
                   </th>
+                  <th className="border p-2 text-right sticky right-[280px] bg-gray-100 z-10 min-w-[120px]">
+                    חברה
+                  </th>
                   {tableSiteColumns.map((site) => (
                     <th
                       key={site.id}
@@ -447,6 +473,9 @@ export default function Results() {
                       </td>
                       <td className="border p-2 text-sm text-gray-600 sticky right-[180px] bg-white z-10">
                         {product.category}
+                      </td>
+                      <td className="border p-2 text-sm text-gray-600 sticky right-[280px] bg-white z-10">
+                        {(product.brand ?? "").trim() || "—"}
                       </td>
                       {tableSiteColumns.map((site) => {
                         const siteResult = findResultForComparisonColumn(
@@ -512,15 +541,31 @@ export default function Results() {
                               <span className="text-xs text-gray-500">
                                 {cellDate.toLocaleDateString("he-IL")}
                               </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  openEditModal(siteResult, product.name, site.name)
-                                }
-                                className="text-xs text-gray-600 hover:text-gray-900 underline mt-0.5 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto"
-                              >
-                                עריכה
-                              </button>
+                              <div className="flex flex-col gap-0.5 mt-0.5 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openEditModal(siteResult, product.name, site.name)
+                                  }
+                                  className="text-xs text-gray-600 hover:text-gray-900 underline"
+                                >
+                                  עריכה
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    confirmDeleteResult(
+                                      siteResult.id,
+                                      product.name,
+                                      site.name,
+                                    )
+                                  }
+                                  disabled={deleteResultMutation.isPending}
+                                  className="text-xs text-red-600 hover:text-red-800 underline disabled:opacity-50"
+                                >
+                                  מחיקה
+                                </button>
+                              </div>
                             </div>
                           </td>
                         );

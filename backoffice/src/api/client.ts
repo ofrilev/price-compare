@@ -113,6 +113,8 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify(body),
       }),
+    deleteResult: (id: string) =>
+      fetchApi<void>(`/scrape/results/${id}`, { method: "DELETE" }),
     lowest: (params?: { category?: string }) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
