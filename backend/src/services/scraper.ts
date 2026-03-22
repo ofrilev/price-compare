@@ -1,4 +1,4 @@
-import { chromium } from "playwright";
+import { getStealthChromium } from "../config/playwrightChromium.js";
 import {
   getChromiumLaunchOptions,
   playwrightHeadlessForEnvironment,
@@ -53,7 +53,7 @@ async function scrapeWithPlaywright(
   const waitStrategy = getWaitStrategy(site);
   const waitUntil = waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
-  const browser = await chromium.launch(
+  const browser = await getStealthChromium().launch(
     getChromiumLaunchOptions({
       headless: playwrightHeadlessForEnvironment(),
     }),

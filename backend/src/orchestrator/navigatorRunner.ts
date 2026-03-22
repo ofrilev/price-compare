@@ -1,6 +1,11 @@
 import { v4 as uuidv4 } from "uuid";
-import { chromium } from "playwright";
+import { getStealthChromium } from "../config/playwrightChromium.js";
 import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
+import {
+  DIEZ_STEALTH_EXTRA_HEADERS,
+  DIEZ_STEALTH_USER_AGENT,
+  DIEZ_STEALTH_VIEWPORT,
+} from "../config/navigatorDiezStealth.js";
 import { readJson } from "../services/store.js";
 import { emit as progressEmit } from "../services/scrapeProgress.js";
 import { logScrape, logScrapeError } from "../services/scrapeLogger.js";
@@ -20,8 +25,6 @@ import type { Site, Product, ScrapeResult } from "../types.js";
 /** Real desktop Chrome UA — avoids HeadlessChrome fingerprint that some sites block */
 const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-
-const DIEZ_VIEWPORT = { width: 1920, height: 1080 } as const;
 
 export interface RunNavigatorComparisonOptions {
   productIds?: string[];
@@ -84,8 +87,8 @@ export async function runNavigatorComparison(
     `Navigator params: productIds=${JSON.stringify(options.productIds)}, category=${options.category}, siteIds=${JSON.stringify(options.siteIds)}`
   );
 
-  const browser = await chromium.launch(getChromiumLaunchOptions());
-  await logScrape("Navigator: browser launched");
+  const browser = await getStealthChromium().launch(getChromiumLaunchOptions());
+  await logScrape("Navigator: browser launched (playwright-extra stealth)");
 
   try {
     for (const product of targetProducts) {
@@ -115,11 +118,17 @@ export async function runNavigatorComparison(
             );
             continue;
           }
-          const ua = site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT;
-          const context = await browser.newContext({
-            userAgent: ua,
-            ...(isDiezSite(site) ? { viewport: DIEZ_VIEWPORT } : {}),
-          });
+          const context = await browser.newContext(
+            isDiezSite(site)
+              ? {
+                  userAgent: DIEZ_STEALTH_USER_AGENT,
+                  viewport: DIEZ_STEALTH_VIEWPORT,
+                  extraHTTPHeaders: { ...DIEZ_STEALTH_EXTRA_HEADERS },
+                }
+              : {
+                  userAgent: site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT,
+                },
+          );
           const page = await context.newPage();
           try {
             const extracted = await navigateAndExtractProduct(page, site, product, plan);

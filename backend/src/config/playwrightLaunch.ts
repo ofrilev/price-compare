@@ -1,9 +1,14 @@
 import type { LaunchOptions } from "playwright";
 
+const DEFAULT_STEALTH_ARGS = [
+  "--disable-blink-features=AutomationControlled",
+  "--no-sandbox",
+  "--disable-dev-shm-usage",
+];
+
 /**
- * Shared Chromium launch for Docker / Railway:
- * - `headless: true` by default (override via `overrides` or `NODE_ENV !== "production"` callers)
- * - `--disable-dev-shm-usage` avoids OOM / crashes when /dev/shm is small in containers
+ * Shared Chromium launch for Docker / Railway + stealth-friendly flags.
+ * Use with `getStealthChromium()` from playwright-extra (stealth plugin).
  */
 export function getChromiumLaunchOptions(
   overrides?: Partial<LaunchOptions>,
@@ -11,7 +16,7 @@ export function getChromiumLaunchOptions(
   const { args: overrideArgs, ...rest } = overrides ?? {};
   return {
     headless: true,
-    args: ["--disable-dev-shm-usage", ...(overrideArgs ?? [])],
+    args: [...DEFAULT_STEALTH_ARGS, ...(overrideArgs ?? [])],
     ...rest,
   };
 }

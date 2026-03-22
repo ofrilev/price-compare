@@ -1,5 +1,5 @@
 import axios from "axios";
-import { chromium } from "playwright";
+import { getStealthChromium } from "../config/playwrightChromium.js";
 import {
   getChromiumLaunchOptions,
   playwrightHeadlessForEnvironment,
@@ -230,7 +230,7 @@ export async function scrapeWithLLMFallback(
   const waitUntil =
     waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
-  const browser = await chromium.launch(
+  const browser = await getStealthChromium().launch(
     getChromiumLaunchOptions({
       headless: playwrightHeadlessForEnvironment(),
     }),

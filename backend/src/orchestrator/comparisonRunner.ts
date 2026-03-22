@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { chromium } from "playwright";
+import { getStealthChromium } from "../config/playwrightChromium.js";
 import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
 import { readJson } from "../services/store.js";
 import { emit as progressEmit } from "../services/scrapeProgress.js";
@@ -61,7 +61,7 @@ export async function runScraperComparison(
   await logScrape(`Request params: productIds=${JSON.stringify(options.productIds)}, category=${options.category}, siteIds=${JSON.stringify(options.siteIds)}`);
 
   const browser = hasPlaywright
-    ? await chromium.launch(getChromiumLaunchOptions())
+    ? await getStealthChromium().launch(getChromiumLaunchOptions())
     : undefined;
   if (browser) await logScrape("Browser launched (reused across sites)");
 

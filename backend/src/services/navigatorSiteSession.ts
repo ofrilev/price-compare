@@ -1,6 +1,6 @@
 import { mkdir } from "fs/promises";
 import { join } from "path";
-import type { Page } from "playwright";
+import type { Locator, Page } from "playwright";
 import { isDiezSite } from "../config/diezSite.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product, Site } from "../types.js";
@@ -14,10 +14,17 @@ import { tryNavigatorVariantAssist } from "./navigatorVariantAssist.service.js";
 /** Navigator Playwright timeouts (Railway / cost control) */
 const NAV_PLAYWRIGHT_TIMEOUT_MS = 10_000;
 
-/** Diez: wait for lazy search scripts after DOM ready (longer than navigation timeout). */
-const DIEZ_NETWORKIDLE_MS = 25_000;
-
 const DIEZ_DEBUG_SCREENSHOT_DIR = "navigator-diez-debug";
+
+/** Cloudflare / lazy UI: pause before touching search (domcontentloaded already used on goto). */
+const DIEZ_HUMAN_DELAY_MIN_MS = 2000;
+const DIEZ_HUMAN_DELAY_MAX_MS = 3000;
+
+const DIEZ_SEARCH_TOGGLE_SELECTORS = [
+  ".elementor-search-form__toggle",
+  ".search-icon",
+  ".header-search-icon",
+] as const;
 
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
@@ -40,7 +47,7 @@ async function saveDiezSearchDebugScreenshot(
 }
 
 const ELEMENTOR_SEARCH_TOGGLE =
-  ".elementor-search-form__toggle, .search-toggle, .header-search-button";
+  ".elementor-search-form__toggle, .search-toggle, .header-search-button, .header-search-icon";
 
 const ELEMENTOR_SEARCH_INPUT =
   'input[type="search"], .elementor-search-form__input';
@@ -147,7 +154,7 @@ async function revealElementorSearchUi(page: Page, site: Site): Promise<void> {
 }
 
 /**
- * Diez search bar: networkidle, .search-icon, Elementor toggle, then input.
+ * Diez search bar: human delay (Cloudflare), then search toggles, then input[type="search"].
  * Each locator step is wrapped — failures write a PNG under data/navigator-diez-debug/.
  */
 async function runDiezSearchBarFlow(
@@ -158,39 +165,66 @@ async function runDiezSearchBarFlow(
 ): Promise<void> {
   if (!isDiezSite(site)) return;
 
-  try {
-    await page.waitForLoadState("networkidle", { timeout: DIEZ_NETWORKIDLE_MS });
-  } catch {
-    await logScrape(
-      `Diez: networkidle wait exceeded (${DIEZ_NETWORKIDLE_MS}ms), continuing with search UI`,
+  const humanMs =
+    DIEZ_HUMAN_DELAY_MIN_MS +
+    Math.floor(
+      Math.random() *
+        (DIEZ_HUMAN_DELAY_MAX_MS - DIEZ_HUMAN_DELAY_MIN_MS + 1),
     );
-  }
+  await sleep(humanMs);
+  await logScrape(`Diez: human-like delay ${humanMs}ms before search UI`);
 
   try {
-    await page.click(".search-icon", { timeout: 5000 });
-    await sleep(350);
-  } catch (err) {
-    await saveDiezSearchDebugScreenshot(page, "search-icon-click");
-    throw err;
-  }
-
-  try {
-    const searchToggle = page.locator(ELEMENTOR_SEARCH_TOGGLE).first();
-    if (await searchToggle.isVisible().catch(() => false)) {
-      await searchToggle.click({ timeout: 5000 });
-      await sleep(450);
+    let clicked = false;
+    for (const sel of DIEZ_SEARCH_TOGGLE_SELECTORS) {
+      const loc = page.locator(sel).first();
+      if (await loc.isVisible().catch(() => false)) {
+        await loc.click({ timeout: 5000 });
+        clicked = true;
+        await sleep(450);
+        break;
+      }
+    }
+    if (!clicked) {
+      throw new Error(
+        "Diez: no search toggle visible (.elementor-search-form__toggle, .search-icon, .header-search-icon)",
+      );
     }
   } catch (err) {
-    await saveDiezSearchDebugScreenshot(page, "elementor-search-toggle");
+    await saveDiezSearchDebugScreenshot(page, "search-toggle-click");
     throw err;
   }
 
   try {
-    const searchInput = page.locator(ELEMENTOR_SEARCH_INPUT).first();
+    const searchInput = page.locator('input[type="search"]').first();
     await searchInput.waitFor({
       state: "visible",
       timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
     });
+    await fillDiezSearchInput(page, cfg, query, searchInput);
+  } catch (err) {
+    await saveDiezSearchDebugScreenshot(page, "search-input-type-search");
+    try {
+      const fallback = page.locator(".elementor-search-form__input").first();
+      await fallback.waitFor({
+        state: "visible",
+        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+      });
+      await fillDiezSearchInput(page, cfg, query, fallback);
+    } catch (err2) {
+      await saveDiezSearchDebugScreenshot(page, "search-input-elementor-fallback");
+      throw err2 instanceof Error ? err2 : err;
+    }
+  }
+}
+
+async function fillDiezSearchInput(
+  page: Page,
+  cfg: NonNullable<Site["scraperConfig"]>,
+  query: string,
+  searchInput: Locator,
+): Promise<void> {
+  try {
     await searchInput.fill("");
     await searchInput.fill(query);
     if (cfg.searchSubmitSelector) {

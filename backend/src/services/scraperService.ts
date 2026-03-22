@@ -1,4 +1,5 @@
-import { chromium, type Browser } from "playwright";
+import type { Browser } from "playwright";
+import { getStealthChromium } from "../config/playwrightChromium.js";
 import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
 import axios from "axios";
 import { parseSiteHtml } from "../parsers/configParser.js";
@@ -51,7 +52,7 @@ async function scrapeWithPlaywright(
     waitStrategy === "networkidle" ? "networkidle" : "domcontentloaded";
 
   const shouldClose = !browser;
-  const b = browser ?? (await chromium.launch(getChromiumLaunchOptions()));
+  const b = browser ?? (await getStealthChromium().launch(getChromiumLaunchOptions()));
 
   try {
     const page = await b.newPage();
