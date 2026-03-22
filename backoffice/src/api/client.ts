@@ -105,6 +105,14 @@ export const api = {
       ).toString();
       return fetchApi<ScrapeResult[]>(`/scrape/results${q ? `?${q}` : ""}`);
     },
+    updateResult: (
+      id: string,
+      body: { price?: number; productUrl?: string },
+    ) =>
+      fetchApi<ScrapeResult>(`/scrape/results/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }),
     lowest: (params?: { category?: string }) => {
       const q = new URLSearchParams(
         params as Record<string, string>,
@@ -155,6 +163,7 @@ export interface ScraperConfig {
   navigatorEnabled?: boolean;
   navigatorResultContainer?: string;
   categoryUrlByProductCategory?: Record<string, string>;
+  useElementorSearchUi?: boolean;
 }
 
 export interface Site {

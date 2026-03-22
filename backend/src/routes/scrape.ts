@@ -293,6 +293,79 @@ scrapeRouter.get("/results/lowest", async (req, res) => {
 });
 
 /**
+ * PATCH /api/scrape/results/:id
+ * Manually update price and/or product URL. `scrapedAt` is refreshed only when `price` changes.
+ */
+scrapeRouter.patch("/results/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body ?? {};
+    const hasPrice = Object.prototype.hasOwnProperty.call(body, "price");
+    const hasUrl = Object.prototype.hasOwnProperty.call(body, "productUrl");
+
+    if (!hasPrice && !hasUrl) {
+      return res.status(400).json({
+        error: "נדרש לפחות אחד: price או productUrl",
+      });
+    }
+
+    const results = await readJson<ScrapeResult[]>("results.json");
+    const idx = results.findIndex((r) => r.id === id);
+    if (idx === -1) {
+      return res.status(404).json({ error: "תוצאה לא נמצאה" });
+    }
+
+    const current = results[idx];
+    let nextPrice = current.price;
+    let nextUrl = current.productUrl;
+    let nextScrapedAt = current.scrapedAt;
+
+    if (hasPrice) {
+      const raw = body.price;
+      const p = typeof raw === "number" ? raw : parseFloat(String(raw));
+      if (!Number.isFinite(p) || p <= 0) {
+        return res.status(400).json({ error: "מחיר לא תקין" });
+      }
+      if (p !== current.price) {
+        nextPrice = p;
+        nextScrapedAt = new Date().toISOString();
+      }
+    }
+
+    if (hasUrl) {
+      const u = String(body.productUrl ?? "").trim();
+      if (!u) {
+        return res.status(400).json({ error: "קישור לא יכול להיות ריק" });
+      }
+      nextUrl = u;
+    }
+
+    const updated: ScrapeResult = {
+      ...current,
+      price: nextPrice,
+      productUrl: nextUrl,
+      scrapedAt: nextScrapedAt,
+    };
+    results[idx] = updated;
+    await writeJson("results.json", results);
+
+    const products = await readJson<Product[]>("products.json");
+    const sites = await readJson<Site[]>("sites.json");
+    const productMap = new Map(products.map((p) => [p.id, p]));
+    const siteMap = new Map(sites.map((s) => [s.id, s]));
+
+    res.json({
+      ...updated,
+      productName: productMap.get(updated.productId)?.name ?? "Unknown",
+      siteName: siteMap.get(updated.siteId)?.name ?? "Unknown",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "עדכון תוצאה נכשל" });
+  }
+});
+
+/**
  * POST /api/scrape/match-category
  * Match products across sites for a category using LLM
  */

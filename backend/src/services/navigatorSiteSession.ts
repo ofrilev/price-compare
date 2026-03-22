@@ -8,6 +8,44 @@ import { logScrape } from "./scrapeLogger.js";
 import type { NavigatorQueryPlan } from "./navigatorQueryPlanner.service.js";
 import { tryNavigatorVariantAssist } from "./navigatorVariantAssist.service.js";
 
+/** Navigator Playwright timeouts (Railway / cost control) */
+const NAV_PLAYWRIGHT_TIMEOUT_MS = 10_000;
+
+const ELEMENTOR_SEARCH_TOGGLE =
+  ".elementor-search-form__toggle, .search-toggle, .header-search-button";
+
+const ELEMENTOR_SEARCH_INPUT =
+  'input[type="search"], .elementor-search-form__input';
+
+function usesElementorSearchUi(site: Site): boolean {
+  return (
+    isDiezSite(site) || site.scraperConfig?.useElementorSearchUi === true
+  );
+}
+
+function navUrlForSite(site: Site, url: string): string {
+  if (isHalilitSite(site)) return stripHalilitSortParams(url);
+  return url;
+}
+
+async function navigatorGoto(page: Page, site: Site, url: string): Promise<void> {
+  const target = navUrlForSite(site, url);
+  await page.goto(target, {
+    waitUntil: "domcontentloaded",
+    timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+  });
+  if (isHalilitSite(site)) {
+    const current = page.url();
+    const fixed = stripHalilitSortParams(current);
+    if (fixed !== current) {
+      await page.goto(fixed, {
+        waitUntil: "domcontentloaded",
+        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+      });
+    }
+  }
+}
+
 async function runPreSteps(page: Page, site: Site): Promise<void> {
   const cfg = site.scraperConfig;
   if (!cfg?.preSteps?.length) return;
@@ -71,25 +109,12 @@ function filterHalilitExactModelCandidates(
   return candidates.filter((c) => normTitleForHalilitMatch(c.text) === wanted);
 }
 
-async function revealDiezSearchBar(page: Page, site: Site): Promise<void> {
-  if (!isDiezSite(site)) return;
-  const toggles = [
-    "button.elementor-search-form__toggle",
-    ".elementor-search-form__toggle",
-    "[class*='elementor-search-form__toggle']",
-    "button[aria-label*='חיפוש' i]",
-    "button[aria-label*='search' i]",
-    ".search-toggle",
-    "[data-open-search]",
-  ];
-  for (const sel of toggles) {
-    const loc = page.locator(sel).first();
-    const vis = await loc.isVisible().catch(() => false);
-    if (vis) {
-      await loc.click({ timeout: 4000 }).catch(() => null);
-      await new Promise((r) => setTimeout(r, 450));
-      return;
-    }
+async function revealElementorSearchUi(page: Page, site: Site): Promise<void> {
+  if (!usesElementorSearchUi(site)) return;
+  const searchToggle = page.locator(ELEMENTOR_SEARCH_TOGGLE).first();
+  if (await searchToggle.isVisible().catch(() => false)) {
+    await searchToggle.click({ timeout: 5000 }).catch(() => null);
+    await new Promise((r) => setTimeout(r, 450));
   }
 }
 
@@ -105,12 +130,26 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
   const base = site.baseUrl.split("?")[0];
   const root = base.endsWith("/") ? base : `${base}/`;
 
-  if (cfg?.searchStrategy === "searchBar" && cfg.searchInputSelector) {
-    await page.goto(root, { waitUntil: "domcontentloaded", timeout: 30000 });
+  if (
+    cfg?.searchStrategy === "searchBar" &&
+    (cfg.searchInputSelector || usesElementorSearchUi(site))
+  ) {
+    await navigatorGoto(page, site, root);
     await runPreSteps(page, site);
-    await revealDiezSearchBar(page, site);
-    const searchInput = page.locator(cfg.searchInputSelector).first();
-    await searchInput.waitFor({ state: "visible", timeout: 10000 }).catch(() => null);
+    await revealElementorSearchUi(page, site);
+    const searchInput = usesElementorSearchUi(site)
+      ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
+      : page.locator(cfg.searchInputSelector!).first();
+    if (usesElementorSearchUi(site)) {
+      await searchInput.waitFor({
+        state: "visible",
+        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+      });
+    } else {
+      await searchInput
+        .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
+        .catch(() => null);
+    }
     await searchInput.fill("");
     await searchInput.fill(query);
     if (cfg.searchSubmitSelector) {
@@ -121,21 +160,13 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
     await new Promise((r) => setTimeout(r, 2000));
   } else if (site.searchUrlTemplate) {
     const pathOrUrl = buildSearchUrl(site, query);
-    let url = pathOrUrl.startsWith("http")
+    const url = pathOrUrl.startsWith("http")
       ? pathOrUrl
       : new URL(pathOrUrl.replace(/^\//, ""), site.baseUrl).href;
-    if (isHalilitSite(site)) url = stripHalilitSortParams(url);
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
-    if (isHalilitSite(site)) {
-      const current = page.url();
-      const fixed = stripHalilitSortParams(current);
-      if (fixed !== current) {
-        await page.goto(fixed, { waitUntil: "domcontentloaded", timeout: 30000 });
-      }
-    }
+    await navigatorGoto(page, site, url);
     await runPreSteps(page, site);
   } else {
-    await page.goto(root, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await navigatorGoto(page, site, root);
     await runPreSteps(page, site);
   }
 
@@ -238,20 +269,33 @@ async function gotoCategoryIfConfigured(
 ): Promise<boolean> {
   const raw = site.scraperConfig?.categoryUrlByProductCategory?.[product.category];
   if (!raw) return false;
-  let url = raw.startsWith("http") ? raw : new URL(raw.replace(/^\//, ""), site.baseUrl).href;
-  if (isHalilitSite(site)) url = stripHalilitSortParams(url);
+  const url = raw.startsWith("http") ? raw : new URL(raw.replace(/^\//, ""), site.baseUrl).href;
   await logScrape(`Navigator ${site.name}: fallback category URL ${url}`);
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await navigatorGoto(page, site, url);
   await runPreSteps(page, site);
   return true;
 }
 
 async function searchFromCurrentPage(page: Page, site: Site, query: string): Promise<void> {
   const cfg = site.scraperConfig;
-  if (cfg?.searchStrategy === "searchBar" && cfg.searchInputSelector) {
-    await revealDiezSearchBar(page, site);
-    const si = page.locator(cfg.searchInputSelector).first();
-    await si.waitFor({ state: "visible", timeout: 8000 }).catch(() => null);
+  if (
+    cfg?.searchStrategy === "searchBar" &&
+    (cfg.searchInputSelector || usesElementorSearchUi(site))
+  ) {
+    await revealElementorSearchUi(page, site);
+    const si = usesElementorSearchUi(site)
+      ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
+      : page.locator(cfg.searchInputSelector!).first();
+    if (usesElementorSearchUi(site)) {
+      await si.waitFor({
+        state: "visible",
+        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+      });
+    } else {
+      await si
+        .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
+        .catch(() => null);
+    }
     await si.fill("").catch(() => null);
     await si.fill(query).catch(() => null);
     if (cfg.searchSubmitSelector) {
@@ -308,7 +352,7 @@ async function openBestCandidate(
   }
 
   await logScrape(`Navigator ${site.name}: open ${best.href}`);
-  await page.goto(best.href, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await navigatorGoto(page, site, best.href);
   if (site.scraperConfig?.waitExtraMs) {
     await new Promise((r) => setTimeout(r, site.scraperConfig!.waitExtraMs));
   }

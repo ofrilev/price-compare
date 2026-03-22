@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { toHrefUrl } from "../utils/url";
 import {
@@ -12,7 +12,16 @@ const PAGE_SIZES = [10, 25, 50, 100];
 type SortField = "product" | "category" | "lowestPrice" | "siteCount";
 type SortDir = "asc" | "desc";
 
+type EditModalState = {
+  resultId: string;
+  originalPrice: number;
+  originalUrl: string;
+  productName: string;
+  siteName: string;
+};
+
 export default function Results() {
+  const queryClient = useQueryClient();
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [brandFilter, setBrandFilter] = useState<string>("");
   const [siteFilter, setSiteFilter] = useState<string[]>([]);
@@ -21,6 +30,96 @@ export default function Results() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [editModal, setEditModal] = useState<EditModalState | null>(null);
+  const [editPrice, setEditPrice] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
+  const modalPriceInputRef = useRef<HTMLInputElement>(null);
+
+  const updateResultMutation = useMutation({
+    mutationFn: (args: {
+      id: string;
+      body: { price?: number; productUrl?: string };
+    }) => api.scrape.updateResult(args.id, args.body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
+      queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
+      setEditModal(null);
+      setEditError(null);
+    },
+    onError: (err: Error) => {
+      setEditError(err.message || "שמירה נכשלה");
+    },
+  });
+
+  useEffect(() => {
+    if (editModal) {
+      modalPriceInputRef.current?.focus();
+    }
+  }, [editModal]);
+
+  useEffect(() => {
+    if (!editModal) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !updateResultMutation.isPending) {
+        setEditModal(null);
+        setEditError(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [editModal, updateResultMutation.isPending]);
+
+  const openEditModal = (
+    r: { id: string; price: number; productUrl: string },
+    productName: string,
+    siteName: string,
+  ) => {
+    setEditModal({
+      resultId: r.id,
+      originalPrice: r.price,
+      originalUrl: r.productUrl,
+      productName,
+      siteName,
+    });
+    setEditPrice(String(r.price));
+    setEditUrl(r.productUrl);
+    setEditError(null);
+  };
+
+  const closeEditModal = () => {
+    if (updateResultMutation.isPending) return;
+    setEditModal(null);
+    setEditError(null);
+  };
+
+  const saveEdit = () => {
+    if (!editModal) return;
+    setEditError(null);
+    const { resultId, originalPrice, originalUrl } = editModal;
+    const priceTrim = editPrice.trim();
+    const urlTrim = editUrl.trim();
+    const body: { price?: number; productUrl?: string } = {};
+
+    if (priceTrim !== String(originalPrice)) {
+      const p = parseFloat(priceTrim.replace(/,/g, ""));
+      if (!Number.isFinite(p) || p <= 0) {
+        setEditError("הזן מחיר תקין");
+        return;
+      }
+      body.price = p;
+    }
+    if (urlTrim !== originalUrl) {
+      body.productUrl = urlTrim;
+    }
+
+    if (Object.keys(body).length === 0) {
+      setEditModal(null);
+      return;
+    }
+
+    updateResultMutation.mutate({ id: resultId, body });
+  };
 
   const { data: results = [], isLoading: resultsLoading } = useQuery({
     queryKey: ["scrape-results"],
@@ -392,7 +491,7 @@ export default function Results() {
                         return (
                           <td
                             key={site.id}
-                            className={`border p-2 text-center ${priceBg}${diezRing}`}
+                            className={`group border p-2 text-center ${priceBg}${diezRing}`}
                           >
                             <div className="flex flex-col items-center gap-1">
                               <span className="text-lg">
@@ -413,6 +512,15 @@ export default function Results() {
                               <span className="text-xs text-gray-500">
                                 {cellDate.toLocaleDateString("he-IL")}
                               </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  openEditModal(siteResult, product.name, site.name)
+                                }
+                                className="text-xs text-gray-600 hover:text-gray-900 underline mt-0.5 opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto"
+                              >
+                                עריכה
+                              </button>
                             </div>
                           </td>
                         );
@@ -481,6 +589,84 @@ export default function Results() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Edit price / URL modal */}
+      {editModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="edit-result-modal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeEditModal();
+          }}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl border border-gray-200 w-full max-w-md p-5 text-right"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              id="edit-result-modal-title"
+              className="text-lg font-semibold text-gray-900 mb-1"
+            >
+              עריכת תוצאה
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {editModal.productName}
+              <span className="text-gray-400 mx-1">·</span>
+              {editModal.siteName}
+            </p>
+
+            <div className="space-y-3">
+              <label className="block text-sm text-gray-700">
+                מחיר (₪)
+                <input
+                  ref={modalPriceInputRef}
+                  type="text"
+                  inputMode="decimal"
+                  value={editPrice}
+                  onChange={(e) => setEditPrice(e.target.value)}
+                  className="mt-1 w-full border rounded-lg px-3 py-2 text-center"
+                  disabled={updateResultMutation.isPending}
+                />
+              </label>
+              <label className="block text-sm text-gray-700">
+                קישור למוצר
+                <input
+                  type="url"
+                  value={editUrl}
+                  onChange={(e) => setEditUrl(e.target.value)}
+                  className="mt-1 w-full border rounded-lg px-3 py-2 text-sm text-left dir-ltr"
+                  disabled={updateResultMutation.isPending}
+                />
+              </label>
+            </div>
+
+            {editError && (
+              <p className="mt-3 text-sm text-red-600 text-center">{editError}</p>
+            )}
+
+            <div className="mt-5 flex gap-2 justify-end flex-wrap">
+              <button
+                type="button"
+                onClick={closeEditModal}
+                disabled={updateResultMutation.isPending}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm disabled:opacity-50"
+              >
+                ביטול
+              </button>
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={updateResultMutation.isPending}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50"
+              >
+                {updateResultMutation.isPending ? "שומר…" : "שמור"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

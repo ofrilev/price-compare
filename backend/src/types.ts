@@ -30,6 +30,8 @@ export interface ScraperConfig {
   navigatorResultContainer?: string;
   /** Optional category URL per product category key (e.g. פסנתרים → category page) */
   categoryUrlByProductCategory?: Record<string, string>;
+  /** Elementor-style header search: click toggle then use standard search input locators (navigator / searchBar) */
+  useElementorSearchUi?: boolean;
 }
 
 export interface Site {
