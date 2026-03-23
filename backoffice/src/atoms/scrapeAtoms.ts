@@ -24,6 +24,13 @@ export const scrapeSelectedSiteIdsAtom = atomWithStorage<string[]>(
   jsonStorage<string[]>(),
 );
 
+/** When true, Diez is auto-selected and server merges Diez into compare. When false, only explicit site selection. */
+export const scrapeIncludeDiezDefaultAtom = atomWithStorage<boolean>(
+  "price-scraper-include-diez-default-v1",
+  true,
+  jsonStorage<boolean>(),
+);
+
 export type LastSearchRunStatus = {
   updatedAt: string;
   runType: "navigator" | "category_match" | null;

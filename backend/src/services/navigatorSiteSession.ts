@@ -1,10 +1,6 @@
-import { mkdir } from "fs/promises";
-import { join } from "path";
-import type { Locator, Page } from "playwright";
-import { isDiezSite } from "../config/diezSite.js";
+import type { Page } from "playwright";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product, Site } from "../types.js";
-import { getDataDir } from "./store.js";
 import { extractNavigatorPriceFromHtml } from "./navigatorPriceExtract.js";
 import { similarityScore } from "./navigatorStringSimilarity.js";
 import { logScrape } from "./scrapeLogger.js";
@@ -14,38 +10,6 @@ import { tryNavigatorVariantAssist } from "./navigatorVariantAssist.service.js";
 /** Navigator Playwright timeouts (Railway / cost control) */
 const NAV_PLAYWRIGHT_TIMEOUT_MS = 10_000;
 
-const DIEZ_DEBUG_SCREENSHOT_DIR = "navigator-diez-debug";
-
-/** Cloudflare / lazy UI: pause before touching search (domcontentloaded already used on goto). */
-const DIEZ_HUMAN_DELAY_MIN_MS = 2000;
-const DIEZ_HUMAN_DELAY_MAX_MS = 3000;
-
-const DIEZ_SEARCH_TOGGLE_SELECTORS = [
-  ".elementor-search-form__toggle",
-  ".search-icon",
-  ".header-search-icon",
-] as const;
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-async function saveDiezSearchDebugScreenshot(
-  page: Page,
-  tag: string,
-): Promise<void> {
-  try {
-    const dir = join(getDataDir(), DIEZ_DEBUG_SCREENSHOT_DIR);
-    await mkdir(dir, { recursive: true });
-    const safe = tag.replace(/[^\w.-]+/g, "_").slice(0, 100);
-    const file = join(dir, `diez-${Date.now()}-${safe}.png`);
-    await page.screenshot({ path: file, fullPage: true });
-    await logScrape(`Diez debug screenshot: ${file}`);
-  } catch (e) {
-    await logScrape(`Diez screenshot failed (${tag}): ${String(e)}`);
-  }
-}
-
 const ELEMENTOR_SEARCH_TOGGLE =
   ".elementor-search-form__toggle, .search-toggle, .header-search-button, .header-search-icon";
 
@@ -53,9 +17,7 @@ const ELEMENTOR_SEARCH_INPUT =
   'input[type="search"], .elementor-search-form__input';
 
 function usesElementorSearchUi(site: Site): boolean {
-  return (
-    isDiezSite(site) || site.scraperConfig?.useElementorSearchUi === true
-  );
+  return site.scraperConfig?.useElementorSearchUi === true;
 }
 
 function navUrlForSite(site: Site, url: string): string {
@@ -153,96 +115,6 @@ async function revealElementorSearchUi(page: Page, site: Site): Promise<void> {
   }
 }
 
-/**
- * Diez search bar: human delay (Cloudflare), then search toggles, then input[type="search"].
- * Each locator step is wrapped — failures write a PNG under data/navigator-diez-debug/.
- */
-async function runDiezSearchBarFlow(
-  page: Page,
-  site: Site,
-  cfg: NonNullable<Site["scraperConfig"]>,
-  query: string,
-): Promise<void> {
-  if (!isDiezSite(site)) return;
-
-  const humanMs =
-    DIEZ_HUMAN_DELAY_MIN_MS +
-    Math.floor(
-      Math.random() *
-        (DIEZ_HUMAN_DELAY_MAX_MS - DIEZ_HUMAN_DELAY_MIN_MS + 1),
-    );
-  await sleep(humanMs);
-  await logScrape(`Diez: human-like delay ${humanMs}ms before search UI`);
-
-  try {
-    let clicked = false;
-    for (const sel of DIEZ_SEARCH_TOGGLE_SELECTORS) {
-      const loc = page.locator(sel).first();
-      if (await loc.isVisible().catch(() => false)) {
-        await loc.click({ timeout: 5000 });
-        clicked = true;
-        await sleep(450);
-        break;
-      }
-    }
-    if (!clicked) {
-      throw new Error(
-        "Diez: no search toggle visible (.elementor-search-form__toggle, .search-icon, .header-search-icon)",
-      );
-    }
-  } catch (err) {
-    await saveDiezSearchDebugScreenshot(page, "search-toggle-click");
-    throw err;
-  }
-
-  try {
-    const searchInput = page.locator('input[type="search"]').first();
-    await searchInput.waitFor({
-      state: "visible",
-      timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
-    });
-    await fillDiezSearchInput(page, cfg, query, searchInput);
-  } catch (err) {
-    await saveDiezSearchDebugScreenshot(page, "search-input-type-search");
-    try {
-      const fallback = page.locator(".elementor-search-form__input").first();
-      await fallback.waitFor({
-        state: "visible",
-        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
-      });
-      await fillDiezSearchInput(page, cfg, query, fallback);
-    } catch (err2) {
-      await saveDiezSearchDebugScreenshot(page, "search-input-elementor-fallback");
-      throw err2 instanceof Error ? err2 : err;
-    }
-  }
-}
-
-async function fillDiezSearchInput(
-  page: Page,
-  cfg: NonNullable<Site["scraperConfig"]>,
-  query: string,
-  searchInput: Locator,
-): Promise<void> {
-  try {
-    await searchInput.fill("");
-    await searchInput.fill(query);
-    if (cfg.searchSubmitSelector) {
-      await page
-        .locator(cfg.searchSubmitSelector)
-        .first()
-        .click({ timeout: 5000 })
-        .catch(() => null);
-    } else {
-      await searchInput.press("Enter");
-    }
-    await sleep(2000);
-  } catch (err) {
-    await saveDiezSearchDebugScreenshot(page, "search-input-submit");
-    throw err;
-  }
-}
-
 function buildSearchUrl(site: Site, query: string): string {
   const encoded = encodeURIComponent(query);
   return site.searchUrlTemplate
@@ -261,32 +133,28 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
   ) {
     await navigatorGoto(page, site, root);
     await runPreSteps(page, site);
-    if (isDiezSite(site)) {
-      await runDiezSearchBarFlow(page, site, cfg, query);
+    await revealElementorSearchUi(page, site);
+    const searchInput = usesElementorSearchUi(site)
+      ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
+      : page.locator(cfg.searchInputSelector!).first();
+    if (usesElementorSearchUi(site)) {
+      await searchInput.waitFor({
+        state: "visible",
+        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+      });
     } else {
-      await revealElementorSearchUi(page, site);
-      const searchInput = usesElementorSearchUi(site)
-        ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
-        : page.locator(cfg.searchInputSelector!).first();
-      if (usesElementorSearchUi(site)) {
-        await searchInput.waitFor({
-          state: "visible",
-          timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
-        });
-      } else {
-        await searchInput
-          .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
-          .catch(() => null);
-      }
-      await searchInput.fill("");
-      await searchInput.fill(query);
-      if (cfg.searchSubmitSelector) {
-        await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
-      } else {
-        await searchInput.press("Enter");
-      }
-      await new Promise((r) => setTimeout(r, 2000));
+      await searchInput
+        .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
+        .catch(() => null);
     }
+    await searchInput.fill("");
+    await searchInput.fill(query);
+    if (cfg.searchSubmitSelector) {
+      await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
+    } else {
+      await searchInput.press("Enter");
+    }
+    await new Promise((r) => setTimeout(r, 2000));
   } else if (site.searchUrlTemplate) {
     const pathOrUrl = buildSearchUrl(site, query);
     const url = pathOrUrl.startsWith("http")
@@ -307,6 +175,30 @@ async function performSearch(page: Page, site: Site, query: string): Promise<voi
 interface LinkCandidate {
   href: string;
   text: string;
+}
+
+/** Drop links that are only the site root — never a product PDP (avoids bogus prices from homepage). */
+function filterOutSiteRootCandidates(
+  site: Site,
+  candidates: LinkCandidate[],
+): LinkCandidate[] {
+  let base: URL;
+  try {
+    base = new URL(site.baseUrl.split("?")[0]);
+  } catch {
+    return candidates;
+  }
+  const origin = base.origin;
+  return candidates.filter((c) => {
+    try {
+      const u = new URL(c.href);
+      if (u.origin !== origin) return true;
+      const path = u.pathname.replace(/\/+$/, "") || "/";
+      return path !== "/";
+    } catch {
+      return true;
+    }
+  });
 }
 
 async function collectCandidates(page: Page, site: Site): Promise<LinkCandidate[]> {
@@ -411,32 +303,35 @@ async function searchFromCurrentPage(page: Page, site: Site, query: string): Pro
     cfg?.searchStrategy === "searchBar" &&
     (cfg.searchInputSelector || usesElementorSearchUi(site))
   ) {
-    if (isDiezSite(site)) {
-      await runDiezSearchBarFlow(page, site, cfg, query);
+    await revealElementorSearchUi(page, site);
+    const si = usesElementorSearchUi(site)
+      ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
+      : page.locator(cfg.searchInputSelector!).first();
+    if (usesElementorSearchUi(site)) {
+      await si.waitFor({
+        state: "visible",
+        timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
+      });
     } else {
-      await revealElementorSearchUi(page, site);
-      const si = usesElementorSearchUi(site)
-        ? page.locator(ELEMENTOR_SEARCH_INPUT).first()
-        : page.locator(cfg.searchInputSelector!).first();
-      if (usesElementorSearchUi(site)) {
-        await si.waitFor({
-          state: "visible",
-          timeout: NAV_PLAYWRIGHT_TIMEOUT_MS,
-        });
-      } else {
-        await si
-          .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
-          .catch(() => null);
-      }
-      await si.fill("").catch(() => null);
-      await si.fill(query).catch(() => null);
-      if (cfg.searchSubmitSelector) {
-        await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
-      } else {
-        await si.press("Enter").catch(() => null);
-      }
-      await new Promise((r) => setTimeout(r, 2000));
+      await si
+        .waitFor({ state: "visible", timeout: NAV_PLAYWRIGHT_TIMEOUT_MS })
+        .catch(() => null);
     }
+    await si.fill("").catch(() => null);
+    await si.fill(query).catch(() => null);
+    if (cfg.searchSubmitSelector) {
+      await page.locator(cfg.searchSubmitSelector).first().click({ timeout: 5000 }).catch(() => null);
+    } else {
+      await si.press("Enter").catch(() => null);
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  } else if (site.searchUrlTemplate) {
+    const pathOrUrl = buildSearchUrl(site, query);
+    const url = pathOrUrl.startsWith("http")
+      ? pathOrUrl
+      : new URL(pathOrUrl.replace(/^\//, ""), site.baseUrl).href;
+    await navigatorGoto(page, site, url);
+    await runPreSteps(page, site);
   }
   if (cfg?.waitExtraMs) {
     await new Promise((r) => setTimeout(r, cfg.waitExtraMs));
@@ -477,9 +372,9 @@ async function openBestCandidate(
     }
   }
 
-  if (candidates.length > 1 && bestScore < 0.08) {
+  if (bestScore < 0.08) {
     await logScrape(
-      `Navigator ${site.name}: weak match (score=${bestScore.toFixed(3)}), skipping among ${candidates.length} results`
+      `Navigator ${site.name}: weak match (score=${bestScore.toFixed(3)}), skipping${candidates.length > 1 ? ` among ${candidates.length} results` : " (single candidate)"}`,
     );
     return false;
   }
@@ -520,6 +415,13 @@ export async function navigateAndExtractProduct(
     }
 
     let candidates = await collectCandidates(page, site);
+    const beforeRootFilter = candidates.length;
+    candidates = filterOutSiteRootCandidates(site, candidates);
+    if (candidates.length !== beforeRootFilter) {
+      await logScrape(
+        `Navigator ${site.name}: removed ${beforeRootFilter - candidates.length} site-root link(s)`,
+      );
+    }
     if (isHalilitSite(site)) {
       const before = candidates.length;
       candidates = filterHalilitExactModelCandidates(product, candidates);
@@ -532,7 +434,10 @@ export async function navigateAndExtractProduct(
     if (candidates.length === 0 && categoryUrlConfigured) {
       await gotoCategoryIfConfigured(page, site, product);
       await searchFromCurrentPage(page, site, query);
-      candidates = await collectCandidates(page, site);
+      candidates = filterOutSiteRootCandidates(
+        site,
+        await collectCandidates(page, site),
+      );
       if (isHalilitSite(site)) {
         const before = candidates.length;
         candidates = filterHalilitExactModelCandidates(product, candidates);
@@ -571,3 +476,4 @@ export async function navigateAndExtractProduct(
 
   return null;
 }
+

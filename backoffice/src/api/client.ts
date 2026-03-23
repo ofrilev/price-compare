@@ -94,6 +94,8 @@ export const api = {
       category?: string;
       siteIds?: string[];
       mode?: "scraper" | "llm_websearch" | "navigator";
+      /** When false, server does not auto-append Diez to siteIds. Default true. */
+      includeDiezInCompare?: boolean;
     }) =>
       fetchApi<{ results: ScrapeResult[]; count: number }>(`/scrape`, {
         method: "POST",
@@ -123,7 +125,11 @@ export const api = {
         `/scrape/results/lowest${q ? `?${q}` : ""}`,
       );
     },
-    matchCategory: (body: { category: string; siteIds?: string[] }) =>
+    matchCategory: (body: {
+      category: string;
+      siteIds?: string[];
+      includeDiezInCompare?: boolean;
+    }) =>
       fetchApi<CategoryMatchResult>(`/scrape/match-category`, {
         method: "POST",
         body: JSON.stringify(body),

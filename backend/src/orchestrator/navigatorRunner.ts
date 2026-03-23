@@ -1,11 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
-import { getStealthChromium } from "../config/playwrightChromium.js";
+import { chromium } from "playwright";
 import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
-import {
-  DIEZ_STEALTH_EXTRA_HEADERS,
-  DIEZ_STEALTH_USER_AGENT,
-  DIEZ_STEALTH_VIEWPORT,
-} from "../config/navigatorDiezStealth.js";
 import { readJson } from "../services/store.js";
 import { emit as progressEmit } from "../services/scrapeProgress.js";
 import { logScrape, logScrapeError } from "../services/scrapeLogger.js";
@@ -87,8 +82,8 @@ export async function runNavigatorComparison(
     `Navigator params: productIds=${JSON.stringify(options.productIds)}, category=${options.category}, siteIds=${JSON.stringify(options.siteIds)}`
   );
 
-  const browser = await getStealthChromium().launch(getChromiumLaunchOptions());
-  await logScrape("Navigator: browser launched (playwright-extra stealth)");
+  const browser = await chromium.launch(getChromiumLaunchOptions());
+  await logScrape("Navigator: browser launched (Playwright Chromium, no stealth)");
 
   try {
     for (const product of targetProducts) {
@@ -118,17 +113,9 @@ export async function runNavigatorComparison(
             );
             continue;
           }
-          const context = await browser.newContext(
-            isDiezSite(site)
-              ? {
-                  userAgent: DIEZ_STEALTH_USER_AGENT,
-                  viewport: DIEZ_STEALTH_VIEWPORT,
-                  extraHTTPHeaders: { ...DIEZ_STEALTH_EXTRA_HEADERS },
-                }
-              : {
-                  userAgent: site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT,
-                },
-          );
+          const context = await browser.newContext({
+            userAgent: site.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT,
+          });
           const page = await context.newPage();
           try {
             const extracted = await navigateAndExtractProduct(page, site, product, plan);

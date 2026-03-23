@@ -1501,5 +1501,32 @@
     "currency": "ILS",
     "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp-10-bk/",
     "scrapedAt": "2026-03-22T20:54:05.597Z"
+  },
+  {
+    "id": "67d4255a-e6ea-4f80-bff7-56bb5fbc1a23",
+    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2650,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/",
+    "scrapedAt": "2026-03-23T20:28:17.821Z"
+  },
+  {
+    "id": "47552975-04a4-4059-8eba-8bfaf7292954",
+    "productId": "cf2d7d73-f845-4ba9-a7f0-5ff24d2989d5",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 2350,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/%D7%A4%D7%A1%D7%A0%D7%AA%D7%A8_%D7%93%D7%99%D7%92%D7%99%D7%98%D7%9C%D7%99_yamaha_p45",
+    "scrapedAt": "2026-03-23T20:33:48.499Z"
+  },
+  {
+    "id": "09d9e147-711d-40dd-969c-d294823c3cbd",
+    "productId": "0174a7e8-aa71-4004-9271-596c79d1a243",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 2230,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%99%d7%9e%d7%94%d7%94-yamaha-p-145-black/",
+    "scrapedAt": "2026-03-23T20:44:56.758Z"
   }
 ]

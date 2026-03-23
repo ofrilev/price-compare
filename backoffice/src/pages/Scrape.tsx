@@ -8,6 +8,7 @@ import {
   scrapeBrandFilterAtom,
   scrapeSelectedProductIdsAtom,
   scrapeSelectedSiteIdsAtom,
+  scrapeIncludeDiezDefaultAtom,
   lastSearchRunStatusAtom,
 } from "../atoms/scrapeAtoms";
 import { isDiezConfiguredSite } from "../utils/comparisonTableSites";
@@ -20,8 +21,13 @@ function getDiezSiteId(sitesList: Site[]): string | undefined {
   return sitesList.find((s) => s.enabled && isDiezConfiguredSite(s))?.id;
 }
 
-/** Always include enabled Diez in the selection when it exists in config */
-function withRequiredDiezIds(ids: string[], sitesList: Site[]): string[] {
+/** When includeDiez is true, ensure enabled Diez is in the selected site ids */
+function withRequiredDiezIds(
+  ids: string[],
+  sitesList: Site[],
+  includeDiez: boolean,
+): string[] {
+  if (!includeDiez) return [...ids];
   const diezId = getDiezSiteId(sitesList);
   if (!diezId || ids.includes(diezId)) return [...ids];
   return [...ids, diezId];
@@ -76,6 +82,9 @@ export default function Scrape() {
   );
   const [selectedSiteIds, setSelectedSiteIds] = useAtom(
     scrapeSelectedSiteIdsAtom,
+  );
+  const [includeDiezDefault, setIncludeDiezDefault] = useAtom(
+    scrapeIncludeDiezDefaultAtom,
   );
   const [lastSearchStatus, setLastSearchStatus] = useAtom(
     lastSearchRunStatusAtom,
@@ -160,6 +169,7 @@ export default function Scrape() {
         category?: string;
         siteIds?: string[];
         mode?: "scraper" | "llm_websearch" | "navigator";
+        includeDiezInCompare?: boolean;
       } = {},
     ) => {
       setScrapeLog([]);
@@ -282,9 +292,11 @@ export default function Scrape() {
       productIds?: string[];
       siteIds: string[];
       mode: typeof SCRAPE_MODE;
+      includeDiezInCompare: boolean;
     } = {
       siteIds: selectedSiteIds,
       mode: SCRAPE_MODE,
+      includeDiezInCompare: includeDiezDefault,
     };
     if (selectedProductIds.length > 0) {
       body.productIds = selectedProductIds;
@@ -317,8 +329,9 @@ export default function Scrape() {
     const enabledSiteIds = sites.filter((s) => s.enabled).map((s) => s.id);
     const diezId = getDiezSiteId(sites);
     if (selectedSiteIds.length === enabledSiteIds.length) {
-      // Deselect all except דיאז (חובה)
-      setSelectedSiteIds(diezId ? [diezId] : []);
+      setSelectedSiteIds(
+        includeDiezDefault && diezId ? [diezId] : [],
+      );
     } else {
       setSelectedSiteIds(enabledSiteIds);
     }
@@ -345,17 +358,25 @@ export default function Scrape() {
     prevScrapeBrandRef.current = scrapeBrandFilter;
     if (!brandChanged) return;
     const ids = getDefaultSiteIdsForBrand(scrapeBrandFilter, sites);
-    if (ids.length > 0) setSelectedSiteIds(withRequiredDiezIds(ids, sites));
-  }, [scrapeBrandFilter, sites, setSelectedSiteIds]);
+    if (ids.length > 0) {
+      setSelectedSiteIds(withRequiredDiezIds(ids, sites, includeDiezDefault));
+    }
+  }, [
+    scrapeBrandFilter,
+    sites,
+    setSelectedSiteIds,
+    includeDiezDefault,
+  ]);
 
-  // דיאז תמיד נבחר (לא ניתן להסיר בממשק)
+  // דיאז נבחר אוטומטית רק כש"כלול דיאז כברירת מחדל" דלוק
   useEffect(() => {
+    if (!includeDiezDefault) return;
     const diezId = getDiezSiteId(sites);
     if (!diezId) return;
     setSelectedSiteIds((prev) =>
       prev.includes(diezId) ? prev : [...prev, diezId],
     );
-  }, [sites, setSelectedSiteIds]);
+  }, [sites, setSelectedSiteIds, includeDiezDefault]);
 
   // נקה בחירת מוצרים שלא מופיעים ברשימה המסוננת
   useEffect(() => {
@@ -685,15 +706,30 @@ export default function Scrape() {
 
       {sites.length > 0 && (
         <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200 text-right">
+          <label className="flex items-center gap-2 justify-end mb-3 cursor-pointer select-none flex-row-reverse">
+            <span className="text-sm font-medium text-gray-800">
+              כלול דיאז כברירת מחדל בהשוואה
+            </span>
+            <input
+              type="checkbox"
+              checked={includeDiezDefault}
+              onChange={(e) => setIncludeDiezDefault(e.target.checked)}
+              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+            />
+          </label>
+          <p className="text-xs text-gray-600 mb-3">
+            כבוי: דיאז לא נוסף אוטומטית לבחירה ולא נשלח בשרת אלא אם סימנת אותו
+            ידנית. דלוק: דיאז נשאר מסומן ונכלל בכל השוואה (כמו קודם).
+          </p>
           <div className="flex items-center justify-between mb-2 flex-row-reverse">
             <div className="text-sm text-gray-700 font-medium space-y-1">
               <p>
                 חובה לבחור לפחות אתר אחד — ההשוואה לא רצה על כל האתרים אוטומטית.
               </p>
               <p className="text-xs font-normal text-indigo-800">
-                אתר דיאז נשאר תמיד מסומן ולא ניתן לבטל — בשרת הוא נכלל בכל
-                השוואה; ב-Navigator דילוג על דיאז רק כשכבר יש תוצאה מאותו מוצר
-                מאותו יום (UTC).
+                {includeDiezDefault
+                  ? "דיאז מסומן כברירת מחדל ולא ניתן לבטל — בשרת הוא נכלל אם לא בחרת אחרת; ב-Navigator דילוג על דיאז רק כשכבר יש תוצאה מאותו מוצר מאותו יום (UTC)."
+                  : "דיאז לא נכלל אלא אם סימנת אותו. ב-Navigator דילוג על דיאז רק כשכבר יש תוצאה מאותו מוצר מאותו יום (UTC) כשדיאז בכלל נבחר."}
               </p>
             </div>
             <button
@@ -723,7 +759,8 @@ export default function Scrape() {
             {sites
               .filter((s) => s.enabled)
               .map((site) => {
-                const lockedDiez = isDiezConfiguredSite(site);
+                const lockedDiez =
+                  isDiezConfiguredSite(site) && includeDiezDefault;
                 return (
                   <label
                     key={site.id}
@@ -734,7 +771,7 @@ export default function Scrape() {
                     }`}
                     title={
                       lockedDiez
-                        ? "דיאז — נדרש לכל השוואה, לא ניתן לבטל"
+                        ? "דיאז — נדרש כשברירת המחדל דלוקה, לא ניתן לבטל"
                         : undefined
                     }
                   >

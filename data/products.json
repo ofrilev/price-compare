@@ -49,13 +49,6 @@
     "brand": "Yamaha"
   },
   {
-    "id": "af237686-e81e-47fa-b2eb-8ed1303ac11f",
-    "name": "Yamaha P-45",
-    "searchTerm": "Yamaha P-45",
-    "category": "פסנתרים",
-    "brand": "Yamaha"
-  },
-  {
     "id": "0174a7e8-aa71-4004-9271-596c79d1a243",
     "name": "Yamaha P-145",
     "searchTerm": "Yamaha P-145",
@@ -121,6 +114,20 @@
     "name": "CT-S100",
     "searchTerm": "CT-S100",
     "brand": "Casio",
+    "category": "פסנתרים"
+  },
+  {
+    "id": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "name": "C40",
+    "searchTerm": "C40",
+    "brand": "Yamaha",
+    "category": "גיטרות ומגברים"
+  },
+  {
+    "id": "cf2d7d73-f845-4ba9-a7f0-5ff24d2989d5",
+    "name": "P-45",
+    "searchTerm": "P-45",
+    "brand": "Yamaha",
     "category": "פסנתרים"
   }
 ]

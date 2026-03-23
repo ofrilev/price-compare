@@ -51,7 +51,7 @@
     "usePlaywright": true,
     "enabled": true,
     "scraperConfig": {
-      "searchStrategy": "searchBar",
+      "searchStrategy": "url",
       "searchInputSelector": "#searchbox, input[type='search'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='הקלד']",
       "priceSelectors": [
         ".saleprice",
@@ -163,7 +163,7 @@
     "usePlaywright": true,
     "enabled": true,
     "scraperConfig": {
-      "searchStrategy": "searchBar",
+      "searchStrategy": "url",
       "searchInputSelector": "input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='Search']",
       "priceSelectors": [
         ".elementor-widget-container p.price ins",

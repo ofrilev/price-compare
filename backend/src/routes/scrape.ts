@@ -181,11 +181,17 @@ scrapeRouter.get("/stream", (req, res) => {
 
 scrapeRouter.post("/", async (req, res) => {
   try {
-    const { productIds, category, siteIds, mode } = req.body ?? {};
+    const { productIds, category, siteIds, mode, includeDiezInCompare } =
+      req.body ?? {};
     const useLegacy = process.env.USE_LEGACY_LLM_SCRAPE === "true";
 
     const sitesList = await readJson<Site[]>("sites.json");
-    const ids = mergeDiezSiteId(Array.isArray(siteIds) ? siteIds : [], sitesList);
+    const includeDiez = includeDiezInCompare !== false;
+    const ids = mergeDiezSiteId(
+      Array.isArray(siteIds) ? siteIds : [],
+      sitesList,
+      includeDiez,
+    );
     if (ids.length === 0) {
       return res.status(400).json({
         error: "יש לבחור לפחות אתר אחד לפני ההשוואה",
@@ -391,14 +397,19 @@ scrapeRouter.delete("/results/:id", async (req, res) => {
  */
 scrapeRouter.post("/match-category", async (req, res) => {
   try {
-    const { category, siteIds } = req.body ?? {};
+    const { category, siteIds, includeDiezInCompare } = req.body ?? {};
     
     if (!category) {
       return res.status(400).json({ error: "קטגוריה נדרשת" });
     }
 
     const sitesForCategory = await readJson<Site[]>("sites.json");
-    const mIds = mergeDiezSiteId(Array.isArray(siteIds) ? siteIds : [], sitesForCategory);
+    const includeDiez = includeDiezInCompare !== false;
+    const mIds = mergeDiezSiteId(
+      Array.isArray(siteIds) ? siteIds : [],
+      sitesForCategory,
+      includeDiez,
+    );
     if (mIds.length === 0) {
       return res.status(400).json({
         error: "יש לבחור לפחות אתר אחד להתאמת קטגוריה",

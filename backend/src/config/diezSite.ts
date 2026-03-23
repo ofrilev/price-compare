@@ -26,10 +26,15 @@ export function getConfiguredDiezSite(sites: Site[]): Site | undefined {
 }
 
 /**
- * Diez participates in every compare when configured, unless the client already selected it.
- * Skipping actual navigation when a same-day row exists is done in navigatorRunner.
+ * When `includeDiezByDefault` is true (default): append configured Diez to siteIds if missing.
+ * When false: leave siteIds unchanged so scrapes only run on explicitly selected sites.
  */
-export function mergeDiezSiteId(siteIds: string[], sites: Site[]): string[] {
+export function mergeDiezSiteId(
+  siteIds: string[],
+  sites: Site[],
+  includeDiezByDefault = true,
+): string[] {
+  if (!includeDiezByDefault) return [...siteIds];
   const diez = getConfiguredDiezSite(sites);
   if (!diez) return [...siteIds];
   if (!diez.scraperConfig?.navigatorEnabled) return [...siteIds];
