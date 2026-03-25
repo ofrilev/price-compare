@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type Site } from "../api/client";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { isZapConfiguredSite } from "../utils/comparisonTableSites";
+import {
+  isDiezConfiguredSite,
+  isZapConfiguredSite,
+} from "../utils/comparisonTableSites";
 
 export default function Sites() {
   const queryClient = useQueryClient();
@@ -15,9 +18,12 @@ export default function Sites() {
     queryFn: () => api.sites.list(),
   });
 
-  /** זאפ is managed in data/sites.json only — shown on Scrape (Navigator) */
+  /** זאפ ודיאז לא מנוהלים כאן — מופיעים ב־Navigator בדף השוואת מחירים; עריכה ב־sites.json */
   const retailSites = useMemo(
-    () => sites.filter((s) => !isZapConfiguredSite(s)),
+    () =>
+      sites.filter(
+        (s) => !isZapConfiguredSite(s) && !isDiezConfiguredSite(s),
+      ),
     [sites],
   );
 
@@ -78,7 +84,9 @@ export default function Sites() {
     <div dir="rtl" className="text-right">
       <h1 className="text-xl font-semibold mb-4 text-right">אתרים</h1>
       <p className="text-sm text-gray-600 mb-3 text-right">
-        זאפ (מחולל מחירים) אינו מופיע כאן — הוא זמין רק בדף <strong>השוואת מחירים</strong> לבחירת Navigator.
+        <strong>זאפ</strong> ו־<strong>דיאז</strong> אינם ברשימה — הם זמינים בדף{" "}
+        <strong>השוואת מחירים</strong> לבחירת Navigator; הגדרות בקובץ{" "}
+        <code className="text-xs bg-gray-100 px-1 rounded">data/sites.json</code>.
       </p>
       <div className="flex gap-4 mb-4">
         <button
@@ -87,12 +95,12 @@ export default function Sites() {
         >
           הוסף אתר
         </button>
-        {selectedIds.size > 0 && (
+        {selectedSites.length > 0 && (
           <button
             onClick={() => setBulkModalOpen(true)}
             className="px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700"
           >
-            פעולות על {selectedIds.size} נבחרים
+            פעולות על {selectedSites.length} נבחרים
           </button>
         )}
       </div>
