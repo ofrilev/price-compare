@@ -46,7 +46,7 @@ function extractMatchingJsonFromResponse(content: string): string | null {
 }
 
 import { emit as progressEmit } from "./scrapeProgress.js";
-import { logScrape, logScrapeError } from "./scrapeLogger.js";
+import { appendLlmTokenUsage, logScrape, logScrapeError } from "./scrapeLogger.js";
 import { ensureAnchorSiteInList } from "../config/anchorSite.js";
 import { getStealthChromium } from "../config/playwrightChromium.js";
 import { getChromiumLaunchOptions } from "../config/playwrightLaunch.js";
@@ -473,6 +473,10 @@ For "unmatched": Include products found in only ONE store. Use the exact site na
     }
 
     const result: CategoryMatchResponse = JSON.parse(jsonStr);
+
+    await logScrape(
+      appendLlmTokenUsage(`Category match LLM: category="${category}"`, response.data?.usage),
+    );
 
     const minPrices = targetSites.length >= 2 ? 2 : 1;
     const filteredComparison = (result.comparison || []).filter(

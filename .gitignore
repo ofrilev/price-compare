@@ -7,3 +7,4 @@ dist
 logs/
 data/users.json
 data/navigator-diez-debug/
+data/navigator-zap-debug/

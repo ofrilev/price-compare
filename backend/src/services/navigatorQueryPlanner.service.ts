@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getSearchTermFallbacks } from "./normalization.service.js";
-import { logScrape, logScrapeError } from "./scrapeLogger.js";
+import { appendLlmTokenUsage, logScrape, logScrapeError } from "./scrapeLogger.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Product } from "../types.js";
 
@@ -87,11 +87,19 @@ Rules:
     );
 
     const content = response.data.choices[0]?.message?.content?.trim();
-    if (!content) return fallbackPlan(product);
+    if (!content) {
+      await logScrape(
+        appendLlmTokenUsage(
+          `NavigatorQueryPlanner: empty LLM content, fallback for "${product.name}"`,
+          response.data?.usage,
+        ),
+      );
+      return fallbackPlan(product);
+    }
 
     const parsed = JSON.parse(content) as Partial<NavigatorQueryPlan>;
     const fb = fallbackPlan(product);
-    return {
+    const plan: NavigatorQueryPlan = {
       primary: typeof parsed.primary === "string" && parsed.primary.trim() ? parsed.primary.trim() : fb.primary,
       secondary:
         typeof parsed.secondary === "string" && parsed.secondary.trim()
@@ -106,6 +114,13 @@ Rules:
           ? parsed.categoryPathHint.trim()
           : null,
     };
+    await logScrape(
+      appendLlmTokenUsage(
+        `NavigatorQueryPlanner: "${product.name}" primary="${plan.primary}" secondary="${plan.secondary}" tertiary="${plan.tertiary}"`,
+        response.data?.usage,
+      ),
+    );
+    return plan;
   } catch (err) {
     await logScrapeError("NavigatorQueryPlanner error", err);
     return fallbackPlan(product);

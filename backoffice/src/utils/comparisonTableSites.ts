@@ -28,6 +28,23 @@ export function isDiezConfiguredSite(site: Site): boolean {
   );
 }
 
+function hostnameLooksLikeZap(url: string): boolean {
+  try {
+    const h = new URL(url).hostname.toLowerCase();
+    return h === "zap.co.il" || h.endsWith(".zap.co.il");
+  } catch {
+    return /zap\.co\.il/i.test(url);
+  }
+}
+
+/** זאפ is an aggregator for Navigator only — not a retail column in the comparison table */
+export function isZapConfiguredSite(site: Site): boolean {
+  return (
+    hostnameLooksLikeZap(site.baseUrl || "") ||
+    hostnameLooksLikeZap(site.siteUrl || "")
+  );
+}
+
 /** Match stored scrape rows to Diez (legacy id or product URL host) */
 export function isDiezScrapeResult(r: ScrapeResult): boolean {
   if (r.siteId === LEGACY_DIEZ_SITE_ID) return true;
@@ -39,7 +56,8 @@ export function isDiezScrapeResult(r: ScrapeResult): boolean {
 export function buildComparisonTableSiteColumns(
   enabledSites: Site[]
 ): ComparisonTableSiteColumn[] {
-  const fromConfig: ComparisonTableSiteColumn[] = enabledSites.map((s) => ({
+  const retailOnly = enabledSites.filter((s) => !isZapConfiguredSite(s));
+  const fromConfig: ComparisonTableSiteColumn[] = retailOnly.map((s) => ({
     id: s.id,
     name: s.name,
     siteUrl: s.siteUrl || s.baseUrl,

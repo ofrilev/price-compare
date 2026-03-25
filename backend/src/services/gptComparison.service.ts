@@ -1,5 +1,5 @@
 import axios from "axios";
-import { logScrape, logScrapeError } from "./scrapeLogger.js";
+import { appendLlmTokenUsage, logScrape, logScrapeError } from "./scrapeLogger.js";
 
 export interface SiteResult {
   siteName: string;
@@ -81,14 +81,24 @@ Rules:
     );
 
     const content = response.data.choices[0]?.message?.content?.trim();
-    if (!content) return null;
+    if (!content) {
+      await logScrape(
+        appendLlmTokenUsage("GPT: empty message content", response.data?.usage),
+      );
+      return null;
+    }
 
     let jsonStr = content;
     const jsonMatch = content.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
     if (jsonMatch) jsonStr = jsonMatch[1];
 
     const result = JSON.parse(jsonStr) as GPTComparisonOutput;
-    await logScrape(`GPT: done for "${input.productName}", cheapest=${result.cheapest}`);
+    await logScrape(
+      appendLlmTokenUsage(
+        `GPT: done for "${input.productName}", cheapest=${result.cheapest}`,
+        response.data?.usage,
+      ),
+    );
     return result;
   } catch (err) {
     await logScrapeError("GPT error", err);

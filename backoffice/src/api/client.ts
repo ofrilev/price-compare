@@ -107,10 +107,7 @@ export const api = {
       ).toString();
       return fetchApi<ScrapeResult[]>(`/scrape/results${q ? `?${q}` : ""}`);
     },
-    updateResult: (
-      id: string,
-      body: { price?: number; productUrl?: string },
-    ) =>
+    updateResult: (id: string, body: { price?: number; productUrl?: string }) =>
       fetchApi<ScrapeResult>(`/scrape/results/${id}`, {
         method: "PATCH",
         body: JSON.stringify(body),
@@ -172,6 +169,13 @@ export interface ScraperConfig {
   navigatorResultContainer?: string;
   categoryUrlByProductCategory?: Record<string, string>;
   useElementorSearchUi?: boolean;
+  zapMaxOffers?: number;
+  zapSearchInputSelector?: string;
+  zapResultsContainerSelector?: string;
+  zapResultsFallbackSelectors?: string[];
+  zapExtractMode?: "dom" | "llm";
+  zapExtractLlmMaxChars?: number;
+  zapModalDismissSelectors?: string[];
 }
 
 export interface Site {

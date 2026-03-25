@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type Site } from "../api/client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { isZapConfiguredSite } from "../utils/comparisonTableSites";
 
 export default function Sites() {
   const queryClient = useQueryClient();
@@ -13,6 +14,12 @@ export default function Sites() {
     queryKey: ["sites"],
     queryFn: () => api.sites.list(),
   });
+
+  /** זאפ is managed in data/sites.json only — shown on Scrape (Navigator) */
+  const retailSites = useMemo(
+    () => sites.filter((s) => !isZapConfiguredSite(s)),
+    [sites],
+  );
 
   const createMutation = useMutation({
     mutationFn: (data: Partial<Site>) => api.sites.create(data),
@@ -45,29 +52,34 @@ export default function Sites() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.size === sites.length) {
+    if (retailSites.length === 0) return;
+    const allRetailSelected = retailSites.every((s) => selectedIds.has(s.id));
+    if (allRetailSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(sites.map((s) => s.id)));
+      setSelectedIds(new Set(retailSites.map((s) => s.id)));
     }
   };
 
-  const selectedSites = sites.filter((s) => selectedIds.has(s.id));
+  const selectedSites = retailSites.filter((s) => selectedIds.has(s.id));
   const checkAllRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const el = checkAllRef.current;
     if (!el) return;
-    const n = selectedIds.size;
-    const total = sites.length;
+    const n = retailSites.filter((s) => selectedIds.has(s.id)).length;
+    const total = retailSites.length;
     el.indeterminate = n > 0 && n < total;
-  }, [selectedIds.size, sites.length]);
+  }, [selectedIds, retailSites]);
 
   if (isLoading) return <div className="text-gray-500">טוען...</div>;
 
   return (
     <div dir="rtl" className="text-right">
       <h1 className="text-xl font-semibold mb-4 text-right">אתרים</h1>
+      <p className="text-sm text-gray-600 mb-3 text-right">
+        זאפ (מחולל מחירים) אינו מופיע כאן — הוא זמין רק בדף <strong>השוואת מחירים</strong> לבחירת Navigator.
+      </p>
       <div className="flex gap-4 mb-4">
         <button
           onClick={() => setCreating(true)}
@@ -92,7 +104,10 @@ export default function Sites() {
               <input
                 ref={checkAllRef}
                 type="checkbox"
-                checked={sites.length > 0 && selectedIds.size === sites.length}
+                checked={
+                  retailSites.length > 0 &&
+                  retailSites.every((s) => selectedIds.has(s.id))
+                }
                 onChange={toggleSelectAll}
                 className="w-4 h-4 rounded"
               />
@@ -104,7 +119,7 @@ export default function Sites() {
           </tr>
         </thead>
         <tbody>
-          {sites.map((site) => (
+          {retailSites.map((site) => (
             <tr key={site.id} className="border">
               <td className="border p-2">
                 <input

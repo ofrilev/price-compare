@@ -10,6 +10,7 @@ import {
   logLLMComparisonStart,
   logLLMComparisonEnd,
 } from "./llmLogger.js";
+import { appendLlmTokenUsage, logScrape } from "./scrapeLogger.js";
 import { ensureAnchorSiteInList } from "../config/anchorSite.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import { getSearchTermFallbacks } from "./normalization.service.js";
@@ -182,6 +183,10 @@ IMPORTANT: This is a price comparison task. Your goal is to help the user find t
     }
 
     const result: LLMComparisonResponse = JSON.parse(jsonStr);
+
+    await logScrape(
+      appendLlmTokenUsage(`LLM comparison model response: "${product.name}"`, response.data?.usage),
+    );
 
     // Validate and parse prices
     for (const res of result.results) {

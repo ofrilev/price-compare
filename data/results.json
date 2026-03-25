@@ -1440,15 +1440,6 @@
     "scrapedAt": "2026-03-21T20:47:12.569Z"
   },
   {
-    "id": "eb8c4989-e342-4768-a7f7-410c0dd38e9a",
-    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
-    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
-    "price": 550,
-    "currency": "ILS",
-    "productUrl": "https://www.next-pro.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-casio-ct-s100/",
-    "scrapedAt": "2026-03-21T21:28:13.069Z"
-  },
-  {
     "id": "6962e1a9-c4ec-485e-ab92-c79f7fd34941",
     "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
     "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
@@ -1566,30 +1557,57 @@
     "scrapedAt": "2026-03-25T08:47:03.357Z"
   },
   {
-    "id": "f967a144-9f35-4f44-a8dc-5ec8e8e152ca",
-    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "id": "635acdad-49c8-4816-97f9-8337fe0a4683",
+    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
     "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
-    "price": 650,
+    "price": 525,
     "currency": "ILS",
-    "productUrl": "https://diez.co.il/product/%d7%92%d7%99%d7%98%d7%a8%d7%94-%d7%a7%d7%9c%d7%90%d7%a1%d7%99%d7%aa-%d7%99%d7%9e%d7%94%d7%94-yamaha-c40bl/",
-    "scrapedAt": "2026-03-25T09:01:08.551Z"
+    "productUrl": "https://diez.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-%d7%a7%d7%a1%d7%99%d7%95-casio-ct-s100/",
+    "scrapedAt": "2026-03-25T12:06:29.777Z"
   },
   {
-    "id": "c5655ec0-63e1-4b0b-a7b4-bb77eb3b1824",
-    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
-    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
-    "price": 725,
+    "id": "dbebb8a9-744f-4304-b035-cfea67bab28e",
+    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 550,
     "currency": "ILS",
-    "productUrl": "https://www.kley-zemer.co.il/%D7%92%D7%99%D7%98%D7%A8%D7%94_%D7%A7%D7%9C%D7%90%D7%A1%D7%99%D7%AA_yamaha_c40",
-    "scrapedAt": "2026-03-25T09:01:08.551Z"
+    "productUrl": "https://www.next-pro.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-casio-ct-s100/",
+    "scrapedAt": "2026-03-25T12:06:29.777Z"
   },
   {
-    "id": "bea5e1b5-fe17-450c-9822-f9c21aea06e4",
-    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "id": "e2670390-ebd1-4fa1-a2f4-dde74a83483f",
+    "productId": "be57d919-f3e0-4ab1-af16-e308e200969b",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 800,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-%d7%a7%d7%a1%d7%99%d7%95-casio-ct-s300-wh-%d7%9c%d7%90-%d7%9b%d7%95%d7%9c%d7%9c-%d7%a9%d7%a0%d7%90%d7%99/",
+    "scrapedAt": "2026-03-25T12:23:08.336Z"
+  },
+  {
+    "id": "0f70b9ad-e4b9-43c9-af56-eba29a1b4280",
+    "productId": "be57d919-f3e0-4ab1-af16-e308e200969b",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 849,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-casio-ct-s300-%d7%a2%d7%9d-%d7%a8%d7%92%d7%99%d7%a9%d7%95%d7%aa-%d7%9c%d7%9e%d7%92%d7%a2/",
+    "scrapedAt": "2026-03-25T12:23:08.336Z"
+  },
+  {
+    "id": "bcd1c836-eee7-4a7a-86b3-a8cec3485a23",
+    "productId": "4905a710-5795-492b-b0b3-c2de5bb0707c",
     "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
-    "price": 4189,
+    "price": 4539,
     "currency": "ILS",
-    "productUrl": "https://www.halilit.com/23612-electric-guitars?q=C40",
-    "scrapedAt": "2026-03-25T09:01:08.551Z"
+    "productUrl": "https://www.halilit.com/722466-stage-pianos?q=Roland%20RD-08",
+    "scrapedAt": "2026-03-25T13:02:56.030Z"
+  },
+  {
+    "id": "5e5d71e1-93a7-41a1-a5e8-e07118c14993",
+    "productId": "bbe4e964-dca2-4f1d-a45b-4787c9ed8597",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 12162,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/?s=Roland%20RD-2000",
+    "scrapedAt": "2026-03-25T13:34:41.505Z"
   }
 ]

@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { Page } from "playwright";
-import { logScrape, logScrapeError } from "./scrapeLogger.js";
+import { appendLlmTokenUsage, logScrape, logScrapeError } from "./scrapeLogger.js";
 import type { Product } from "../types.js";
 import type { Site } from "../types.js";
 
@@ -88,21 +88,39 @@ Prefer select_index 0 if any select exists.`;
     const content = response.data.choices[0]?.message?.content?.trim();
     if (!content) return false;
     const parsed = JSON.parse(content) as ActionPayload;
-    if (parsed.action === "none") return false;
+    if (parsed.action === "none") {
+      await logScrape(
+        appendLlmTokenUsage(
+          `Navigator ${site.name}: LLM variant assist → none`,
+          response.data?.usage,
+        ),
+      );
+      return false;
+    }
 
     if (parsed.action === "select_index" && typeof parsed.selectIndex === "number") {
       const sel = page.locator("select:visible").nth(parsed.selectIndex);
       if ((await sel.count()) === 0) return false;
       await sel.selectOption({ index: 0 }).catch(() => null);
       await new Promise((r) => setTimeout(r, 1500));
-      await logScrape(`Navigator ${site.name}: LLM variant assist select index ${parsed.selectIndex}`);
+      await logScrape(
+        appendLlmTokenUsage(
+          `Navigator ${site.name}: LLM variant assist select index ${parsed.selectIndex}`,
+          response.data?.usage,
+        ),
+      );
       return true;
     }
 
     if (parsed.action === "click_selector" && parsed.selector?.trim()) {
       await page.locator(parsed.selector.trim()).first().click({ timeout: 4000 }).catch(() => null);
       await new Promise((r) => setTimeout(r, 1500));
-      await logScrape(`Navigator ${site.name}: LLM variant assist click ${parsed.selector}`);
+      await logScrape(
+        appendLlmTokenUsage(
+          `Navigator ${site.name}: LLM variant assist click ${parsed.selector}`,
+          response.data?.usage,
+        ),
+      );
       return true;
     }
   } catch (err) {

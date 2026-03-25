@@ -18,6 +18,38 @@ function getTimestamp(): string {
   return new Date().toISOString();
 }
 
+/**
+ * Format OpenAI `chat.completions` usage (and similar) for scrape log lines.
+ */
+export function formatLlmTokenUsage(usage: unknown): string {
+  if (!usage || typeof usage !== "object") return "";
+  const u = usage as Record<string, unknown>;
+  const parts: string[] = [];
+  const p = u.prompt_tokens;
+  const c = u.completion_tokens;
+  const t = u.total_tokens;
+  if (typeof p === "number") parts.push(`prompt=${p}`);
+  if (typeof c === "number") parts.push(`completion=${c}`);
+  if (typeof t === "number") parts.push(`total=${t}`);
+  const pt = u.prompt_tokens_details;
+  if (pt && typeof pt === "object") {
+    const cached = (pt as Record<string, unknown>).cached_tokens;
+    if (typeof cached === "number" && cached > 0) parts.push(`cached=${cached}`);
+  }
+  const cd = u.completion_tokens_details;
+  if (cd && typeof cd === "object") {
+    const rt = (cd as Record<string, unknown>).reasoning_tokens;
+    if (typeof rt === "number") parts.push(`reasoning=${rt}`);
+  }
+  return parts.length ? parts.join(", ") : "";
+}
+
+/** Append token usage to a scrape log message when the API returned usage stats. */
+export function appendLlmTokenUsage(message: string, usage: unknown): string {
+  const tok = formatLlmTokenUsage(usage);
+  return tok ? `${message} | ${tok}` : message;
+}
+
 let logFilePromise: Promise<string> | null = null;
 
 async function getLogFile(): Promise<string> {

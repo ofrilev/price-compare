@@ -75,43 +75,6 @@
     }
   },
   {
-    "id": "a3b4c5d6-e7f8-9012-abcd-ef1234567890",
-    "name": "קילומבו",
-    "baseUrl": "https://www.kilombo.co.il/",
-    "siteUrl": "https://www.kilombo.co.il/",
-    "searchUrlTemplate": "https://www.kilombo.co.il/?s={searchTerm}",
-    "selectors": {
-      "price": ".price, .product-price, [class*='price'], [data-price]",
-      "productName": ".product-title, .product-name, h2, h3, h4",
-      "productLink": "a[href*='/product/'], a[href*='/products/'], a.product-link"
-    },
-    "selectorType": "css",
-    "usePlaywright": true,
-    "enabled": true,
-    "scraperConfig": {
-      "searchStrategy": "searchBar",
-      "searchInputSelector": "input[aria-label^='חפש'], input[type='search'], input[name='s'], input[name='q'], input[placeholder*='חיפוש'], input[placeholder*='search']",
-      "priceSelectors": [
-        ".price",
-        ".product-price",
-        "[class*='price']",
-        "[data-price]"
-      ],
-      "resultItemSelector": ".product, .product-item, .product-card, article, .woocommerce-loop-product",
-      "priceStrategy": "first",
-      "waitStrategy": "domcontentloaded",
-      "waitExtraMs": 2000,
-      "preSteps": [
-        {
-          "type": "click",
-          "selector": ".cookie-accept, [data-accept-cookies], button.cookie-consent, .cookie-banner button"
-        }
-      ],
-      "navigatorEnabled": true,
-      "navigatorResultContainer": "main, .site-main, .woocommerce"
-    }
-  },
-  {
     "id": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
     "name": "נקסט פרו",
     "baseUrl": "https://www.next-pro.co.il/",
@@ -198,6 +161,38 @@
         "אקורדיונים": "https://diez.co.il/product-category/אקורדיונים/",
         "סאונד והגברה": "https://diez.co.il/product-category/סאונד-והגברה/"
       }
+    }
+  },
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-efzap000001",
+    "name": "זאפ",
+    "baseUrl": "https://www.zap.co.il/",
+    "siteUrl": "https://www.zap.co.il/",
+    "searchUrlTemplate": "https://www.zap.co.il/?q={searchTerm}",
+    "selectors": {
+      "price": "#divSearchResults",
+      "productName": "#divSearchResults",
+      "productLink": "#divSearchResults a[href]"
+    },
+    "selectorType": "css",
+    "usePlaywright": true,
+    "enabled": true,
+    "scraperConfig": {
+      "searchStrategy": "searchBar",
+      "searchInputSelector": "#acSearch-input",
+      "zapMaxOffers": 8,
+      "zapExtractMode": "llm",
+      "zapExtractLlmMaxChars": 14000,
+      "zapSearchInputSelector": "#acSearch-input",
+      "zapResultsContainerSelector": "#divSearchResults",
+      "zapResultsFallbackSelectors": ["main", "#content"],
+      "priceSelectors": [".price"],
+      "resultItemSelector": "#divSearchResults",
+      "priceStrategy": "first",
+      "waitStrategy": "domcontentloaded",
+      "waitExtraMs": 2500,
+      "navigatorEnabled": true,
+      "navigatorResultContainer": "#divSearchResults"
     }
   }
 ]

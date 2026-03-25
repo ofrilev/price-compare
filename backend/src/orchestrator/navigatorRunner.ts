@@ -14,6 +14,8 @@ import {
   isDiezSite,
   todayUtcYmd,
 } from "../config/diezSite.js";
+import { findConfiguredSiteIdForOfferHostname, isZapSite } from "../config/zapSite.js";
+import { runZapNavigatorExtract } from "../services/zapNavigatorExtract.service.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
 import type { Site, Product, ScrapeResult } from "../types.js";
 
@@ -68,6 +70,7 @@ export async function runNavigatorComparison(
   }
   if (targetProducts.length === 0) throw new Error("לא נמצאו מוצרים");
 
+  const selectedSiteIds = new Set(options.siteIds!);
   const siteMap = new Map(targetSites.map((s) => [s.id, s]));
   const allResults: ScrapeResult[] = [];
 
@@ -98,7 +101,63 @@ export async function runNavigatorComparison(
 
         const siteResultsBySite = new Map<string, { price: number; productUrl: string }>();
 
+        const zapSite = targetSites.find((s) => isZapSite(s));
+        if (zapSite) {
+          const zContext = await browser.newContext({
+            userAgent: zapSite.scraperConfig?.userAgent ?? DEFAULT_USER_AGENT,
+          });
+          const zPage = await zContext.newPage();
+          try {
+            const rawOffers = await runZapNavigatorExtract(
+              zPage,
+              zapSite,
+              plan.primary,
+              sites,
+            );
+            for (const offer of rawOffers) {
+              const matchedId = findConfiguredSiteIdForOfferHostname(
+                sites,
+                offer.hostname,
+                selectedSiteIds,
+                zapSite,
+              );
+              if (!matchedId) continue;
+              const matchedSite = sites.find((s) => s.id === matchedId);
+              if (
+                matchedSite &&
+                isDiezSite(matchedSite) &&
+                hasSameDayDiezResult(
+                  existingResults,
+                  product.id,
+                  diezConfigured,
+                  todayYmd,
+                )
+              ) {
+                await logScrape(
+                  `${matchedSite.name} (Zap): skip map — כבר יש רשומת דיאז מ-${todayYmd}`,
+                );
+                continue;
+              }
+              if (!siteResultsBySite.has(matchedId)) {
+                siteResultsBySite.set(matchedId, {
+                  price: offer.price,
+                  productUrl: offer.productUrl,
+                });
+                await logScrape(
+                  `${siteMap.get(matchedId)?.name ?? matchedId} (Zap): ${offer.price} ILS @ ${offer.productUrl}`,
+                );
+              }
+            }
+          } finally {
+            await zPage.close().catch(() => null);
+            await zContext.close().catch(() => null);
+          }
+        }
+
         for (const site of targetSites) {
+          if (isZapSite(site)) {
+            continue;
+          }
           if (
             isDiezSite(site) &&
             hasSameDayDiezResult(
@@ -110,6 +169,12 @@ export async function runNavigatorComparison(
           ) {
             await logScrape(
               `${site.name} (Navigator): skip — כבר יש רשומה מ-${todayYmd}`,
+            );
+            continue;
+          }
+          if (siteResultsBySite.has(site.id)) {
+            await logScrape(
+              `${site.name} (Navigator): skip — כבר מזאפ`,
             );
             continue;
           }
@@ -138,12 +203,15 @@ export async function runNavigatorComparison(
           }
         }
 
-        const siteResults = Array.from(siteResultsBySite.entries()).map(([siteId, data]) => ({
-          siteName: siteMap.get(siteId)!.name,
-          siteId,
-          price: data.price,
-          productUrl: data.productUrl,
-        }));
+        const siteResults = Array.from(siteResultsBySite.entries()).map(([siteId, data]) => {
+          const meta = siteMap.get(siteId) ?? sites.find((x) => x.id === siteId);
+          return {
+            siteName: meta?.name ?? siteId,
+            siteId,
+            price: data.price,
+            productUrl: data.productUrl,
+          };
+        });
 
         if (siteResults.length === 0) {
           await logScrape(`Navigator: no prices for ${product.name}`);

@@ -32,6 +32,20 @@ export interface ScraperConfig {
   categoryUrlByProductCategory?: Record<string, string>;
   /** Elementor-style header search: click toggle then use standard search input locators (navigator / searchBar) */
   useElementorSearchUi?: boolean;
+  /** זאפ (aggregator): max retailer rows to read (price asc, document order). Default 8. */
+  zapMaxOffers?: number;
+  /** Override Zap search input selector (default #acSearch-input) */
+  zapSearchInputSelector?: string;
+  /** Override Zap results container (default #divSearchResults) */
+  zapResultsContainerSelector?: string;
+  /** Try these scopes (after primary) when model.aspx / compare UI keeps offers outside #divSearchResults */
+  zapResultsFallbackSelectors?: string[];
+  /** זאפ: `dom` = in-page script parse (default); `llm` = innerText → structured LLM, DOM fallback if empty */
+  zapExtractMode?: "dom" | "llm";
+  /** Max characters of results innerText sent to LLM when zapExtractMode is llm (default 14000) */
+  zapExtractLlmMaxChars?: number;
+  /** Extra CSS selectors (first match wins per round) to close promotional overlays on zap.co.il */
+  zapModalDismissSelectors?: string[];
 }
 
 export interface Site {

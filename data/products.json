@@ -131,5 +131,12 @@
     "searchTerm": "P525",
     "brand": "Yamaha",
     "category": "פסנתרים"
+  },
+  {
+    "id": "d7a87479-39b5-468f-886a-2c5cbcbe53ed",
+    "name": "CT-S200",
+    "searchTerm": "CT-S200",
+    "brand": "Casio",
+    "category": "פסנתרים"
   }
 ]

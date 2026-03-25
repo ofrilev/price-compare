@@ -1,5 +1,5 @@
 import axios from "axios";
-import { logScrape, logScrapeError } from "./scrapeLogger.js";
+import { appendLlmTokenUsage, logScrape, logScrapeError } from "./scrapeLogger.js";
 import type { NormalizedProduct } from "./normalization.service.js";
 
 export interface ProductMatchValidatorInput {
@@ -110,6 +110,13 @@ Rules:
     const parsed = JSON.parse(jsonStr) as { selections?: Record<string, number | null> };
     const selectionsObj = parsed.selections;
     if (!selectionsObj || typeof selectionsObj !== "object") return null;
+
+    await logScrape(
+      appendLlmTokenUsage(
+        `ProductMatchValidator: LLM structured response for "${productName}"`,
+        response.data?.usage,
+      ),
+    );
 
     const result = new Map<string, NormalizedProduct>();
     for (const { siteId, siteName, products } of sitesWithProducts) {

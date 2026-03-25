@@ -2,6 +2,7 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { readJson } from "./store.js";
 import { emit as progressEmit } from "./scrapeProgress.js";
+import { appendLlmTokenUsage, logScrape } from "./scrapeLogger.js";
 import { parsePrice } from "./priceParser.js";
 import { ensureAnchorSiteInList } from "../config/anchorSite.js";
 import { productSearchQuery } from "../utils/productSearchQuery.js";
@@ -184,6 +185,13 @@ Rules:
           throw apiErr;
         }
       }
+
+      await logScrape(
+        appendLlmTokenUsage(
+          `LLM web search model response: "${product.name}"`,
+          response.data?.usage,
+        ),
+      );
 
       const content = response.data?.choices?.[0]?.message?.content?.trim();
       if (!content) {
