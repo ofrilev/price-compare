@@ -219,6 +219,7 @@ export default function Products() {
         <ProductForm
           key="__create__"
           categories={categories}
+          brands={brands}
           onSave={(data) => createMutation.mutate(data)}
           onCancel={() => {
             createMutation.reset();
@@ -232,6 +233,7 @@ export default function Products() {
           key={editing.id}
           product={editing}
           categories={categories}
+          brands={brands}
           onSave={(data) => updateMutation.mutate({ id: editing.id, data })}
           onCancel={() => {
             updateMutation.reset();
@@ -473,15 +475,19 @@ function BulkActionsModal({
   );
 }
 
+const BRAND_CUSTOM = "__custom_brand__";
+
 function ProductForm({
   product,
   categories,
+  brands,
   onSave,
   onCancel,
   error,
 }: {
   product?: Product;
   categories: string[];
+  brands: string[];
   onSave: (data: Partial<Product>) => void;
   onCancel: () => void;
   error?: string;
@@ -494,16 +500,23 @@ function ProductForm({
   const [categoryInput, setCategoryInput] = useState(
     () => product?.category ?? "",
   );
+  const [useCustomBrand, setUseCustomBrand] = useState(() => {
+    const b = (product?.brand ?? "").trim();
+    return b.length > 0 && !brands.includes(b);
+  });
 
   useEffect(() => {
     if (product) {
       setForm({ name: product.name, brand: product.brand ?? "" });
       setCategoryInput(product.category ?? "");
+      const b = (product.brand ?? "").trim();
+      setUseCustomBrand(b.length > 0 && !brands.includes(b));
     } else {
       setForm({ name: "", brand: "" });
       setCategoryInput("");
+      setUseCustomBrand(false);
     }
-  }, [product?.id, product?.name, product?.brand, product?.category]);
+  }, [product?.id, product?.name, product?.brand, product?.category, brands]);
 
   const handleSave = () => {
     const name = (form.name ?? "").trim();
@@ -544,12 +557,46 @@ function ProductForm({
             <label className="block text-sm font-medium text-gray-700">
               חברה (מותווסף לכל חיפוש)
             </label>
-            <input
-              value={form.brand ?? ""}
-              onChange={(e) => setForm({ ...form, brand: e.target.value })}
-              className="w-full border rounded px-2 py-1"
-              placeholder="לדוגמה: Yamaha, Roland"
-            />
+            <select
+              value={
+                useCustomBrand
+                  ? BRAND_CUSTOM
+                  : (form.brand ?? "").trim()
+              }
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === BRAND_CUSTOM) {
+                  setUseCustomBrand(true);
+                  setForm({ ...form, brand: "" });
+                } else {
+                  setUseCustomBrand(false);
+                  setForm({ ...form, brand: v });
+                }
+              }}
+              className="w-full border rounded px-2 py-1 bg-white text-right"
+            >
+              <option value="">— בחר חברה מוכרת —</option>
+              {[...brands]
+                .sort((a, b) => a.localeCompare(b, "he"))
+                .map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+              <option value={BRAND_CUSTOM}>אחר / הקלדה ידנית</option>
+            </select>
+            {useCustomBrand && (
+              <input
+                type="text"
+                value={form.brand ?? ""}
+                onChange={(e) =>
+                  setForm({ ...form, brand: e.target.value })
+                }
+                className="mt-2 w-full border rounded px-2 py-1"
+                placeholder="שם חברה חדשה (יופיע ברשימה אחרי שמירה)"
+                autoComplete="off"
+              />
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">

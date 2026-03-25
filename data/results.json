@@ -1503,15 +1503,6 @@
     "scrapedAt": "2026-03-22T20:54:05.597Z"
   },
   {
-    "id": "67d4255a-e6ea-4f80-bff7-56bb5fbc1a23",
-    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
-    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
-    "price": 2650,
-    "currency": "ILS",
-    "productUrl": "https://www.kley-zemer.co.il/",
-    "scrapedAt": "2026-03-23T20:28:17.821Z"
-  },
-  {
     "id": "47552975-04a4-4059-8eba-8bfaf7292954",
     "productId": "cf2d7d73-f845-4ba9-a7f0-5ff24d2989d5",
     "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
@@ -1528,5 +1519,77 @@
     "currency": "ILS",
     "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%99%d7%9e%d7%94%d7%94-yamaha-p-145-black/",
     "scrapedAt": "2026-03-23T20:44:56.758Z"
+  },
+  {
+    "id": "b282a9e4-9d77-4a72-ae70-32db490be285",
+    "productId": "c1e9b792-94a2-40e7-a906-e13c988f6049",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 8490,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%99%d7%9e%d7%94%d7%94-yamaha-p525-white/",
+    "scrapedAt": "2026-03-25T08:33:17.883Z"
+  },
+  {
+    "id": "e4ba3234-6fd1-4d33-b7fe-5e60309eeb57",
+    "productId": "c1e9b792-94a2-40e7-a906-e13c988f6049",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 9750,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/yamaha-p-525-black",
+    "scrapedAt": "2026-03-25T08:37:05.798Z"
+  },
+  {
+    "id": "7d366f1e-3ce2-4e5f-9b82-a09208566749",
+    "productId": "5b59c91d-f506-4a60-9429-779b39dbe153",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 2270,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/23628-digital-pianos?q=Roland%20FP-10",
+    "scrapedAt": "2026-03-25T08:45:39.619Z"
+  },
+  {
+    "id": "4b57e350-163e-4f8b-9c3e-662d39ce6a30",
+    "productId": "5b59c91d-f506-4a60-9429-779b39dbe153",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 2200,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a0%d7%99%d7%99%d7%93-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp-10-bk/",
+    "scrapedAt": "2026-03-25T08:46:47.053Z"
+  },
+  {
+    "id": "ac5cc13c-09d8-4c54-97a7-2ec1311124d5",
+    "productId": "cf2d7d73-f845-4ba9-a7f0-5ff24d2989d5",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 2100,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%99%d7%9e%d7%94%d7%94-yamaha-p-45-black/",
+    "scrapedAt": "2026-03-25T08:47:03.357Z"
+  },
+  {
+    "id": "f967a144-9f35-4f44-a8dc-5ec8e8e152ca",
+    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 650,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%92%d7%99%d7%98%d7%a8%d7%94-%d7%a7%d7%9c%d7%90%d7%a1%d7%99%d7%aa-%d7%99%d7%9e%d7%94%d7%94-yamaha-c40bl/",
+    "scrapedAt": "2026-03-25T09:01:08.551Z"
+  },
+  {
+    "id": "c5655ec0-63e1-4b0b-a7b4-bb77eb3b1824",
+    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
+    "price": 725,
+    "currency": "ILS",
+    "productUrl": "https://www.kley-zemer.co.il/%D7%92%D7%99%D7%98%D7%A8%D7%94_%D7%A7%D7%9C%D7%90%D7%A1%D7%99%D7%AA_yamaha_c40",
+    "scrapedAt": "2026-03-25T09:01:08.551Z"
+  },
+  {
+    "id": "bea5e1b5-fe17-450c-9822-f9c21aea06e4",
+    "productId": "9a734f55-4f2b-4658-9b52-b3157fbd771a",
+    "siteId": "547e6ae1-4586-4a36-be4b-408c64ac5af0",
+    "price": 4189,
+    "currency": "ILS",
+    "productUrl": "https://www.halilit.com/23612-electric-guitars?q=C40",
+    "scrapedAt": "2026-03-25T09:01:08.551Z"
   }
 ]

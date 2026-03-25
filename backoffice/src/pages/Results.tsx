@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { toHrefUrl } from "../utils/url";
 import {
   buildComparisonTableSiteColumns,
@@ -22,6 +22,7 @@ type EditModalState = {
 
 export default function Results() {
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [brandFilter, setBrandFilter] = useState<string>("");
   const [siteFilter, setSiteFilter] = useState<string[]>([]);
@@ -35,6 +36,9 @@ export default function Results() {
   const [editUrl, setEditUrl] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
   const modalPriceInputRef = useRef<HTMLInputElement>(null);
+  const [highlightProductIds, setHighlightProductIds] = useState<string[]>(
+    [],
+  );
 
   const updateResultMutation = useMutation({
     mutationFn: (args: {
@@ -144,7 +148,11 @@ export default function Results() {
     updateResultMutation.mutate({ id: resultId, body });
   };
 
-  const { data: results = [], isLoading: resultsLoading } = useQuery({
+  const {
+    data: results = [],
+    isLoading: resultsLoading,
+    isFetching: resultsFetching,
+  } = useQuery({
     queryKey: ["scrape-results"],
     queryFn: () => api.scrape.results(),
   });
@@ -174,7 +182,7 @@ export default function Results() {
     queryFn: () => api.products.brands(),
   });
 
-  const { rows, totalPages, totalRows } = useMemo(() => {
+  const { allRows, rows, totalPages, totalRows } = useMemo(() => {
     const productMap = new Map(products.map((p) => [p.id, p]));
     const productsMap = new Map<string, { product: (typeof products)[0]; results: typeof results }>();
 
@@ -252,7 +260,7 @@ export default function Results() {
     const start = (page - 1) * pageSize;
     const paginatedRows = rows.slice(start, start + pageSize);
 
-    return { rows: paginatedRows, totalPages, totalRows };
+    return { allRows: rows, rows: paginatedRows, totalPages, totalRows };
   }, [
     results,
     products,
@@ -279,6 +287,65 @@ export default function Results() {
     }
     return ranges;
   }, [rows]);
+
+  const focusProductsRaw = searchParams.get("focusProducts");
+
+  useEffect(() => {
+    const raw = focusProductsRaw?.trim();
+    if (!raw || resultsLoading) return;
+
+    const ids = raw
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!ids.length) return;
+
+    const clearFocusParam = () => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("focusProducts");
+          return next;
+        },
+        { replace: true },
+      );
+    };
+
+    const idx = allRows.findIndex((r) => ids.includes(r.product.id));
+    if (idx === -1) {
+      if (resultsFetching) return;
+      clearFocusParam();
+      return;
+    }
+
+    const targetPage = Math.floor(idx / pageSize) + 1;
+    setPage(targetPage);
+    setHighlightProductIds(ids);
+
+    const rowId = allRows[idx]!.product.id;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`comparison-row-${rowId}`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        el?.focus({ preventScroll: true });
+      });
+    });
+
+    clearFocusParam();
+  }, [
+    focusProductsRaw,
+    resultsLoading,
+    resultsFetching,
+    allRows,
+    pageSize,
+    setSearchParams,
+  ]);
+
+  useEffect(() => {
+    if (!highlightProductIds.length) return;
+    const t = window.setTimeout(() => setHighlightProductIds([]), 5000);
+    return () => window.clearTimeout(t);
+  }, [highlightProductIds]);
 
   const toggleSiteFilter = (siteId: string) => {
     setSiteFilter((prev) =>
@@ -466,15 +533,45 @@ export default function Results() {
               <tbody>
                 {rows.map(({ product, results: productResults }) => {
                   const priceRange = productPriceRanges.get(product.id);
+                  const rowHighlighted = highlightProductIds.includes(
+                    product.id,
+                  );
                   return (
-                    <tr key={product.id} className="border hover:bg-gray-50">
-                      <td className="border p-2 font-medium sticky right-0 bg-white z-10">
+                    <tr
+                      key={product.id}
+                      id={`comparison-row-${product.id}`}
+                      tabIndex={rowHighlighted ? 0 : undefined}
+                      className={`border hover:bg-gray-50 transition-shadow duration-300 ${
+                        rowHighlighted
+                          ? "bg-amber-50 z-[2] relative ring-[3px] ring-inset ring-indigo-600 shadow-[0_6px_18px_rgba(67,56,202,0.28),0_2px_6px_rgba(15,23,42,0.12)]"
+                          : ""
+                      }`}
+                    >
+                      <td
+                        className={`border p-2 sticky right-0 z-10 ${
+                          rowHighlighted
+                            ? "bg-amber-50 font-bold text-gray-950"
+                            : "bg-white font-medium"
+                        }`}
+                      >
                         {product.name}
                       </td>
-                      <td className="border p-2 text-sm text-gray-600 sticky right-[180px] bg-white z-10">
+                      <td
+                        className={`border p-2 text-sm sticky right-[180px] z-10 ${
+                          rowHighlighted
+                            ? "bg-amber-50 font-semibold text-gray-900"
+                            : "bg-white text-gray-600"
+                        }`}
+                      >
                         {product.category}
                       </td>
-                      <td className="border p-2 text-sm text-gray-600 sticky right-[280px] bg-white z-10">
+                      <td
+                        className={`border p-2 text-sm sticky right-[280px] z-10 ${
+                          rowHighlighted
+                            ? "bg-amber-50 font-semibold text-gray-900"
+                            : "bg-white text-gray-600"
+                        }`}
+                      >
                         {(product.brand ?? "").trim() || "—"}
                       </td>
                       {tableSiteColumns.map((site) => {

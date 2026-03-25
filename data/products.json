@@ -50,14 +50,14 @@
   },
   {
     "id": "0174a7e8-aa71-4004-9271-596c79d1a243",
-    "name": "Yamaha P-145",
+    "name": "P-145",
     "searchTerm": "Yamaha P-145",
     "category": "פסנתרים",
     "brand": "Yamaha"
   },
   {
     "id": "e73f70bd-ddab-4001-8eee-5005dce1823d",
-    "name": "Yamaha P-225",
+    "name": "P-225",
     "searchTerm": "Yamaha P-225",
     "category": "פסנתרים",
     "brand": "Yamaha"
@@ -84,13 +84,6 @@
     "brand": "Yamaha"
   },
   {
-    "id": "3eeff377-a043-4036-85a1-229f102ecd14",
-    "name": "Yamaha P525",
-    "searchTerm": "Yamaha P525",
-    "category": "פסנתרים",
-    "brand": "Yamaha"
-  },
-  {
     "id": "3c50f513-0d28-4251-b1a5-120a14971390",
     "name": "FP30X",
     "category": "פסנתרים",
@@ -99,15 +92,17 @@
   },
   {
     "id": "bc9d7b51-fedd-4304-8552-f78291612da0",
-    "name": "Yamaha DGX-670",
+    "name": "DGX-670",
     "category": "פסנתרים",
-    "brand": "Yamaha"
+    "brand": "Yamaha",
+    "searchTerm": "Yamaha DGX-670"
   },
   {
     "id": "4738eab6-0316-485a-8a77-3e0d6f84d07a",
-    "name": "Roland RD 2000 EX",
+    "name": "RD 2000 EX",
     "category": "פסנתרים",
-    "brand": "Roland"
+    "brand": "Roland",
+    "searchTerm": "Roland RD 2000 EX"
   },
   {
     "id": "413142eb-26be-4c1a-83e2-912e7152c843",
@@ -127,6 +122,13 @@
     "id": "cf2d7d73-f845-4ba9-a7f0-5ff24d2989d5",
     "name": "P-45",
     "searchTerm": "P-45",
+    "brand": "Yamaha",
+    "category": "פסנתרים"
+  },
+  {
+    "id": "c1e9b792-94a2-40e7-a906-e13c988f6049",
+    "name": "P525",
+    "searchTerm": "P525",
     "brand": "Yamaha",
     "category": "פסנתרים"
   }

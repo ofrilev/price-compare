@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, API_BASE, type Product, type Site } from "../api/client";
+import { useQuery } from "@tanstack/react-query";
+import { api, type Product, type Site } from "../api/client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import {
   scrapeCategoryFilterAtom,
   scrapeBrandFilterAtom,
@@ -10,6 +10,11 @@ import {
   scrapeSelectedSiteIdsAtom,
   scrapeIncludeDiezDefaultAtom,
   lastSearchRunStatusAtom,
+  navigatorScrapeLogAtom,
+  navigatorStreamRunningAtom,
+  navigatorLastLlmPromptAtom,
+  navigatorLastLlmResponseAtom,
+  navigatorRunRequestAtom,
 } from "../atoms/scrapeAtoms";
 import { isDiezConfiguredSite } from "../utils/comparisonTableSites";
 import { APP_TITLE } from "../config/app";
@@ -70,7 +75,6 @@ function getDefaultSiteIdsForBrand(
 }
 
 export default function Scrape() {
-  const queryClient = useQueryClient();
   const [categoryFilter, setCategoryFilter] = useAtom(scrapeCategoryFilterAtom);
   const [scrapeBrandFilter, setScrapeBrandFilter] = useAtom(
     scrapeBrandFilterAtom,
@@ -86,26 +90,13 @@ export default function Scrape() {
   const [includeDiezDefault, setIncludeDiezDefault] = useAtom(
     scrapeIncludeDiezDefaultAtom,
   );
-  const [lastSearchStatus, setLastSearchStatus] = useAtom(
-    lastSearchRunStatusAtom,
-  );
-  const [scrapeLog, setScrapeLog] = useState<
-    Array<{ type: string; message: string; timestamp: number }>
-  >([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [lastLlmPrompt, setLastLlmPrompt] = useState<{
-    product?: string;
-    category?: string;
-    prompt: string;
-  } | null>(null);
-  const [lastLlmResponse, setLastLlmResponse] = useState<{
-    product?: string;
-    category?: string;
-    rawResponse: string;
-    parsedResult: unknown;
-  } | null>(null);
+  const [lastSearchStatus] = useAtom(lastSearchRunStatusAtom);
+  const [scrapeLog] = useAtom(navigatorScrapeLogAtom);
+  const [isStreaming] = useAtom(navigatorStreamRunningAtom);
+  const [lastLlmPrompt] = useAtom(navigatorLastLlmPromptAtom);
+  const [lastLlmResponse] = useAtom(navigatorLastLlmResponseAtom);
+  const setNavigatorRequest = useSetAtom(navigatorRunRequestAtom);
   const [showLlmDebug, setShowLlmDebug] = useState(false);
-  const eventSourceRef = useRef<EventSource | null>(null);
   const logContainerRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -162,129 +153,6 @@ export default function Scrape() {
       api.scrape.lowest(categoryFilter ? { category: categoryFilter } : {}),
   });
 
-  const scrapeMutation = useMutation({
-    mutationFn: async (
-      body: {
-        productIds?: string[];
-        category?: string;
-        siteIds?: string[];
-        mode?: "scraper" | "llm_websearch" | "navigator";
-        includeDiezInCompare?: boolean;
-      } = {},
-    ) => {
-      setScrapeLog([]);
-      setLastLlmPrompt(null);
-      setLastLlmResponse(null);
-      setIsStreaming(true);
-
-      // Get auth token for EventSource (which can't send headers)
-      const token = localStorage.getItem("auth_token");
-      const streamUrl = token
-        ? `${API_BASE}/scrape/stream?token=${encodeURIComponent(token)}`
-        : `${API_BASE}/scrape/stream`;
-      const es = new EventSource(streamUrl);
-      eventSourceRef.current = es;
-
-      es.onopen = () => {
-        console.log("EventSource connection opened for scrape");
-      };
-
-      es.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          if (data.type === "llm_prompt") {
-            try {
-              const parsed = JSON.parse(data.message || "{}");
-              setLastLlmPrompt(parsed);
-              setShowLlmDebug(true);
-            } catch {}
-            return;
-          }
-          if (data.type === "llm_response") {
-            try {
-              const parsed = JSON.parse(data.message || "{}");
-              setLastLlmResponse(parsed);
-              setShowLlmDebug(true);
-            } catch {}
-            return;
-          }
-          setScrapeLog((prev) => {
-            const newLog = [
-              ...prev,
-              {
-                type: data.type || "status",
-                message: data.message || "",
-                timestamp: Date.now(),
-              },
-            ];
-            setTimeout(() => {
-              if (logContainerRef.current) {
-                logContainerRef.current.scrollTop =
-                  logContainerRef.current.scrollHeight;
-              }
-            }, 10);
-            return newLog;
-          });
-        } catch (err) {
-          console.error("Error parsing EventSource message:", err);
-        }
-      };
-
-      es.onerror = (event) => {
-        console.error(
-          "EventSource error:",
-          event,
-          "readyState:",
-          es.readyState,
-        );
-        // EventSource.CONNECTING = 0, EventSource.OPEN = 1, EventSource.CLOSED = 2
-        // Only close if the connection is actually closed
-        if (es.readyState === EventSource.CLOSED) {
-          console.log("EventSource connection closed");
-          setIsStreaming(false);
-          es.close();
-        }
-        // If connecting or open, EventSource will try to reconnect automatically
-      };
-
-      try {
-        const result = await api.scrape.run(body);
-        setIsStreaming(false);
-        es.close();
-        eventSourceRef.current = null;
-        return result;
-      } catch (err) {
-        setIsStreaming(false);
-        es.close();
-        eventSourceRef.current = null;
-        throw err;
-      }
-    },
-    onSuccess: (data, variables) => {
-      setLastSearchStatus({
-        updatedAt: new Date().toISOString(),
-        runType: "navigator",
-        state: "success",
-        summary: `השוואת Navigator הושלמה — ${data.count} תוצאות`,
-        resultsCount: data.count,
-        scopeHint: formatNavigatorScopeHint(variables?.productIds, products),
-      });
-      queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
-      queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
-    },
-    onError: (err, variables) => {
-      setIsStreaming(false);
-      setLastSearchStatus({
-        updatedAt: new Date().toISOString(),
-        runType: "navigator",
-        state: "error",
-        summary: "שגיאה בהרצת Navigator",
-        detail: err instanceof Error ? err.message : String(err),
-        scopeHint: formatNavigatorScopeHint(variables?.productIds, products),
-      });
-    },
-  });
-
   const runScrape = () => {
     if (selectedSiteIds.length === 0 || sites.length === 0) return;
 
@@ -302,7 +170,11 @@ export default function Scrape() {
       body.productIds = selectedProductIds;
     }
 
-    scrapeMutation.mutate(body);
+    setNavigatorRequest({
+      id: crypto.randomUUID(),
+      body,
+      scopeHint: formatNavigatorScopeHint(selectedProductIds, products),
+    });
   };
 
   const toggleProduct = (id: string) => {
@@ -337,12 +209,16 @@ export default function Scrape() {
     }
   };
 
-  // Auto-scroll log container when new messages arrive
+  // Auto-scroll log container when new messages arrive (including after returning to /scrape)
   useEffect(() => {
     if (logContainerRef.current && scrapeLog.length > 0) {
       logContainerRef.current.scrollTop = logContainerRef.current.scrollHeight;
     }
   }, [scrapeLog]);
+
+  useEffect(() => {
+    if (lastLlmPrompt || lastLlmResponse) setShowLlmDebug(true);
+  }, [lastLlmPrompt, lastLlmResponse]);
 
   const prevScrapeBrandRef = useRef<string | undefined>(undefined);
   const brandHydratedRef = useRef(false);
@@ -599,7 +475,6 @@ export default function Scrape() {
                 type="button"
                 onClick={runScrape}
                 disabled={
-                  scrapeMutation.isPending ||
                   isStreaming ||
                   sites.length === 0 ||
                   selectedSiteIds.length === 0 ||
@@ -687,9 +562,7 @@ export default function Scrape() {
                   </svg>
                 )}
                 <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                  {scrapeMutation.isPending || isStreaming
-                    ? "משווה מחירים..."
-                    : "השווה מחירים"}
+                  {isStreaming ? "משווה מחירים..." : "השווה מחירים"}
                 </span>
               </button>
             </div>
@@ -836,7 +709,9 @@ export default function Scrape() {
                 ></div>
               </div>
             )}
-            <h3 className="font-semibold text-lg">סטטוס השוואה חי</h3>
+            <h3 className="font-semibold text-lg">
+              {isStreaming ? "סטטוס השוואה חי" : "יומן הרצת Navigator האחרונה"}
+            </h3>
           </div>
           <div
             ref={logContainerRef}

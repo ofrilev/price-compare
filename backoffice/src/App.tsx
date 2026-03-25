@@ -8,6 +8,8 @@ import Scrape from "./pages/Scrape";
 import Results from "./pages/Results";
 import Login from "./pages/Login";
 import { APP_TITLE } from "./config/app";
+import { NavigatorScrapeRunner } from "./components/NavigatorScrapeRunner";
+import { ToastHost } from "./components/ToastHost";
 
 function NavLink({ to, children }: { to: string; children: ReactNode }) {
   const location = useLocation();
@@ -32,6 +34,12 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
+      {isAuthenticated ? (
+        <>
+          <NavigatorScrapeRunner />
+          <ToastHost />
+        </>
+      ) : null}
       {isAuthenticated && (
         <nav className="border-b bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center justify-between gap-4 flex-wrap w-full">
