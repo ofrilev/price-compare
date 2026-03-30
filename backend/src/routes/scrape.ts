@@ -299,6 +299,74 @@ scrapeRouter.get("/results/lowest", async (req, res) => {
 });
 
 /**
+ * POST /api/scrape/results
+ * Manually add a price row for product × site (empty table cell).
+ */
+scrapeRouter.post("/results", async (req, res) => {
+  try {
+    const { productId, siteId, price, productUrl } = req.body ?? {};
+    if (!productId || !siteId) {
+      return res.status(400).json({ error: "נדרשים productId ו-siteId" });
+    }
+
+    const products = await readJson<Product[]>("products.json");
+    const sites = await readJson<Site[]>("sites.json");
+    if (!products.some((p) => p.id === productId)) {
+      return res.status(400).json({ error: "מוצר לא נמצא" });
+    }
+    if (!sites.some((s) => s.id === siteId)) {
+      return res.status(400).json({ error: "אתר לא נמצא" });
+    }
+
+    const raw = price;
+    const p = typeof raw === "number" ? raw : parseFloat(String(raw ?? ""));
+    if (!Number.isFinite(p) || p <= 0) {
+      return res.status(400).json({ error: "מחיר לא תקין" });
+    }
+
+    const url = String(productUrl ?? "").trim();
+    if (!url) {
+      return res.status(400).json({ error: "נדרש קישור למוצר" });
+    }
+
+    const results = await readJson<ScrapeResult[]>("results.json");
+    const existingIdx = results.findIndex(
+      (r) => r.productId === productId && r.siteId === siteId,
+    );
+    if (existingIdx !== -1) {
+      return res.status(409).json({
+        error: "כבר קיימת תוצאה למוצר זה באתר זה — השתמשו בעריכה",
+        existingId: results[existingIdx].id,
+      });
+    }
+
+    const now = new Date().toISOString();
+    const created: ScrapeResult = {
+      id: uuidv4(),
+      productId,
+      siteId,
+      price: p,
+      currency: "ILS",
+      productUrl: url,
+      scrapedAt: now,
+    };
+    results.push(created);
+    await writeJson("results.json", results);
+
+    const productMap = new Map(products.map((pr) => [pr.id, pr]));
+    const siteMap = new Map(sites.map((s) => [s.id, s]));
+    res.status(201).json({
+      ...created,
+      productName: productMap.get(created.productId)?.name ?? "Unknown",
+      siteName: siteMap.get(created.siteId)?.name ?? "Unknown",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "הוספת תוצאה נכשלה" });
+  }
+});
+
+/**
  * PATCH /api/scrape/results/:id
  * Manually update price and/or product URL. `scrapedAt` is refreshed only when `price` changes.
  */

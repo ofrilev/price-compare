@@ -107,6 +107,16 @@ export const api = {
       ).toString();
       return fetchApi<ScrapeResult[]>(`/scrape/results${q ? `?${q}` : ""}`);
     },
+    createResult: (body: {
+      productId: string;
+      siteId: string;
+      price: number;
+      productUrl: string;
+    }) =>
+      fetchApi<ScrapeResult>(`/scrape/results`, {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
     updateResult: (id: string, body: { price?: number; productUrl?: string }) =>
       fetchApi<ScrapeResult>(`/scrape/results/${id}`, {
         method: "PATCH",

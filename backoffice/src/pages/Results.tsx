@@ -12,13 +12,22 @@ const PAGE_SIZES = [10, 25, 50, 100];
 type SortField = "product" | "category" | "lowestPrice" | "siteCount";
 type SortDir = "asc" | "desc";
 
-type EditModalState = {
-  resultId: string;
-  originalPrice: number;
-  originalUrl: string;
-  productName: string;
-  siteName: string;
-};
+type ResultFormModal =
+  | {
+      mode: "edit";
+      resultId: string;
+      originalPrice: number;
+      originalUrl: string;
+      productName: string;
+      siteName: string;
+    }
+  | {
+      mode: "add";
+      productId: string;
+      siteId: string;
+      productName: string;
+      siteName: string;
+    };
 
 export default function Results() {
   const queryClient = useQueryClient();
@@ -31,7 +40,7 @@ export default function Results() {
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [editModal, setEditModal] = useState<EditModalState | null>(null);
+  const [formModal, setFormModal] = useState<ResultFormModal | null>(null);
   const [editPrice, setEditPrice] = useState("");
   const [editUrl, setEditUrl] = useState("");
   const [editError, setEditError] = useState<string | null>(null);
@@ -39,6 +48,24 @@ export default function Results() {
   const [highlightProductIds, setHighlightProductIds] = useState<string[]>(
     [],
   );
+
+  const createResultMutation = useMutation({
+    mutationFn: (args: {
+      productId: string;
+      siteId: string;
+      price: number;
+      productUrl: string;
+    }) => api.scrape.createResult(args),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
+      queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
+      setFormModal(null);
+      setEditError(null);
+    },
+    onError: (err: Error) => {
+      setEditError(err.message || "הוספה נכשלה");
+    },
+  });
 
   const updateResultMutation = useMutation({
     mutationFn: (args: {
@@ -48,7 +75,7 @@ export default function Results() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["scrape-results"] });
       queryClient.invalidateQueries({ queryKey: ["scrape-lowest"] });
-      setEditModal(null);
+      setFormModal(null);
       setEditError(null);
     },
     onError: (err: Error) => {
@@ -79,30 +106,34 @@ export default function Results() {
     deleteResultMutation.mutate(resultId);
   };
 
-  useEffect(() => {
-    if (editModal) {
-      modalPriceInputRef.current?.focus();
-    }
-  }, [editModal]);
+  const formBusy =
+    createResultMutation.isPending || updateResultMutation.isPending;
 
   useEffect(() => {
-    if (!editModal) return;
+    if (formModal) {
+      modalPriceInputRef.current?.focus();
+    }
+  }, [formModal]);
+
+  useEffect(() => {
+    if (!formModal) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !updateResultMutation.isPending) {
-        setEditModal(null);
+      if (e.key === "Escape" && !formBusy) {
+        setFormModal(null);
         setEditError(null);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [editModal, updateResultMutation.isPending]);
+  }, [formModal, formBusy]);
 
   const openEditModal = (
     r: { id: string; price: number; productUrl: string },
     productName: string,
     siteName: string,
   ) => {
-    setEditModal({
+    setFormModal({
+      mode: "edit",
       resultId: r.id,
       originalPrice: r.price,
       originalUrl: r.productUrl,
@@ -114,26 +145,60 @@ export default function Results() {
     setEditError(null);
   };
 
-  const closeEditModal = () => {
-    if (updateResultMutation.isPending) return;
-    setEditModal(null);
+  const openAddModal = (
+    productId: string,
+    siteId: string,
+    productName: string,
+    siteName: string,
+  ) => {
+    setFormModal({
+      mode: "add",
+      productId,
+      siteId,
+      productName,
+      siteName,
+    });
+    setEditPrice("");
+    setEditUrl("");
     setEditError(null);
   };
 
-  const saveEdit = () => {
-    if (!editModal) return;
+  const closeFormModal = () => {
+    if (formBusy) return;
+    setFormModal(null);
     setEditError(null);
-    const { resultId, originalPrice, originalUrl } = editModal;
+  };
+
+  const submitResultForm = () => {
+    if (!formModal) return;
+    setEditError(null);
     const priceTrim = editPrice.trim();
     const urlTrim = editUrl.trim();
+
+    const p = parseFloat(priceTrim.replace(/,/g, ""));
+    if (!Number.isFinite(p) || p <= 0) {
+      setEditError("הזן מחיר תקין");
+      return;
+    }
+    if (!urlTrim) {
+      setEditError("נדרש קישור למוצר");
+      return;
+    }
+
+    if (formModal.mode === "add") {
+      createResultMutation.mutate({
+        productId: formModal.productId,
+        siteId: formModal.siteId,
+        price: p,
+        productUrl: urlTrim,
+      });
+      return;
+    }
+
+    const { resultId, originalPrice, originalUrl } = formModal;
     const body: { price?: number; productUrl?: string } = {};
 
     if (priceTrim !== String(originalPrice)) {
-      const p = parseFloat(priceTrim.replace(/,/g, ""));
-      if (!Number.isFinite(p) || p <= 0) {
-        setEditError("הזן מחיר תקין");
-        return;
-      }
       body.price = p;
     }
     if (urlTrim !== originalUrl) {
@@ -141,7 +206,7 @@ export default function Results() {
     }
 
     if (Object.keys(body).length === 0) {
-      setEditModal(null);
+      setFormModal(null);
       return;
     }
 
@@ -585,11 +650,39 @@ export default function Results() {
                           return (
                             <td
                               key={site.id}
-                              className={`border p-2 text-center text-gray-400 ${
+                              tabIndex={0}
+                              className={`group border p-2 text-center align-middle outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400/60 ${
                                 site.isDiez ? diezBase : ""
                               }`}
                             >
-                              -
+                              <div className="relative min-h-[2.75rem] flex items-center justify-center">
+                                <span
+                                  aria-hidden
+                                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-150 text-gray-400 group-hover:opacity-0 group-focus-within:opacity-0 ${
+                                    site.isDiez ? "text-amber-800/70" : ""
+                                  }`}
+                                >
+                                  -
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    openAddModal(
+                                      product.id,
+                                      site.id,
+                                      product.name,
+                                      site.name,
+                                    )
+                                  }
+                                  className={`relative z-10 text-sm underline-offset-2 hover:underline opacity-0 pointer-events-none transition-opacity duration-150 group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto ${
+                                    site.isDiez
+                                      ? "text-amber-900"
+                                      : "text-blue-600 hover:text-blue-800"
+                                  }`}
+                                >
+                                  + הוסף מחיר
+                                </button>
+                              </div>
                             </td>
                           );
                         }
@@ -733,15 +826,15 @@ export default function Results() {
         </>
       )}
 
-      {/* Edit price / URL modal */}
-      {editModal && (
+      {/* Add / edit price + URL modal */}
+      {formModal && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50"
           role="dialog"
           aria-modal="true"
           aria-labelledby="edit-result-modal-title"
           onClick={(e) => {
-            if (e.target === e.currentTarget) closeEditModal();
+            if (e.target === e.currentTarget) closeFormModal();
           }}
         >
           <div
@@ -752,12 +845,14 @@ export default function Results() {
               id="edit-result-modal-title"
               className="text-lg font-semibold text-gray-900 mb-1"
             >
-              עריכת תוצאה
+              {formModal.mode === "add"
+                ? "הוספת מחיר וקישור"
+                : "עריכת תוצאה"}
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              {editModal.productName}
+              {formModal.productName}
               <span className="text-gray-400 mx-1">·</span>
-              {editModal.siteName}
+              {formModal.siteName}
             </p>
 
             <div className="space-y-3">
@@ -770,7 +865,7 @@ export default function Results() {
                   value={editPrice}
                   onChange={(e) => setEditPrice(e.target.value)}
                   className="mt-1 w-full border rounded-lg px-3 py-2 text-center"
-                  disabled={updateResultMutation.isPending}
+                  disabled={formBusy}
                 />
               </label>
               <label className="block text-sm text-gray-700">
@@ -780,7 +875,7 @@ export default function Results() {
                   value={editUrl}
                   onChange={(e) => setEditUrl(e.target.value)}
                   className="mt-1 w-full border rounded-lg px-3 py-2 text-sm text-left dir-ltr"
-                  disabled={updateResultMutation.isPending}
+                  disabled={formBusy}
                 />
               </label>
             </div>
@@ -792,19 +887,19 @@ export default function Results() {
             <div className="mt-5 flex gap-2 justify-end flex-wrap">
               <button
                 type="button"
-                onClick={closeEditModal}
-                disabled={updateResultMutation.isPending}
+                onClick={closeFormModal}
+                disabled={formBusy}
                 className="px-4 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm disabled:opacity-50"
               >
                 ביטול
               </button>
               <button
                 type="button"
-                onClick={saveEdit}
-                disabled={updateResultMutation.isPending}
+                onClick={submitResultForm}
+                disabled={formBusy}
                 className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-50"
               >
-                {updateResultMutation.isPending ? "שומר…" : "שמור"}
+                {formBusy ? "שומר…" : "שמור"}
               </button>
             </div>
           </div>

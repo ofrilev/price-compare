@@ -1440,15 +1440,6 @@
     "scrapedAt": "2026-03-21T20:47:12.569Z"
   },
   {
-    "id": "6962e1a9-c4ec-485e-ab92-c79f7fd34941",
-    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
-    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
-    "price": 525,
-    "currency": "ILS",
-    "productUrl": "https://diez.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-%d7%a7%d7%a1%d7%99%d7%95-casio-ct-s100/",
-    "scrapedAt": "2026-03-22T09:24:53.946Z"
-  },
-  {
     "id": "3119f4db-197c-4c53-82b0-b6747145972c",
     "productId": "d7b83ac2-9a2e-4515-b01a-32494490dfa4",
     "siteId": "f35b6b12-60d7-45b7-8105-2ae2b3dd5d4e",
@@ -1557,24 +1548,6 @@
     "scrapedAt": "2026-03-25T08:47:03.357Z"
   },
   {
-    "id": "635acdad-49c8-4816-97f9-8337fe0a4683",
-    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
-    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
-    "price": 525,
-    "currency": "ILS",
-    "productUrl": "https://diez.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-%d7%a7%d7%a1%d7%99%d7%95-casio-ct-s100/",
-    "scrapedAt": "2026-03-25T12:06:29.777Z"
-  },
-  {
-    "id": "dbebb8a9-744f-4304-b035-cfea67bab28e",
-    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
-    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
-    "price": 550,
-    "currency": "ILS",
-    "productUrl": "https://www.next-pro.co.il/product/%d7%90%d7%95%d7%a8%d7%92%d7%a0%d7%99%d7%aa-casio-ct-s100/",
-    "scrapedAt": "2026-03-25T12:06:29.777Z"
-  },
-  {
     "id": "e2670390-ebd1-4fa1-a2f4-dde74a83483f",
     "productId": "be57d919-f3e0-4ab1-af16-e308e200969b",
     "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
@@ -1609,5 +1582,50 @@
     "currency": "ILS",
     "productUrl": "https://diez.co.il/?s=Roland%20RD-2000",
     "scrapedAt": "2026-03-25T13:34:41.505Z"
+  },
+  {
+    "id": "0e6b285c-af2c-40bb-a8aa-7d2ec5642012",
+    "productId": "413142eb-26be-4c1a-83e2-912e7152c843",
+    "siteId": "b4c5d6e7-f8a9-0123-bcde-f12345678901",
+    "price": 550,
+    "currency": "ILS",
+    "productUrl": "https://www.next-pro.co.il/?s=Casio%20CT-S100",
+    "scrapedAt": "2026-03-30T08:10:02.102Z"
+  },
+  {
+    "id": "6192ecb0-de03-4991-bb69-72330591fc09",
+    "productId": "86834863-87ac-497b-b945-cf984cb173d1",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 7000,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/?s=Roland%20FP-90X",
+    "scrapedAt": "2026-03-30T08:18:26.116Z"
+  },
+  {
+    "id": "4494b7aa-44c7-4c5c-93bc-9f09088d9a57",
+    "productId": "bbe4e964-dca2-4f1d-a45b-4787c9ed8597",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 12162,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/?s=Roland%20RD-2000",
+    "scrapedAt": "2026-03-30T08:18:39.394Z"
+  },
+  {
+    "id": "7290fb40-42cd-4683-a0bc-9886e8e615cd",
+    "productId": "3c50f513-0d28-4251-b1a5-120a14971390",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 2750,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-fp30x-black/",
+    "scrapedAt": "2026-03-30T08:25:59.588Z"
+  },
+  {
+    "id": "389a8e22-3b26-4003-a5ed-e827b9d32d1a",
+    "productId": "4905a710-5795-492b-b0b3-c2de5bb0707c",
+    "siteId": "e1d2c3b4-a596-4e7f-8d90-d1e2z0000001",
+    "price": 4400,
+    "currency": "ILS",
+    "productUrl": "https://diez.co.il/product/%d7%a4%d7%a1%d7%a0%d7%aa%d7%a8-%d7%97%d7%a9%d7%9e%d7%9c%d7%99-%d7%a8%d7%95%d7%9c%d7%a0%d7%93-roland-rd-08-black/",
+    "scrapedAt": "2026-03-30T08:26:35.578Z"
   }
 ]
